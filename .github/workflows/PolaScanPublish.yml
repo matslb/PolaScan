@@ -3,7 +3,7 @@ name: "Publish PolaScan"
 on:
   push:
       branches:
-        - master
+        - main
 env:
   PROJECT_PATH: PolaScanApp/PolaScan.csproj
   DOTNET_CORE_VERSION: 6.0.x
