@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolaScan", "PolaScanApp\PolaScan.csproj", "{09158D44-376C-4FF3-AD8E-7EC0BC28405E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolaScan.Api", "PolaScan.Api\PolaScan.Api.csproj", "{335637D7-DD42-4DC1-8687-F0F1B1E8135B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{09158D44-376C-4FF3-AD8E-7EC0BC28405E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09158D44-376C-4FF3-AD8E-7EC0BC28405E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09158D44-376C-4FF3-AD8E-7EC0BC28405E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09158D44-376C-4FF3-AD8E-7EC0BC28405E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{335637D7-DD42-4DC1-8687-F0F1B1E8135B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{335637D7-DD42-4DC1-8687-F0F1B1E8135B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{335637D7-DD42-4DC1-8687-F0F1B1E8135B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{335637D7-DD42-4DC1-8687-F0F1B1E8135B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E7AF3A56-30E1-4AD1-88DB-56B5271BB999}
+	EndGlobalSection
+EndGlobal
