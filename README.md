@@ -10,5 +10,5 @@ Using Azure Custom Vision with a model custom trained to recognize polaroid imag
 PolaScan will detect a handwritten date on the front of a Polaroid, and add it to the metadata of the scanned image.
 
 ### Google Timeline data
- Download your google timeline data from [wwww.takeout.google.com] and add it to PolaScan to match the dates on your polaroids to get the coordinates from when time photo was taken.
+ Download your google timeline data from [takeout.google.com](https://takeout.google.com) and add it to PolaScan to match the dates on your polaroids to get the coordinates from when time photo was taken.
  
