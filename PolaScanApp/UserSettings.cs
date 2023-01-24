@@ -11,7 +11,6 @@ namespace PolaScan;
 
 public class UserSettings
 {
-    private static string settingsFolder = "Polascan";
     private static string settingsFileName = "polaScanSettings.json";
     public string DestinationPath { get; set; } = $"{Environment.GetEnvironmentVariable("USERPROFILE")}\\Pictures\\PolaScan";
     public string InitialDirectory { get; set; } = $"{Environment.GetEnvironmentVariable("USERPROFILE")}\\Documents";
@@ -31,11 +30,13 @@ public class UserSettings
     }
     private void LoadSettings()
     {
-        if (File.Exists(GetLocalFilePath(settingsFileName)))
+        if (File.Exists(Helpers.GetAppDataFilePath(settingsFileName)))
         {
-            var file = File.ReadAllText(GetLocalFilePath(settingsFileName));
+            var file = File.ReadAllText(Helpers.GetAppDataFilePath(settingsFileName));
             var settings = JsonConvert.DeserializeObject<UserSettings>(file);
             GoogleTimelineFilePath = settings.GoogleTimelineFilePath;
+            DestinationPath = settings.DestinationPath;
+            InitialDirectory = settings.InitialDirectory;
             SettingsFileExists = true;
         }
     }
@@ -43,13 +44,9 @@ public class UserSettings
     public void Save()
     {
         var json = JsonConvert.SerializeObject(this);
-        Directory.CreateDirectory(GetLocalFilePath(""));
-        File.WriteAllText(GetLocalFilePath(settingsFileName), json);
+        Directory.CreateDirectory(Helpers.GetAppDataFilePath(""));
+        File.WriteAllText(Helpers.GetAppDataFilePath(settingsFileName), json);
     }
 
-    private static string GetLocalFilePath(string fileName)
-    {
-        string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        return Path.Combine(appData, settingsFolder, fileName);
-    }
+
 }

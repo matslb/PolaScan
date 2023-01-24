@@ -1,7 +1,7 @@
-﻿using PolaScan;
-using PolaScan.Models;
+﻿using PolaScan.Models;
 using System.Diagnostics;
 using System.Windows;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace PolaScan;
 
@@ -12,7 +12,7 @@ public partial class MainWindow : Window
 {
     private PolaScanApiClient polaScanClient;
     private ImageHandler imageHandler;
-    private GoogleTimelineService timelineService;
+    private GoogleTimelineService timelineService { get; set; }
     private UserSettings userSettings;
 
     public MainWindow()
@@ -27,18 +27,17 @@ public partial class MainWindow : Window
         var updatedSettings = settings ?? UserSettings.GetUserSettings();
         this.imageHandler = new ImageHandler();
         this.polaScanClient = new PolaScanApiClient();
-        if (userSettings == null || (userSettings.GoogleTimelineFilePath != null && userSettings.GoogleTimelineFilePath != updatedSettings.GoogleTimelineFilePath))
-        {
-            Title.Text = $"Loading Google Timeline data";
-            Helpers.ProcessUITasks();
-            this.timelineService = new GoogleTimelineService(updatedSettings);
-            Title.Text = "";
-        }
         userSettings = updatedSettings;
+
+        CompleteButton.Visibility = Visibility.Hidden;
+        Helpers.DeleteTemporaryFiles();
     }
 
     private async void ExecuteBtn_Click(object sender, RoutedEventArgs e)
     {
+
+        LoadGoogleTimeLineData();
+
         // Configure open file dialog box
         var dialog = new Microsoft.Win32.OpenFileDialog();
         dialog.DefaultExt = ".jpg"; // Default file extension
@@ -49,57 +48,102 @@ public partial class MainWindow : Window
         bool? result = dialog.ShowDialog();
         if (result == true)
         {
-            Progress.Visibility = Visibility.Visible;
-            ExecuteBtn.Visibility = Visibility.Hidden;
-            Mode.Visibility = Visibility.Hidden;
-            CompleteButton.Visibility = Visibility.Hidden;
-            Progress.Value = 0;
-            Title.Text = $"Slicing scans";
-            Helpers.ProcessUITasks();
+            SetToScanningStatus(dialog.FileNames.Length);
+
+            var polaroidsInScan = new List<string>();
+
             foreach (var fileName in dialog.FileNames)
             {
                 var locations = await polaScanClient.DetectPolaroidsInImage(fileName);
-                Progress.Maximum = locations.Count;
+                polaroidsInScan.AddRange(await imageHandler.GetPolaroidsFromScan(fileName, locations));
 
-                Helpers.ProcessUITasks();
-
-                var polaroidsInScan = await imageHandler.GetPolaroidsFromScan(fileName, locations);
-
-                foreach (var polaroidFileName in polaroidsInScan)
-                {
-                    Progress.Value += 1;
-                    Title.Text = $"Processing {Progress.Value} of {Progress.Maximum} photos";
-                    Helpers.ProcessUITasks();
-
-                    if (polaroidFileName == null) continue;
-
-                    var polaroidLipSectionName = await imageHandler.SavePolaroidLipSection(polaroidFileName);
-
-                    var polaroidWithMeta = new PolaroidWithMeta
-                    {
-                        OriginalPath = polaroidFileName
-                    };
-                    if (Mode.SelectedIndex == 0)
-                        polaroidWithMeta.Date = await polaScanClient.DetectDateInImage(polaroidLipSectionName);
-                    if (polaroidWithMeta.Date == DateTimeOffset.MinValue || Mode.SelectedIndex == 1)
-                        polaroidWithMeta = SetDate.GetDateManually(polaroidWithMeta);
-
-                    if (polaroidWithMeta != null)
-                    {
-                        polaroidWithMeta.Location = timelineService.GetDateLocation(polaroidWithMeta.Date);
-                        await imageHandler.MoveToDestination(userSettings.DestinationPath, polaroidWithMeta);
-                    }
-                }
-                imageHandler.DeleteTemporaryFiles();
+                SetStatusText($"{polaroidsInScan.Count} photos detected");
             }
-            Title.Text = "Completed!";
-            CompleteButton.Visibility = Visibility.Visible;
-            ExecuteBtn.Visibility = Visibility.Visible;
-            Mode.Visibility = Visibility.Visible;
-            Mode.SelectedIndex = 0;
-            Helpers.ProcessUITasks();
+
+            Progress.Maximum = polaroidsInScan.Count;
+
+            SetTitleText("Cropping and adding metadata");
+            foreach (var polaroidFileName in polaroidsInScan)
+            {
+                Progress.Value += 1;
+                SetStatusText($"Processing {Progress.Value} of {Progress.Maximum} photos");
+
+                if (polaroidFileName == null) continue;
+
+                var polaroidLipSectionName = await imageHandler.SavePolaroidLipSection(polaroidFileName);
+
+                var polaroidWithMeta = new PolaroidWithMeta
+                {
+                    OriginalPath = polaroidFileName
+                };
+                if (Mode.SelectedIndex == 0)
+                    polaroidWithMeta.Date = await polaScanClient.DetectDateInImage(polaroidLipSectionName);
+                if (polaroidWithMeta.Date == DateTimeOffset.MinValue || Mode.SelectedIndex == 1)
+                    polaroidWithMeta = SetDate.GetDateManually(polaroidWithMeta);
+
+                if (polaroidWithMeta != null)
+                {
+                    polaroidWithMeta.Location = timelineService.GetDateLocation(polaroidWithMeta.Date);
+                    await imageHandler.MoveToDestination(userSettings.DestinationPath, polaroidWithMeta);
+                }
+            }
+            Helpers.DeleteTemporaryFiles();
+
+            SetToCompleteStatus(polaroidsInScan.Count);
         }
     }
+
+    private void SetStatusText(string text)
+    {
+        StatusText.Text = text;
+        Helpers.ProcessUITasks();
+    }
+
+    private void LoadGoogleTimeLineData()
+    {
+        var updatedSettings = UserSettings.GetUserSettings();
+        if (timelineService == null || (userSettings.GoogleTimelineFilePath != null && userSettings.GoogleTimelineFilePath != updatedSettings.GoogleTimelineFilePath))
+        {
+            SetTitleText("Loading Google Timeline data");
+            this.timelineService = new GoogleTimelineService(updatedSettings);
+            Title.Text = "";
+        }
+        this.userSettings = updatedSettings;
+    }
+
+    private void SetTitleText(string text)
+    {
+        Title.Text = text;
+        Helpers.ProcessUITasks();
+    }
+
+    private void SetToCompleteStatus(int photos)
+    {
+        SetTitleText("Completed");
+        SetStatusText($"{photos} photos processed");
+        CompleteButton.Visibility = Visibility.Visible;
+        ExecuteBtn.Visibility = Visibility.Visible;
+        Mode.Visibility = Visibility.Visible;
+        Mode.SelectedIndex = 0;
+        Helpers.ProcessUITasks();
+    }
+
+    private void SetToScanningStatus(int scans)
+    {
+        if (scans > 1)
+            SetTitleText($"Analyzing {scans} scans");
+        else
+            SetTitleText("Analyzing");
+
+        SetStatusText(string.Empty);
+        Progress.Visibility = Visibility.Visible;
+        ExecuteBtn.Visibility = Visibility.Hidden;
+        Mode.Visibility = Visibility.Hidden;
+        CompleteButton.Visibility = Visibility.Hidden;
+        Progress.Value = 0;
+        Helpers.ProcessUITasks();
+    }
+
 
     private void CompleteButton_Click(object sender, RoutedEventArgs e)
     {
@@ -111,6 +155,7 @@ public partial class MainWindow : Window
         var settings = ApplicationSettingsWindow.SetSettings();
         InitializeSettings(settings);
     }
+
     private void HowTo_Click(object sender, RoutedEventArgs e)
     {
         var howTo = new HowTo();

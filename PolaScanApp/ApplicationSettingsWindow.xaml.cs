@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.IO;
+using System.Windows;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace PolaScan
 {
@@ -18,13 +20,13 @@ namespace PolaScan
         private void SetLabels()
         {
             GoogleTimeLinePath.Text = userSettings.GoogleTimelineFilePath ?? "Download here: takeout.google.com";
-            DestinationPath.Text = userSettings.DestinationPath ?? string.Empty;
+            DestinationPath.Text = userSettings.DestinationPath;
             Helpers.ProcessUITasks();
         }
 
         private void SaveClick(object sender, RoutedEventArgs e)
         {
-            userSettings.DestinationPath = DestinationPath.Text;
+            DestinationPath.Text = userSettings.DestinationPath;
             userSettings.Save();
             SetLabels();
             Close();
@@ -55,6 +57,16 @@ namespace PolaScan
             return window.userSettings;
         }
 
-
+        private void SelectDestinationFolder_Click(object sender, RoutedEventArgs e)
+        {
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
+            dialog.InitialDirectory = userSettings.DestinationPath;
+            dialog.IsFolderPicker = true;
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                userSettings.DestinationPath = dialog.FileName;
+            }
+            SetLabels();
+        }
     }
 }

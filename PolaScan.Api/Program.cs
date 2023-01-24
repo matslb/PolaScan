@@ -13,6 +13,7 @@ app.MapGet("/", async (HttpContext ctx) =>
     await ctx.Response.SendFileAsync("index.html");
 }
 );
+
 app.MapPost("/DetectPolaroidsInImage", async Task<IResult> (HttpRequest request) =>
 {
     var form = await request.ReadFormAsync();

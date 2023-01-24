@@ -16,7 +16,7 @@
         <Button x:Name="SelectTimelinePath" Content="Select" Height="30" Width="50" VerticalAlignment="Top" Margin="350,230,0,0" Click="SelectTimelinePath_Click" HorizontalAlignment="Left" />
         <TextBlock x:Name="GoogleTimeLinePath" HorizontalAlignment="Left" Height="42" Margin="425,230,0,0" TextWrapping="Wrap" Text="Download here: takeout.google.com" VerticalAlignment="Top" Width="334"/>
         <Button Content="Save" HorizontalAlignment="Left" Margin="238,335,0,0" VerticalAlignment="Top" Height="26" Width="68" Click="SaveClick"/>
-        <Button x:Name="SelectTimelinePath_Copy" Content="Select" Height="30" Width="50" VerticalAlignment="Top" Margin="350,118,0,0" Click="SelectTimelinePath_Click" HorizontalAlignment="Left" />
+        <Button x:Name="SelectDestinationFolder" Content="Select" Height="30" Width="50" VerticalAlignment="Top" Margin="350,118,0,0"  HorizontalAlignment="Left" Click="SelectDestinationFolder_Click" />
 
     </Grid>
 </Window>
