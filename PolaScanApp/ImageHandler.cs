@@ -13,18 +13,19 @@ namespace PolaScan;
 public class ImageHandler
 {
     public List<string> SavedTemporaryFiles { get; set; }
-    private static string tempFolder = "temp";
-    private static int TestImageModifier = 4;
-    private static int padding = 250;
+    private readonly static string tempFolder = "temp";
+    private readonly static int testImageModifier = 4;
+    private readonly static int padding = 250;
     public ImageHandler()
     {
         SavedTemporaryFiles = new();
+        Directory.CreateDirectory(Helpers.GetAppDataFilePath(tempFolder));
     }
 
     public async Task MoveToDestination(string destinationRootPath, PolaroidWithMeta polaroid)
     {
 
-        var destinationPath = $"{destinationRootPath}\\{DateTime.Now.ToString("yyyy-MM-dd-mm")}";
+        var destinationPath = $"{destinationRootPath}\\{polaroid.Date.Year}\\{polaroid.Date.Month}";
         Directory.CreateDirectory(destinationPath);
         var i = 0;
         var uniqueName = destinationPath + $"\\{polaroid.FileName(i)}";
@@ -60,7 +61,7 @@ public class ImageHandler
              .GaussianSharpen()
              );
         var tempFileName = $"{Guid.NewGuid()}.{fileName.Split(".")[1]}";
-        tempFileName = await SaveTempImage(image, tempFileName);
+        tempFileName = await Helpers.SaveTempImage(image, tempFileName);
         image.Dispose();
         return tempFileName;
     }
@@ -73,8 +74,7 @@ public class ImageHandler
 
         foreach (var position in locations)
         {
-
-            var degrees = await GetImageRotationDegrees(compressedScanFileName, (position));
+            var degrees = GetImageRotationDegrees(compressedScanFileName, (position));
             var crop = GetImageCropRectangle(compressedScanFileName, (position), degrees);
 
             using Image<Rgba32> image = Image.Load<Rgba32>(scanFile);
@@ -91,30 +91,19 @@ public class ImageHandler
 
             var tempFileName = $"{Guid.NewGuid()}.{scanFile.Split(".")[1]}";
 
-            tempFileName = await SaveTempImage(image, tempFileName);
+            tempFileName = await Helpers.SaveTempImage(image, tempFileName);
 
             polaroidsInScan.Add(tempFileName);
-
         }
         return polaroidsInScan;
     }
 
-    private async Task<string> SaveTempImage(Image image, string tempFileName)
-    {
-
-        Directory.CreateDirectory(tempFolder);
-        var filename = $"{tempFolder}\\{tempFileName}";
-        await image.SaveAsync(filename);
-        SavedTemporaryFiles.Add(filename);
-
-        return filename;
-    }
     private async Task<string> SaveCompressedTestImage(string fileName)
     {
         using var image = Image.Load<Rgba32>(fileName);
         image.Mutate(x =>
         x.Pad(image.Width + padding, image.Height + padding)
-        .Resize(new Size { Width = image.Width / TestImageModifier })
+        .Resize(new Size { Width = image.Width / testImageModifier })
         .GaussianSharpen()
         .GaussianBlur()
         .GaussianSharpen()
@@ -123,7 +112,7 @@ public class ImageHandler
         );
 
         var tempFileName = $"{Guid.NewGuid()}.{fileName.Split(".")[1]}";
-        tempFileName = await SaveTempImage(image, tempFileName);
+        tempFileName = await Helpers.SaveTempImage(image, tempFileName);
         image.Dispose();
         return tempFileName;
     }
@@ -133,7 +122,7 @@ public class ImageHandler
         using Image<Rgba32> image = Image.Load<Rgba32>(fileName);
 
         image.Mutate(x => x
-              .Crop(PolaroidSizeWithMargin(image, position, TestImageModifier))
+              .Crop(PolaroidSizeWithMargin(image, position, testImageModifier))
               .Rotate(degrees)
            );
 
@@ -143,10 +132,10 @@ public class ImageHandler
         var width = rightCrop - leftCrop;
         var height = (int)Math.Min((width * 1.215), image.Height - topCrop);
         var crop = new Rectangle(
-            x: leftCrop * TestImageModifier,
-            y: topCrop * TestImageModifier,
-            width: width * TestImageModifier,
-            height: height * TestImageModifier
+            x: leftCrop * testImageModifier,
+            y: topCrop * testImageModifier,
+            width: width * testImageModifier,
+            height: height * testImageModifier
        );
 
         image.Dispose();
@@ -234,13 +223,14 @@ public class ImageHandler
     private static bool IsWhitePixel(Rgba32 pixel) => (pixel.B >= 150 && pixel.G >= 150 && pixel.R >= 150 && pixel.A != 0)
         || (pixel.B == 0 && pixel.G == 128 && pixel.R == 0 && pixel.A != 0)
         || (pixel.B == 0 && pixel.G == 0 && pixel.R == 255 && pixel.A != 0);
-    public async Task<float> GetImageRotationDegrees(string fileName, BoundingBox position)
+
+    private static float GetImageRotationDegrees(string fileName, BoundingBox position)
     {
         using Image<Rgba32> image = Image.Load<Rgba32>(fileName);
 
         /// Cropping image with margin to adjust rotation
         image.Mutate(x => x
-              .Crop(PolaroidSizeWithMargin(image, position, TestImageModifier))
+              .Crop(PolaroidSizeWithMargin(image, position, testImageModifier))
               );
         float degrees = 0;
 
@@ -292,20 +282,10 @@ public class ImageHandler
                  x.Rotate(iterationDegrees)
              );
         }
-        //  var tempFileName = $"leveled-{Guid.NewGuid()}.{fileName.Split(".")[1]}";
-        //  await SaveTempImage(image, tempFileName);
 
         image.Dispose();
 
         return degrees;
-    }
-
-    public void DeleteTemporaryFiles()
-    {
-        foreach (var fileName in SavedTemporaryFiles)
-        {
-            File.Delete(fileName);
-        }
     }
 
     private static Rational[] GPSRational(double x)

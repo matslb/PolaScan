@@ -30,14 +30,12 @@ public class PolaScanApiClient
         .Resize(new Size { Width = image.Width / 4 })
         );
 
-        var stream = new MemoryStream();
-        var tempImageName = $"{Guid.NewGuid()}.jpg";
-        await image.SaveAsJpegAsync(tempImageName);
+        var tempFileName = await Helpers.SaveTempImage(image, $"{Guid.NewGuid()}.jpg");
         image.Dispose();
-        var content = GetImageStreamContent(tempImageName);
+
+        var content = GetImageStreamContent(tempFileName);
         var result = await client.PostAsync("/DetectPolaroidsInImage", content);
         content.Dispose();
-        File.Delete(tempImageName);
 
         return JsonConvert.DeserializeObject<List<BoundingBox>>(await result.Content.ReadAsStringAsync());
     }
