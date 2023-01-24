@@ -80,7 +80,7 @@ public partial class MainWindow : Window
                         OriginalPath = polaroidFileName
                     };
                     if (Mode.SelectedIndex == 0)
-                        polaroidWithMeta.Date = await polaScanClient.DetectDateInImage(polaroidLipSectionName, userSettings.DateFormat);
+                        polaroidWithMeta.Date = await polaScanClient.DetectDateInImage(polaroidLipSectionName);
                     if (polaroidWithMeta.Date == DateTimeOffset.MinValue || Mode.SelectedIndex == 1)
                         polaroidWithMeta = SetDate.GetDateManually(polaroidWithMeta);
 
