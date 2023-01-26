@@ -238,7 +238,7 @@ public class ImageHandler
         var rightTopOfPolaroid = -1;
         var pictureIsNotLevel = true;
 
-        while (pictureIsNotLevel && degrees < 20)
+        while (pictureIsNotLevel && degrees < 30)
         {
             float iterationDegrees = 0;
             image.ProcessPixelRows(accessor =>
@@ -268,10 +268,10 @@ public class ImageHandler
                     }
                 }
                 if (leftTopOfPolaroid > rightTopOfPolaroid)
-                    iterationDegrees = (float)0.1;
+                    iterationDegrees = (float)0.2;
 
                 if (leftTopOfPolaroid < rightTopOfPolaroid)
-                    iterationDegrees = (float)-0.1;
+                    iterationDegrees = (float)-0.2;
 
                 if (leftTopOfPolaroid == rightTopOfPolaroid)
                     pictureIsNotLevel = false;
