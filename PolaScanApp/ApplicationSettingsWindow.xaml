@@ -17,7 +17,7 @@
         <Button Content="Save" HorizontalAlignment="Left" Margin="691,364,0,0" VerticalAlignment="Top" Height="20" Width="68" Click="SaveClick"/>
         <Button x:Name="SelectDestinationFolder" Content="Select" Height="20" Width="50" VerticalAlignment="Top" Margin="247,88,0,0"  HorizontalAlignment="Left" Click="SelectDestinationFolder_Click" />
         <ComboBox x:Name="CultureBox" HorizontalAlignment="Left" Margin="247,0,0,0" VerticalAlignment="Center" Width="100" SelectionChanged="CultureBox_SelectionChanged" FontSize="10"/>
-        <TextBlock HorizontalAlignment="Left" Margin="360,207,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="172"><Run Language="nb-no" Text="Prioritized "/><Run Text="date format."/><LineBreak/><Run Text="Does not require exact match."/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="354,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="172"><Run Language="nb-no" Text="Prioritized "/><Run Text="date format."/><LineBreak/><Run Text="Does not require exact match."/></TextBlock>
         <TextBlock HorizontalAlignment="Left" Margin="60,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" FontWeight="Bold" FontSize="16" Width="150" TextAlignment="Right"><Run Language="nb-no" Text="Date format"/></TextBlock>
         <TextBox x:Name="Copyright" HorizontalAlignment="Left" Margin="247,258,0,0" VerticalAlignment="Top" Width="275"></TextBox>
         <TextBlock HorizontalAlignment="Left" Margin="60,258,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontWeight="Bold" FontSize="16" Width="150" Height="25" TextAlignment="Right"><Run Language="nb-no" Text="Copyright text"/></TextBlock>

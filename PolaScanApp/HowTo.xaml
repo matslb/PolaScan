@@ -5,14 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PolaScan"
         mc:Ignorable="d"
-        Title="HowTo" Height="300" Width="500">
-    <Grid Background="#FF272727">
-        <Image Source="/instruction.png" Margin="10,40,0,0" HorizontalAlignment="Left"  Height="200" Width="120" VerticalAlignment="Top" StretchDirection="DownOnly" />
-        <TextBlock HorizontalAlignment="Left" Margin="148,40,0,0" TextWrapping="Wrap" Text="Tape up to 4 polaroids to a sheet of paper, starting from the top left" VerticalAlignment="Top" Foreground="White"/>
-        <TextBlock HorizontalAlignment="Left" Margin="148,80,0,0" TextWrapping="Wrap" Text="Write the capture date on each polaroid 'lip'" VerticalAlignment="Top" Foreground="White"/>
-        <TextBlock HorizontalAlignment="Left" Margin="148,110,0,0" TextWrapping="Wrap" Text="Wipe them off to remove dust or fingermarks" VerticalAlignment="Top" Foreground="White"/>
-        <TextBlock HorizontalAlignment="Left" Margin="148,140,0,0" TextWrapping="Wrap" Text="Scan as A4" VerticalAlignment="Top" Foreground="White"/>
-        <TextBlock HorizontalAlignment="Left" Margin="148,170,0,0" TextWrapping="Wrap" Text="Save as .jpg" VerticalAlignment="Top" Foreground="White"/>
+        Title="HowTo" Height="350" Width="600">
+    <Grid Background="#FF272727" Margin="0,0,0,-6">
+        <Image Source="/example.jpg" Margin="40,51,0,0" HorizontalAlignment="Left"  Height="211" Width="149" VerticalAlignment="Top" StretchDirection="DownOnly" />
+        <TextBlock HorizontalAlignment="Left" Margin="226,43,0,0" VerticalAlignment="Top" Foreground="White" Width="356" TextWrapping="WrapWithOverflow"><Run Language="nb-no" Text="Wipe your photos with a cloth to remove dust and fingermarks. 
+                                                                                                                                      Place them on the scanner, with a darker uniform background."/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="226,99,0,0" TextWrapping="Wrap" Text="Make sure all photos are 'standing'. They dont have to be perfectly level." VerticalAlignment="Top" Foreground="White" Width="356"/>
+        <TextBlock HorizontalAlignment="Left" Margin="226,145,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" RenderTransformOrigin="0.791,0.416" Width="356"><Run Language="nb-no" Text="Leave a little space around your photos for the best results."/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="226,226,0,0" TextWrapping="Wrap" Text="PolaScan is intended for use with a flatbed / photoscanner. Photos shot with a phone will probably give poor results " VerticalAlignment="Top" Foreground="White" Width="356"/>
+        <TextBlock HorizontalAlignment="Left" Margin="226,179,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" Width="356"><Run Text="Write the date on the polaroid's 'lip'. Set the matching date format in the settings."/></TextBlock>
 
     </Grid>
 </Window>

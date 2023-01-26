@@ -16,6 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="example.jpg" />
     <None Remove="instruction.png" />
     <None Remove="logo.png" />
   </ItemGroup>
@@ -35,6 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="example.jpg" />
     <Resource Include="instruction.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>

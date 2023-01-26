@@ -126,9 +126,11 @@ public class ImageHandler
               .Rotate(degrees)
            );
 
-        var (leftCrop, topCrop) = GetImageCorners(image, true);
-        var (rightCrop, non) = GetImageCorners(image, false);
-        topCrop += 5;
+        var (leftCrop, leftTop) = GetImageCorner(image, true);
+        var (rightCrop, rightTop) = GetImageCorner(image, false);
+
+
+        var topCrop = leftTop + 5;
         var width = rightCrop - leftCrop;
         var height = (int)Math.Min((width * 1.215), image.Height - topCrop);
         var crop = new Rectangle(
@@ -142,15 +144,15 @@ public class ImageHandler
         return crop;
     }
 
-    private (int side, int top) GetImageCorners(Image<Rgba32> image, bool left = true)
+    private static (int side, int top) GetImageCorner(Image<Rgba32> image, bool left = true)
     {
         var verticalHits = new List<int>();
         var side = 0;
         var top = 0;
-
+        var consectutiveReq = 20;
         image.ProcessPixelRows(accessor =>
         {
-            var pixelRange = image.Width / 4;
+            var pixelRange = image.Width / 3;
 
             for (int y = 10; y < accessor.Height / 2; y++)
             {
@@ -175,24 +177,23 @@ public class ImageHandler
 
                         if (IsWhitePixel(possibleCorner))
                         {
-                            possibleCorner = Color.Red;
                             pixelsInLine.Insert(0, (x, y));
                         }
-                        else if (pixelsInLine.Count > 20)
+                        else if (pixelsInLine.Count > consectutiveReq)
                         {
                             // Sjekk hver piksel om det finnes flere hvite under den.
                             foreach (var coords in pixelsInLine)
                             {
-                                for (int i = 1; i < 21; i++)
+                                for (int i = 1; i < consectutiveReq + 1; i++)
                                 {
                                     if (!IsWhitePixel(image[coords.x, coords.y + i]))
                                         break;
 
                                     Span<Rgba32> rowCheck = accessor.GetRowSpan(coords.y + i);
                                     ref Rgba32 p = ref rowCheck[coords.x];
-                                    p = Color.Green;
+                                    // p = Color.Green;
 
-                                    if (i == 20)
+                                    if (i == consectutiveReq)
                                     {
                                         top = coords.y;
                                         side = coords.x;
@@ -221,8 +222,7 @@ public class ImageHandler
     }
 
     private static bool IsWhitePixel(Rgba32 pixel) => (pixel.B >= 150 && pixel.G >= 150 && pixel.R >= 150 && pixel.A != 0)
-        || (pixel.B == 0 && pixel.G == 128 && pixel.R == 0 && pixel.A != 0)
-        || (pixel.B == 0 && pixel.G == 0 && pixel.R == 255 && pixel.A != 0);
+        || (pixel.B == 0 && pixel.G == 128 && pixel.R == 0 && pixel.A != 0);
 
     private static float GetImageRotationDegrees(string fileName, BoundingBox position)
     {
@@ -238,54 +238,63 @@ public class ImageHandler
         var rightTopOfPolaroid = -1;
         var pictureIsNotLevel = true;
 
-        while (pictureIsNotLevel && degrees < 30)
+        while (pictureIsNotLevel && degrees < 30 && degrees > -30)
         {
             float iterationDegrees = 0;
-            image.ProcessPixelRows(accessor =>
-            {
-                for (int y = 0; y < accessor.Height; y++)
-                {
-                    Span<Rgba32> pixelRow = accessor.GetRowSpan(y);
+            var diff = Math.Abs(rightTopOfPolaroid - leftTopOfPolaroid);
+            double deg = diff >= 1 ? (double)diff / 6 : 0.2;
 
-                    ref Rgba32 leftPixel = ref pixelRow[accessor.Width / 4];
+            int fromMiddle = (int)(image.Width / 3.5);
 
-                    if (IsWhitePixel(leftPixel))
-                    {
-                        leftTopOfPolaroid = y;
-                        break;
-                    }
-                }
+            leftTopOfPolaroid = FindTopOfPolaroid(image, fromMiddle);
+            rightTopOfPolaroid = FindTopOfPolaroid(image, image.Width - fromMiddle);
 
-                for (int y = 0; y < accessor.Height; y++)
-                {
-                    Span<Rgba32> pixelRow = accessor.GetRowSpan(y);
+            if (leftTopOfPolaroid < rightTopOfPolaroid)
+                iterationDegrees = (float)-deg;
 
-                    ref Rgba32 rightPixel = ref pixelRow[accessor.Width - (accessor.Width / 4)];
-                    if (IsWhitePixel(rightPixel))
-                    {
-                        rightTopOfPolaroid = y;
-                        break;
-                    }
-                }
-                if (leftTopOfPolaroid > rightTopOfPolaroid)
-                    iterationDegrees = (float)0.2;
+            if (leftTopOfPolaroid > rightTopOfPolaroid)
+                iterationDegrees = (float)deg;
 
-                if (leftTopOfPolaroid < rightTopOfPolaroid)
-                    iterationDegrees = (float)-0.2;
-
-                if (leftTopOfPolaroid == rightTopOfPolaroid)
-                    pictureIsNotLevel = false;
-            });
+            if (leftTopOfPolaroid == rightTopOfPolaroid)
+                pictureIsNotLevel = false;
 
             degrees += iterationDegrees;
             image.Mutate(x =>
                  x.Rotate(iterationDegrees)
              );
+            Helpers.SaveTempImage(image, Guid.NewGuid().ToString() + ".jpeg");
         }
 
         image.Dispose();
 
         return degrees;
+    }
+
+    private static int FindTopOfPolaroid(Image<Rgba32> image, int x)
+    {
+        var consecutive = 0;
+        var targetPixel = -1;
+        image.ProcessPixelRows(accessor =>
+        {
+            for (int y = 0; y < accessor.Height; y++)
+            {
+                Span<Rgba32> pixelRow = accessor.GetRowSpan(y);
+
+                ref Rgba32 currentPixel = ref pixelRow[x];
+
+                if (IsWhitePixel(currentPixel))
+                {
+                    consecutive++;
+                    if (consecutive == 3)
+                    {
+                        targetPixel = y;
+                        break;
+                    }
+                }
+            }
+
+        });
+        return targetPixel;
     }
 
     private static Rational[] GPSRational(double x)
