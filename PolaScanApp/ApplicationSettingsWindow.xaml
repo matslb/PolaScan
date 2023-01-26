@@ -7,16 +7,21 @@
         mc:Ignorable="d"
         Title="Application settings" Height="450" Width="800">
     <Grid>
-        <Label Content="Application settings" FontSize="20" HorizontalAlignment="Center" Margin="0,31,0,0" VerticalAlignment="Top"/>
-        <TextBlock x:Name="DestinationPath" HorizontalAlignment="Left" Margin="425,120,0,0" Text="TextBox" VerticalAlignment="Top" Width="275"/>
-        <TextBlock HorizontalAlignment="Left" Margin="106,120,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="200" TextAlignment="Right"><Run Text="Photo destination folder"/><Run Language="nb-no" Text=":"/></TextBlock>
-        <TextBlock HorizontalAlignment="Left" Margin="171,86,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontWeight="Bold" FontSize="16" TextAlignment="Right" Width="135" Height="34"><Run Language="nb-no" Text="Default folders"/><LineBreak/><Run Language="nb-no"/></TextBlock>
-        <TextBlock HorizontalAlignment="Left" Margin="134,231,0,0" TextWrapping="Wrap" VerticalAlignment="Top" TextAlignment="Right" Width="172"><Run Text="Path to Records."/><Run Text="j"/><Run Text="son"/><Run Language="nb-no" Text=":"/><LineBreak/><Run Language="nb-no"/></TextBlock>
-        <TextBlock HorizontalAlignment="Left" Margin="134,199,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontWeight="Bold" FontSize="16" TextAlignment="Right" Width="172"><Run Language="nb-no" Text="Google Timeline"/></TextBlock>
-        <Button x:Name="SelectTimelinePath" Content="Select" Height="30" Width="50" VerticalAlignment="Top" Margin="350,230,0,0" Click="SelectTimelinePath_Click" HorizontalAlignment="Left" />
-        <TextBlock x:Name="GoogleTimeLinePath" HorizontalAlignment="Left" Height="42" Margin="425,230,0,0" TextWrapping="Wrap" Text="Download here: takeout.google.com" VerticalAlignment="Top" Width="334"/>
-        <Button Content="Save" HorizontalAlignment="Left" Margin="238,335,0,0" VerticalAlignment="Top" Height="26" Width="68" Click="SaveClick"/>
-        <Button x:Name="SelectDestinationFolder" Content="Select" Height="30" Width="50" VerticalAlignment="Top" Margin="350,118,0,0"  HorizontalAlignment="Left" Click="SelectDestinationFolder_Click" />
-
+        <Label Content="Application settings" FontSize="18" HorizontalAlignment="Left" Margin="43,28,0,0" VerticalAlignment="Top" Height="38" Width="167"/>
+        <TextBlock x:Name="DestinationPath" HorizontalAlignment="Left" Margin="302,88,0,0" Text="TextBox" VerticalAlignment="Top" Width="275"/>
+        <TextBlock HorizontalAlignment="Left" Margin="60,88,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontWeight="Bold" FontSize="16" Width="150" Height="34" TextAlignment="Right"><Run Language="nb-no" Text="Destination folder"/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="60,161,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" TextAlignment="Right"><Run Text="Path to Records."/><Run Text="j"/><Run Text="son"/><Run Language="nb-no" Text=":"/><LineBreak/><Run Language="nb-no"/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="60,141,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontWeight="Bold" FontSize="16" Width="150" TextAlignment="Right"><Run Language="nb-no" Text="Google Timeline"/></TextBlock>
+        <Button x:Name="SelectTimelinePath" Content="Select" Height="20" Width="50" VerticalAlignment="Top" Margin="247,141,0,0" Click="SelectTimelinePath_Click" HorizontalAlignment="Left" />
+        <TextBlock x:Name="GoogleTimeLinePath" HorizontalAlignment="Left" Height="42" Margin="302,141,0,0" TextWrapping="Wrap" Text="Download here: takeout.google.com" VerticalAlignment="Top" Width="415"/>
+        <Button Content="Save" HorizontalAlignment="Left" Margin="691,364,0,0" VerticalAlignment="Top" Height="20" Width="68" Click="SaveClick"/>
+        <Button x:Name="SelectDestinationFolder" Content="Select" Height="20" Width="50" VerticalAlignment="Top" Margin="247,88,0,0"  HorizontalAlignment="Left" Click="SelectDestinationFolder_Click" />
+        <ComboBox x:Name="CultureBox" HorizontalAlignment="Left" Margin="247,0,0,0" VerticalAlignment="Center" Width="100" SelectionChanged="CultureBox_SelectionChanged" FontSize="10"/>
+        <TextBlock HorizontalAlignment="Left" Margin="354,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="172"><Run Language="nb-no" Text="Prioritized "/><Run Text="date format."/><LineBreak/><Run Text="Does not require exact match."/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="60,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" FontWeight="Bold" FontSize="16" Width="150" TextAlignment="Right"><Run Language="nb-no" Text="Date format"/></TextBlock>
+        <TextBox x:Name="Copyright" HorizontalAlignment="Left" Margin="247,258,0,0" VerticalAlignment="Top" Width="275"></TextBox>
+        <TextBlock HorizontalAlignment="Left" Margin="60,258,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontWeight="Bold" FontSize="16" Width="150" Height="25" TextAlignment="Right"><Run Language="nb-no" Text="Copyright text"/></TextBlock>
+        <TextBox x:Name="CameraModel" HorizontalAlignment="Left" Margin="247,310,0,0" VerticalAlignment="Top" Width="275"/>
+        <TextBlock HorizontalAlignment="Left" Margin="60,310,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontWeight="Bold" FontSize="16" Width="150" Height="25" TextAlignment="Right"><Run Language="nb-no" Text="Camera model"/></TextBlock>
     </Grid>
 </Window>

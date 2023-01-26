@@ -9,6 +9,12 @@
     <ApplicationIcon>logo.ico</ApplicationIcon>
     <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     <Title>PolaScan</Title>
+    <Description>Automatically scan, crop and organize your Polaroid pictures by date and geolocation data with PolaScan.</Description>
+    <Copyright>Mats Løvstrand Berntsen</Copyright>
+    <PackageProjectUrl>https://github.com/matslb/PolaScan/</PackageProjectUrl>
+    <PackageIcon>logo.ico</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/matslb/PolaScan/</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -16,12 +22,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="instruction.png" />
-    <None Remove="logo.png" />
+    <None Remove="example.jpg" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="logo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -35,9 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="instruction.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
+    <Resource Include="example.jpg" />
     <Resource Include="logo.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
@@ -46,6 +56,12 @@
   <ItemGroup>
     <None Update="logo.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Update="logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 

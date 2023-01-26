@@ -1,10 +1,12 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Media3D;
 using System.Xml.Serialization;
 
 namespace PolaScan;
@@ -15,6 +17,10 @@ public class UserSettings
     public string DestinationPath { get; set; } = $"{Environment.GetEnvironmentVariable("USERPROFILE")}\\Pictures\\PolaScan";
     public string InitialDirectory { get; set; } = $"{Environment.GetEnvironmentVariable("USERPROFILE")}\\Documents";
     public string GoogleTimelineFilePath { get; set; }
+    public string CultureName = CultureInfo.CurrentCulture.Name;
+    public CultureInfo Culture => CultureInfo.GetCultureInfo(CultureName);
+    public string Copyright { get; set; } = Environment.UserName;
+    public string CameraModel { get; set; } = "Polaroid 600 / SX-70";
 
     private bool SettingsFileExists = false;
     private UserSettings()
@@ -37,6 +43,9 @@ public class UserSettings
             GoogleTimelineFilePath = settings.GoogleTimelineFilePath;
             DestinationPath = settings.DestinationPath;
             InitialDirectory = settings.InitialDirectory;
+            CultureName = settings.CultureName;
+            Copyright = settings.Copyright;
+            CameraModel = settings.CameraModel;
             SettingsFileExists = true;
         }
     }

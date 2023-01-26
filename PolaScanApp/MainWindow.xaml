@@ -8,14 +8,14 @@
         Title="PolaScan" Height="450" Width="400
 		">
     <Grid Background="#FF272727">
-        <Button x:Name="ExecuteBtn" Content="Select scans" HorizontalAlignment="Left" Margin="118,232,0,0" VerticalAlignment="Top" Click="ExecuteBtn_Click" Background="#FF49AB45" Foreground="White" BorderThickness="0,0,0,0" Height="24" Width="70" FontFamily="Segoe UI Light" />
+        <Button x:Name="ExecuteBtn" Content="Select scans" HorizontalAlignment="Left" Margin="118,234,0,0" VerticalAlignment="Top" Click="ExecuteBtn_Click" Background="#FF49AB45" Foreground="White" BorderThickness="0,0,0,0" Height="20" Width="70" FontFamily="Segoe UI Light" />
         <ProgressBar x:Name="Progress" Margin="0,345,0,0" Height="10" Maximum="100" Width="164" Value="0" VerticalAlignment="Top" HorizontalAlignment="Center" Foreground="#FF49AB45" />
         <Button x:Name="CompleteButton" Content="View photos" HorizontalAlignment="Center" Margin="0,369,0,0" VerticalAlignment="Top" Click="CompleteButton_Click" Background="#FFD13F86" Foreground="White" FontFamily="Segoe UI Light" BorderThickness="0,0,0,0" Height="24" Width="70" FontStyle="Italic" />
         <Button Content="Settings" HorizontalAlignment="Center" Margin="-320,18,0,0" VerticalAlignment="Top" Click="Button_Click" Background="#FF14AAD9" Foreground="White" FontFamily="Segoe UI Light" BorderThickness="0,0,0,0" Height="24" Width="70" FontStyle="Italic" RenderTransformOrigin="0.657,0.654"/>
-        <Image x:Name="logo" HorizontalAlignment="Center" Height="164" Margin="0,53,0,0" VerticalAlignment="Top" Width="165" Source="/logo.png"/>
+        <Image x:Name="logo" HorizontalAlignment="Center" Height="182" Margin="0,35,0,0" VerticalAlignment="Top" Width="182" Source="/logo.png"/>
         <TextBlock x:Name="Title" HorizontalAlignment="Center" Margin="0,270,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Foreground="White" FontSize="16" />
         <Button Content="How to" HorizontalAlignment="Center" Margin="320,18,0,0" VerticalAlignment="Top" Click="HowTo_Click" Background="#FF14AAD9" Foreground="White" FontFamily="Segoe UI Light" BorderThickness="0,0,0,0" Height="24" Width="70" FontStyle="Italic" RenderTransformOrigin="0.429,0.654"/>
-        <ComboBox x:Name="Mode" HorizontalAlignment="Left" VerticalAlignment="Top" Width="82" Text="Select mode" BorderThickness="0,0,0,0" Background="#FF272727" BorderBrush="#FF272727" Foreground="#FF272727" FontSize="10" Margin="200,234,0,0">
+        <ComboBox x:Name="Mode" HorizontalAlignment="Left" VerticalAlignment="Top" Width="82" Text="Select mode" BorderThickness="0,0,0,0" Background="#FF272727" BorderBrush="#FF272727" Foreground="#FF272727" FontSize="10" Margin="200,234,0,0" Height="20">
             <ComboBoxItem IsSelected="True">Auto dating</ComboBoxItem>
             <ComboBoxItem >Manual dating</ComboBoxItem>
         </ComboBox>

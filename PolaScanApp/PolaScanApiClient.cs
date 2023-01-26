@@ -39,7 +39,7 @@ public class PolaScanApiClient
 
         return JsonConvert.DeserializeObject<List<BoundingBox>>(await result.Content.ReadAsStringAsync());
     }
-    public async Task<DateTimeOffset> DetectDateInImage(string tempImagePath)
+    public async Task<DateTimeOffset> DetectDateInImage(string tempImagePath, CultureInfo cultureInfo)
     {
         var content = GetImageStreamContent(tempImagePath);
 
@@ -47,7 +47,8 @@ public class PolaScanApiClient
         content.Dispose();
 
         var res = JsonConvert.DeserializeObject<string>(await result.Content.ReadAsStringAsync());
-        if (DateTimeOffset.TryParse(res.Replace("\\n", string.Empty), CultureInfo.CurrentCulture, DateTimeStyles.AssumeUniversal, out var dateTime))
+
+        if (DateTimeOffset.TryParse(res.Replace("\\n", string.Empty), cultureInfo, DateTimeStyles.AssumeUniversal, out var dateTime))
         {
             return dateTime.AddHours(12);
         }
