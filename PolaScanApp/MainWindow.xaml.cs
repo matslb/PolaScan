@@ -77,14 +77,14 @@ public partial class MainWindow : Window
                     OriginalPath = polaroidFileName
                 };
                 if (Mode.SelectedIndex == 0)
-                    polaroidWithMeta.Date = await polaScanClient.DetectDateInImage(polaroidLipSectionName);
+                    polaroidWithMeta.Date = await polaScanClient.DetectDateInImage(polaroidLipSectionName, userSettings.Culture);
                 if (polaroidWithMeta.Date == DateTimeOffset.MinValue || Mode.SelectedIndex == 1)
                     polaroidWithMeta = SetDate.GetDateManually(polaroidWithMeta);
 
                 if (polaroidWithMeta != null)
                 {
                     polaroidWithMeta.Location = timelineService.GetDateLocation(polaroidWithMeta.Date);
-                    await imageHandler.MoveToDestination(userSettings.DestinationPath, polaroidWithMeta);
+                    await imageHandler.MoveToDestination(userSettings.DestinationPath, polaroidWithMeta, userSettings);
                 }
             }
             Helpers.DeleteTemporaryFiles();

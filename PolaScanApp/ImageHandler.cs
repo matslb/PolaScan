@@ -22,7 +22,7 @@ public class ImageHandler
         Directory.CreateDirectory(Helpers.GetAppDataFilePath(tempFolder));
     }
 
-    public async Task MoveToDestination(string destinationRootPath, PolaroidWithMeta polaroid)
+    public async Task MoveToDestination(string destinationRootPath, PolaroidWithMeta polaroid, UserSettings userSettings)
     {
 
         var destinationPath = $"{destinationRootPath}\\{polaroid.Date.Year}\\{polaroid.Date.Month}";
@@ -46,8 +46,8 @@ public class ImageHandler
         }
         image.Metadata.ExifProfile.SetValue(ExifTag.Software, nameof(PolaScan));
         image.Metadata.ExifProfile.SetValue(ExifTag.Make, "Polaroid");
-        image.Metadata.ExifProfile.SetValue(ExifTag.Model, "Polaroid 600 / SX-70 Camera");
-        image.Metadata.ExifProfile.SetValue(ExifTag.Copyright, "Mats Løvstrand Berntsen");
+        image.Metadata.ExifProfile.SetValue(ExifTag.Model, userSettings.CameraModel);
+        image.Metadata.ExifProfile.SetValue(ExifTag.Copyright, userSettings.Copyright);
         image.Metadata.ExifProfile.SetValue(ExifTag.DateTimeOriginal, polaroid.Date.ToString("yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture));
         await image.SaveAsync(uniqueName);
     }
