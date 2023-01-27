@@ -262,7 +262,6 @@ public class ImageHandler
             image.Mutate(x =>
                  x.Rotate(iterationDegrees)
              );
-            Helpers.SaveTempImage(image, Guid.NewGuid().ToString() + ".jpeg");
         }
 
         image.Dispose();
