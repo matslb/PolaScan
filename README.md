@@ -1,4 +1,5 @@
 # PolaScan
+<img src="./PolaScanApp/logo.png" alt="Logo" style="width:100px;margin: auto"/>
 Automatically scan, crop and organize your Polaroid pictures by date and geolocation data with PolaScan. 
 
 ## Features
