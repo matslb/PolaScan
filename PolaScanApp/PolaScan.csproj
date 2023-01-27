@@ -15,6 +15,7 @@
     <PackageIcon>logo.ico</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/matslb/PolaScan/</RepositoryUrl>
+    <Version>beta-03</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
