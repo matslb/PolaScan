@@ -2,8 +2,8 @@ name: "Publish PolaScan"
 
 on:
   push:
-      branches:
-        - master
+    tags:
+      - '*'
 env:
   PROJECT_PATH: PolaScanApp/PolaScan.csproj
   DOTNET_CORE_VERSION: 6.0.x
@@ -29,7 +29,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
           release_name: ${{ github.ref }}
 
       - uses: csexton/release-asset-action@v2
