@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 using Newtonsoft.Json;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
 using System.Configuration;
 using System.Globalization;

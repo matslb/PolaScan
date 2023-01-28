@@ -21,6 +21,7 @@ public class UserSettings
     public CultureInfo Culture => CultureInfo.GetCultureInfo(CultureName);
     public string Copyright { get; set; } = Environment.UserName;
     public string CameraModel { get; set; } = "Polaroid 600 / SX-70";
+    public int TimeOfDay { get; set; } = 18;
 
     private bool SettingsFileExists = false;
     private UserSettings()
@@ -46,6 +47,7 @@ public class UserSettings
             CultureName = settings.CultureName;
             Copyright = settings.Copyright;
             CameraModel = settings.CameraModel;
+            TimeOfDay = settings.TimeOfDay;
             SettingsFileExists = true;
         }
     }

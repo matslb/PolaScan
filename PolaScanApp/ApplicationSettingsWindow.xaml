@@ -16,12 +16,15 @@
         <TextBlock x:Name="GoogleTimeLinePath" HorizontalAlignment="Left" Height="42" Margin="302,141,0,0" TextWrapping="Wrap" Text="Download here: takeout.google.com" VerticalAlignment="Top" Width="415"/>
         <Button Content="Save" HorizontalAlignment="Left" Margin="691,364,0,0" VerticalAlignment="Top" Height="20" Width="68" Click="SaveClick"/>
         <Button x:Name="SelectDestinationFolder" Content="Select" Height="20" Width="50" VerticalAlignment="Top" Margin="247,88,0,0"  HorizontalAlignment="Left" Click="SelectDestinationFolder_Click" />
-        <ComboBox x:Name="CultureBox" HorizontalAlignment="Left" Margin="247,0,0,0" VerticalAlignment="Center" Width="100" SelectionChanged="CultureBox_SelectionChanged" FontSize="10"/>
-        <TextBlock HorizontalAlignment="Left" Margin="354,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="172"><Run Language="nb-no" Text="Prioritized "/><Run Text="date format."/><LineBreak/><Run Text="Does not require exact match."/></TextBlock>
-        <TextBlock HorizontalAlignment="Left" Margin="60,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" FontWeight="Bold" FontSize="16" Width="150" TextAlignment="Right"><Run Language="nb-no" Text="Date format"/></TextBlock>
-        <TextBox x:Name="Copyright" HorizontalAlignment="Left" Margin="247,258,0,0" VerticalAlignment="Top" Width="275"></TextBox>
-        <TextBlock HorizontalAlignment="Left" Margin="60,258,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontWeight="Bold" FontSize="16" Width="150" Height="25" TextAlignment="Right"><Run Language="nb-no" Text="Copyright text"/></TextBlock>
-        <TextBox x:Name="CameraModel" HorizontalAlignment="Left" Margin="247,310,0,0" VerticalAlignment="Top" Width="275"/>
-        <TextBlock HorizontalAlignment="Left" Margin="60,310,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontWeight="Bold" FontSize="16" Width="150" Height="25" TextAlignment="Right"><Run Language="nb-no" Text="Camera model"/></TextBlock>
+        <ComboBox x:Name="CultureBox" HorizontalAlignment="Left" Margin="247,223,0,0" VerticalAlignment="Top" Width="100" SelectionChanged="CultureBox_SelectionChanged" FontSize="10"/>
+        <TextBlock HorizontalAlignment="Left" Margin="354,217,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="172" Text="Does not require exact match."/>
+        <TextBlock HorizontalAlignment="Left" Margin="60,201,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontWeight="Bold" FontSize="16" Width="150" TextAlignment="Right"><Run Text="Date "/><Run Language="nb-no" Text="settings"/></TextBlock>
+        <TextBox x:Name="Copyright" HorizontalAlignment="Left" Margin="247,292,0,0" VerticalAlignment="Top" Width="275"></TextBox>
+        <TextBlock HorizontalAlignment="Left" Margin="60,292,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontWeight="Bold" FontSize="16" Width="150" Height="25" TextAlignment="Right"><Run Language="nb-no" Text="Copyright text"/></TextBlock>
+        <TextBox x:Name="CameraModel" HorizontalAlignment="Left" Margin="247,331,0,0" VerticalAlignment="Top" Width="275"/>
+        <TextBlock HorizontalAlignment="Left" Margin="60,331,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontWeight="Bold" FontSize="16" Width="150" Height="25" TextAlignment="Right"><Run Language="nb-no" Text="Camera model"/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="38,222,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="172" TextAlignment="Right"><Run Text="Prioritized "/><Run Text="date format."/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="38,248,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="172" TextAlignment="Right"><Run Text="Assumed hour on date"/><Run Language="nb-no" Text=" "/><Run Text="matching"/></TextBlock>
+        <ComboBox x:Name="TimeOfDay" HorizontalAlignment="Left" Margin="247,254,0,0" VerticalAlignment="Top" Width="69" FontSize="10"/>
     </Grid>
 </Window>
