@@ -4,6 +4,7 @@ using PolaScan.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
+builder.Services.AddApplicationInsightsTelemetry();
 
 var settings = builder.Configuration.GetSection("Settings").Get<Settings>();
 var cognitiveService = new CognitiveService(settings);
