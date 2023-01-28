@@ -18,6 +18,7 @@
         <ComboBox x:Name="Mode" HorizontalAlignment="Left" VerticalAlignment="Top" Width="82" Text="Select mode" BorderThickness="0,0,0,0" Background="#FF272727" BorderBrush="#FF272727" Foreground="#FF272727" FontSize="10" Margin="200,234,0,0" Height="20">
             <ComboBoxItem IsSelected="True">Auto dating</ComboBoxItem>
             <ComboBoxItem >Manual dating</ComboBoxItem>
+            <ComboBoxItem >No dating</ComboBoxItem>
         </ComboBox>
         <TextBlock x:Name="StatusText" HorizontalAlignment="Center" Margin="0,300,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Foreground="White" FontSize="14" />
 

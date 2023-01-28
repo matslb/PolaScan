@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media.Media3D;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
@@ -26,6 +27,10 @@ namespace PolaScan
             {
                 CultureBox.Items.Add(item);
             }
+            for (int i = 0; i < 24; i++)
+            {
+                TimeOfDay.Items.Add(i);
+            }
             SetLabels();
         }
         private void SetLabels()
@@ -33,9 +38,9 @@ namespace PolaScan
             GoogleTimeLinePath.Text = userSettings.GoogleTimelineFilePath ?? "Download here: takeout.google.com";
             DestinationPath.Text = userSettings.DestinationPath;
             CultureBox.SelectedValue = userSettings.Culture;
+            TimeOfDay.SelectedIndex = userSettings.TimeOfDay;
             Copyright.Text = userSettings.Copyright;
             CameraModel.Text = userSettings.CameraModel;
-
             Helpers.ProcessUITasks();
         }
 
@@ -44,6 +49,7 @@ namespace PolaScan
             DestinationPath.Text = userSettings.DestinationPath;
             userSettings.Copyright = Copyright.Text;
             userSettings.CameraModel = CameraModel.Text;
+            userSettings.TimeOfDay = int.Parse(TimeOfDay.Text);
             userSettings.Save();
             SetLabels();
             Close();
@@ -89,6 +95,14 @@ namespace PolaScan
         private void CultureBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             userSettings.CultureName = (CultureBox.SelectedItem as SelectBoxItem).Value.Name;
+        }
+
+        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            Regex regex = new Regex("[^0-9]+");
+            if (int.TryParse($"{TimeOfDay.Text}{e.Text}", out int val))
+                e.Handled = !regex.IsMatch(e.Text) || val >= 0 || val <= 23;
+            e.Handled = true;
         }
 
         public record SelectBoxItem(string Label, CultureInfo Value);

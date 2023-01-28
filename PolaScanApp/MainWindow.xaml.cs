@@ -35,13 +35,12 @@ public partial class MainWindow : Window
 
     private async void ExecuteBtn_Click(object sender, RoutedEventArgs e)
     {
-
-        LoadGoogleTimeLineData();
+        if (Mode.SelectedIndex != 2)
+            LoadGoogleTimeLineData();
 
         // Configure open file dialog box
         var dialog = new Microsoft.Win32.OpenFileDialog();
-        dialog.DefaultExt = ".jpg"; // Default file extension
-        dialog.Filter = "Images (.jpg)|*.jpg"; // Filter files by extension
+        dialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;...";
         dialog.Multiselect = true;
         dialog.InitialDirectory = userSettings.InitialDirectory;
         // Show open file dialog box
@@ -70,21 +69,23 @@ public partial class MainWindow : Window
 
                 if (polaroidFileName == null) continue;
 
-                var polaroidLipSectionName = await imageHandler.SavePolaroidLipSection(polaroidFileName);
-
                 var polaroidWithMeta = new PolaroidWithMeta
                 {
                     OriginalPath = polaroidFileName
                 };
-                if (Mode.SelectedIndex == 0)
-                    polaroidWithMeta.Date = await polaScanClient.DetectDateInImage(polaroidLipSectionName, userSettings.Culture);
-                if (polaroidWithMeta.Date == DateTimeOffset.MinValue || Mode.SelectedIndex == 1)
-                    polaroidWithMeta = SetDate.GetDateManually(polaroidWithMeta);
+                if (Mode.SelectedIndex != 2)
+                {
+                    var polaroidLipSectionName = await imageHandler.SavePolaroidLipSection(polaroidFileName);
+                    if (Mode.SelectedIndex == 0)
+                        polaroidWithMeta.Date = await polaScanClient.DetectDateInImage(polaroidLipSectionName, userSettings.Culture);
+                    if (polaroidWithMeta.Date == DateTimeOffset.MinValue || Mode.SelectedIndex == 1)
+                        polaroidWithMeta = SetDate.GetDateManually(polaroidWithMeta);
+                }
 
                 if (polaroidWithMeta != null)
                 {
-                    polaroidWithMeta.Location = timelineService.GetDateLocation(polaroidWithMeta.Date);
-                    await imageHandler.MoveToDestination(userSettings.DestinationPath, polaroidWithMeta, userSettings);
+                    polaroidWithMeta.Location = timelineService.GetDateLocation(polaroidWithMeta.Date, userSettings.TimeOfDay);
+                    await imageHandler.MoveToDestination(userSettings, polaroidWithMeta);
                 }
             }
             Helpers.DeleteTemporaryFiles();

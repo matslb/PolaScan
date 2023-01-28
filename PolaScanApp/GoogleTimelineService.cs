@@ -7,6 +7,7 @@ namespace PolaScan;
 public class GoogleTimelineService
 {
     private GoogleTimeline Timeline { get; set; }
+
     public GoogleTimelineService(UserSettings userSettings)
     {
         try
@@ -25,9 +26,9 @@ public class GoogleTimelineService
             Timeline = new() { Locations = new() };
     }
 
-    public LocationMeta? GetDateLocation(DateTimeOffset date)
+    public LocationMeta? GetDateLocation(DateTimeOffset date, int timeOfDay)
     {
-        var closestHour = 19;
+        var closestHour = timeOfDay;
         var possibleLocations = Timeline.Locations.Where(x => x.Date.UtcDateTime.ToShortDateString() == date.Date.ToShortDateString());
         var location = possibleLocations.OrderBy(x => x.Date.Hour > closestHour ? x.Date.Hour - closestHour : closestHour - x.Date.Hour).FirstOrDefault();
         return location != null ? new LocationMeta { Latitude = location.Latitude / 1e7, Longitude = location.Longitude / 1e7 } : null;

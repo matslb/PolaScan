@@ -22,10 +22,10 @@ public class ImageHandler
         Directory.CreateDirectory(Helpers.GetAppDataFilePath(tempFolder));
     }
 
-    public async Task MoveToDestination(string destinationRootPath, PolaroidWithMeta polaroid, UserSettings userSettings)
+    public async Task MoveToDestination(UserSettings userSettings, PolaroidWithMeta polaroid)
     {
 
-        var destinationPath = $"{destinationRootPath}\\{polaroid.Date.Year}\\{polaroid.Date.Month}";
+        var destinationPath = polaroid.Date != DateTimeOffset.MinValue ? $"{userSettings.DestinationPath}\\{polaroid.Date.Year}\\{polaroid.Date.Month}" : userSettings.DestinationPath;
         Directory.CreateDirectory(destinationPath);
         var i = 0;
         var uniqueName = destinationPath + $"\\{polaroid.FileName(i)}";
