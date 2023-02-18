@@ -244,7 +244,7 @@ public class ImageHandler
             var diff = Math.Abs(rightTopOfPolaroid - leftTopOfPolaroid);
             double deg = diff >= 1 ? (double)diff / 6 : 0.2;
 
-            int fromMiddle = (int)(image.Width / 3.5);
+            int fromMiddle = (int)(image.Width / 3);
 
             leftTopOfPolaroid = FindTopOfPolaroid(image, fromMiddle);
             rightTopOfPolaroid = FindTopOfPolaroid(image, image.Width - fromMiddle);
