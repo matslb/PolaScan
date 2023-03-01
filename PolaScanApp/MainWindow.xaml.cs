@@ -84,7 +84,8 @@ public partial class MainWindow : Window
 
                 if (polaroidWithMeta != null)
                 {
-                    polaroidWithMeta.Location = timelineService.GetDateLocation(polaroidWithMeta.Date, userSettings.TimeOfDay);
+                    if (Mode.SelectedIndex != 2)
+                        polaroidWithMeta.Location = timelineService.GetDateLocation(polaroidWithMeta.Date, userSettings.TimeOfDay);
                     await imageHandler.MoveToDestination(userSettings, polaroidWithMeta);
                 }
             }

@@ -75,25 +75,31 @@ public class ImageHandler
         foreach (var position in locations)
         {
             var degrees = GetImageRotationDegrees(compressedScanFileName, (position));
-            var crop = GetImageCropRectangle(compressedScanFileName, (position), degrees);
+            var crop = await GetImageCropRectangle(compressedScanFileName, (position), degrees);
 
             using Image<Rgba32> image = Image.Load<Rgba32>(scanFile);
+            try
+            {
+                /// Cropping image with margin to adjust rotation
+                image.Mutate(x => x
+                    .Pad(image.Width + padding, image.Height + padding));
+                image.Mutate(x => x
+                    .Crop(PolaroidSizeWithMargin(image, position, 1))
+                    .Rotate(degrees)
+                    .Crop(crop)
+                    .BackgroundColor(Color.White)
+                    );
 
-            /// Cropping image with margin to adjust rotation
-            image.Mutate(x => x
-                .Pad(image.Width + padding, image.Height + padding));
-            image.Mutate(x => x
-                .Crop(PolaroidSizeWithMargin(image, position, 1))
-                .Rotate(degrees)
-                .Crop(crop)
-                .BackgroundColor(Color.White)
-                );
+                var tempFileName = $"{Guid.NewGuid()}.{scanFile.Split(".")[1]}";
 
-            var tempFileName = $"{Guid.NewGuid()}.{scanFile.Split(".")[1]}";
+                tempFileName = await Helpers.SaveTempImage(image, tempFileName);
 
-            tempFileName = await Helpers.SaveTempImage(image, tempFileName);
-
-            polaroidsInScan.Add(tempFileName);
+                polaroidsInScan.Add(tempFileName);
+            }
+            catch
+            {
+                Console.WriteLine("Shit");
+            }
         }
         return polaroidsInScan;
     }
@@ -102,12 +108,13 @@ public class ImageHandler
     {
         using var image = Image.Load<Rgba32>(fileName);
         image.Mutate(x =>
-        x.Pad(image.Width + padding, image.Height + padding)
+        x
         .Resize(new Size { Width = image.Width / testImageModifier })
         .GaussianSharpen()
         .GaussianBlur()
         .GaussianSharpen()
         .DetectEdges()
+        .Pad((image.Width) + (padding / testImageModifier), (image.Height) + (padding / testImageModifier))
         .BlackWhite()
         );
 
@@ -117,7 +124,7 @@ public class ImageHandler
         return tempFileName;
     }
 
-    private Rectangle GetImageCropRectangle(string fileName, BoundingBox position, float degrees)
+    private async Task<Rectangle> GetImageCropRectangle(string fileName, BoundingBox position, float degrees)
     {
         using Image<Rgba32> image = Image.Load<Rgba32>(fileName);
 
@@ -138,8 +145,8 @@ public class ImageHandler
             y: topCrop * testImageModifier,
             width: width * testImageModifier,
             height: height * testImageModifier
-       );
-
+        );
+        await Helpers.SaveTempImage(image, Guid.NewGuid().ToString() + ".jpg");
         image.Dispose();
         return crop;
     }
@@ -221,7 +228,7 @@ public class ImageHandler
         return (side, top);
     }
 
-    private static bool IsWhitePixel(Rgba32 pixel) => (pixel.B >= 150 && pixel.G >= 150 && pixel.R >= 150 && pixel.A != 0)
+    private static bool IsWhitePixel(Rgba32 pixel) => (pixel.B >= 100 && pixel.G >= 100 && pixel.R >= 100 && pixel.A != 0)
         || (pixel.B == 0 && pixel.G == 128 && pixel.R == 0 && pixel.A != 0);
 
     private static float GetImageRotationDegrees(string fileName, BoundingBox position)
