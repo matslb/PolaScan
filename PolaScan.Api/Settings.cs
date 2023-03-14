@@ -7,6 +7,8 @@ public class Settings
     public string? AzureBlobStorageConnectionString { get; set; }
     public string? CustomVisionPredictionKey { get; set; }
     public string? CustomVisionPredictionEndpoint { get; set; }
+    public string? CustomVisionEndpoint { get; set; }
+    public Guid? CustomVisionKey { get; set; }
     public Guid? CustomVisionProjectId { get; set; }
     public string? CustomVisionIterationName { get; set; }
     public string? AzureBlobStorageContainer { get; set; }
