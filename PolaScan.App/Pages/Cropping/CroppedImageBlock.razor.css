@@ -1,0 +1,71 @@
+﻿.image-block {
+    display: grid;
+    grid-template-columns: 1fr .5fr;
+    position: relative;
+    padding: 1rem;
+    width: 30rem;
+    justify-content: space-between;
+    justify-items: flex-start;
+    padding: 2.5rem;
+    box-shadow: 0 0 0 1px rgb(87 87 87 / 10%), 0 8px 8px 0 rgb(234 224 218 / 30%);
+    background: rgb(148, 148, 148);
+}
+
+.button-group {
+    width: 100%;
+}
+
+.placeholder{
+    height: 200px;
+    width: 150px;
+    color: green;
+}
+
+.image-block .preview{
+    position: relative;
+    background: blue;
+}
+
+.button-group button{
+    position: absolute;
+    height: 2rem;
+    width: 2rem;
+}
+
+.button-group .left {
+    left: -2rem;
+    bottom: 0;
+    top: 0;
+    margin: auto;
+}
+
+.button-group .right {
+    right: -2rem;
+    bottom: 0;
+    top: 0;
+    margin: auto;
+}
+
+.button-group .top {
+    top: -2rem;
+    left: 0;
+    right: 0;
+    margin: auto;
+}
+
+.button-group .bottom {
+    bottom: -2rem;
+    left: 0;
+    right: 0;
+    margin: auto;
+}
+
+.button-group .rotate-right {
+    top: -2rem;
+    right: -2rem;
+}
+
+.button-group .rotate-left {
+    top: -2rem;
+    left: -2rem;
+}

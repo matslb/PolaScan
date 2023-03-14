@@ -1,0 +1,95 @@
+﻿@using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
+@using PolaScan.App.Models;
+@using System.Globalization;
+@using System.Collections.ObjectModel;
+@using System.Diagnostics;
+
+@{
+    <Button @onclick="StartCropping">Select scans</Button>
+    if (IsStarted)
+    {
+        if (IsWorking)
+        {
+            <h3>Analyzing @ScanFileCount scans</h3>
+            <Icon IconName="spinner" />
+        }
+
+        <ul class="image-preview">
+        @foreach (var photo in PolaroidsWithMeta)
+        {
+           <li>
+            <CroppedImageBlock imageHander="@imageHandler" Polaroid="@photo"/>
+           </li> 
+        }
+        </ul>
+    }
+}
+@code {
+    public ObservableCollection<PolaroidWithMeta> PolaroidsWithMeta { get; set; } = new();
+    public int ScanFileCount { get; set; } = 0;
+    public int LocationCount { get; set; } = 0;
+
+    public bool IsStarted { get; set; }
+    public bool IsExported { get; set; }
+    public bool IsWorking { get; set; }
+
+    public PolaScanApiClient polaScanClient = new PolaScanApiClient();
+    public GoogleTimelineService timelineService = new GoogleTimelineService();
+    public ImageHandler imageHandler = new ImageHandler();
+
+    public async Task StartCropping()
+    {
+        IsStarted = true;
+        var result = await FilePicker.Default.PickMultipleAsync();
+        if (result.Any())
+        {
+            IsWorking = true;
+            ScanFileCount = result.Count();
+            StateHasChanged();
+            var locationDic = new Dictionary<string, List<BoundingBox>>(); 
+
+            foreach (var file in result)
+            {
+                var locations = await polaScanClient.DetectPolaroidsInImage(file.FullPath);
+                LocationCount += locations.Count();
+                locationDic.Add(file.FullPath , locations);
+                StateHasChanged();
+            }
+
+            foreach (var file in result)
+            {
+                (await imageHandler.GetPolaroidsFromScan(file.FullPath, locationDic[file.FullPath] )).ToList().ForEach(p =>
+                {
+                    LocationCount -= 1;
+                    PolaroidsWithMeta.Add(p);
+                });
+                StateHasChanged();
+            }
+          
+            StateHasChanged();
+            foreach (var p in PolaroidsWithMeta)
+            {
+                var polaroidLipSectionName = await imageHandler.SavePolaroidLipSection(p);
+                p.Date = await polaScanClient.DetectDateInImage(polaroidLipSectionName, CultureInfo.CurrentCulture);
+
+                p.Location = timelineService.GetDateLocation(p.Date, int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12")));
+                StateHasChanged();
+            };
+            IsWorking = false;
+        }
+    }
+
+    public async Task ExportImages()
+    {
+        foreach (var p in PolaroidsWithMeta.Where(p => p.ToBeSaved))
+        {
+            await imageHandler.MoveToDestination(p);
+        }
+        IsExported = true;
+    }
+
+    public void OpenDestinationFolder()
+    {
+        Process.Start("explorer.exe", Preferences.Default.Get(Constants.Settings.DesitnationPath, ""));
+    }
+}

@@ -1,0 +1,65 @@
+﻿@using PolaScan.App.Models;
+@using static PolaScan.App.Models.Enums;
+
+<div class="image-block">
+
+    <div class="preview">
+        <img src="@Polaroid.PreviewData" width="150" />
+        <div class="button-group">
+            <button class="rotate-left" @onclick="() => Rotate(-.1)"><Icon IconName="rotate-left" /></button>
+            <button class="left" @onclick="() => Move(2, 0)"><Icon IconName="arrow-left" /></button>
+            <button class="top" @onclick="() => Move(0, 2)"><Icon IconName="arrow-up" /></button>
+            <button class="bottom" @onclick="() => Move(0, -2)"><Icon IconName="arrow-down" /></button>
+            <button class="right" @onclick="() => Move(-2,0)"><Icon IconName="arrow-right" /></button>
+            <button class="rotate-right" @onclick="() => Rotate(.1)"><Icon IconName="rotate-right" /></button>
+        </div>
+    </div>
+    <div class="meta">
+        <label>
+            <Icon IconName="save" />
+            <input type="checkbox" value="@Polaroid.ToBeSaved" @onchange="SetShouldSave">
+        </label>
+
+        <label>
+         
+        @if(Polaroid.Date == DateTimeOffset.MinValue)
+        {
+            <Icon IconName="spinner" />
+        }
+        else{
+            <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Polaroid.Date.ToString("yyyy-MM-dd")" />
+        }
+        </label>
+        </div>
+</div>
+
+@code {
+    [Parameter]
+    public PolaroidWithMeta Polaroid {get;set;}
+
+    [Parameter]
+    public ImageHandler imageHander { get; set; }
+
+    private string SetDate(string date)
+    {
+        Polaroid.Date = DateTimeOffset.Parse(date);
+        return date;
+    }
+    private void SetShouldSave(ChangeEventArgs e)
+    {
+        Polaroid.ToBeSaved = (bool) e.Value;
+        StateHasChanged();
+    }
+
+    private async Task Move(int x, int y)
+    {
+        Polaroid.Crop = new SixLabors.ImageSharp.Rectangle(Polaroid.Crop.X + x, Polaroid.Crop.Y + y, Polaroid.Crop.Width, Polaroid.Crop.Height);
+        Polaroid = await imageHander.CutPolaroidFromScan(Polaroid);
+    }
+
+    private async Task Rotate(double degrees)
+    {
+        Polaroid.Rotation += (float)degrees;
+        Polaroid = await imageHander.CutPolaroidFromScan(Polaroid);
+    }
+}

@@ -1,0 +1,41 @@
+﻿@using static PolaScan.App.Models.Enums
+@using static PolaScan.App.Shared.InputField
+<div class="settings-item">
+    <span class="settings-item-label"><b>@Label</b></span>
+    <div class="settings-item-value">
+        <InputField Type="@fieldType" Options="@Options" Value="@GetValue()" Callback="@UpdateSetting" />
+    @{
+        if (displayValue)
+        {
+            <i class="settings-item-existing" >@GetValue()</i>
+        }
+    }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Label { get; set; }
+
+    [Parameter]
+    public string Slug { get; set; }
+
+    [Parameter]
+    public bool displayValue { get; set; } = false;
+
+    [Parameter]
+    public List<string> Options { get; set; }
+
+    [Parameter]
+    public InputType fieldType { get; set; }
+
+    string Value { get; set; }
+
+    private string GetValue() => Value ?? Preferences.Default.Get(Slug, "");
+
+    private string UpdateSetting(string value){
+        Preferences.Default.Set(Slug, value);
+        Value = value;
+        return value;
+    }
+}

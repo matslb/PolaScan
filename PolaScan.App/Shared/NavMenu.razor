@@ -1,0 +1,26 @@
+﻿@inject NavigationManager NavigationManager
+<div>
+	<nav class="flex-row">
+		<div class="nav-item">
+			<NavLink class="nav-link" href="">
+				<Icon Size=2 IconName ="arrow-left" />
+			</NavLink>
+			<NavLink class="nav-link" href="settings">
+				<Icon Size=2 IconName="cog"/>
+			</NavLink>
+		</div>
+	</nav>
+</div>
+
+@code {
+	private string currentUrl { get; set; } = "";
+	protected void Setul()
+	{
+		currentUrl = NavigationManager.Uri;
+	}
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		Setul();
+	}
+}

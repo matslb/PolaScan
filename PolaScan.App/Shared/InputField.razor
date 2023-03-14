@@ -1,0 +1,73 @@
+﻿@using CommunityToolkit.Maui.Storage;
+@using static PolaScan.App.Models.Enums
+
+@inject IFolderPicker folderPicker;
+@{
+    switch(Type)
+    {
+       case InputType.folder:
+            <button @onclick="SelectFolder">Select Folder</button>
+
+            break;  
+       case InputType.date:
+            <input type="date" value="@Value" @oninput="GetValueFromChangeEvent">
+ 
+            break;
+       case InputType.number:
+            <input type="number" value="@Value" @onchange="GetValueFromChangeEvent">
+
+            break;
+        case InputType.file:
+            <button @onclick="SelectFile">Select file</button>
+
+            break;
+        case InputType.select:
+            <select @oninput="GetValueFromChangeEvent">
+            @{foreach (var option in Options)
+            {
+                if(@option == @Value){
+                    <option selected>@option</option>
+                }else{
+                    <option >@option</option>
+                }
+            }}
+            </select>
+            break;
+
+        default:
+            <input type="text" value="@Value" @oninput="GetValueFromChangeEvent">
+            break;                   
+    }
+}
+@code {
+
+    [Parameter]
+    public InputType Type { get; set; }
+
+    [Parameter]
+    public string Value { get; set; }
+
+    [Parameter]
+    public List<string> Options { get; set; } = new();
+
+    [Parameter]
+    public Func<string, string> Callback {get; set;}
+
+    public void GetValueFromChangeEvent(ChangeEventArgs e){
+        Callback(e.Value.ToString());
+    }
+
+    public async Task SelectFolder(){
+        var result = await FolderPicker.Default.PickAsync("", new CancellationToken());
+        Callback(result.Folder.Path);
+    }
+
+    public async Task SelectFile()
+    {
+        var result = await FilePicker.Default.PickAsync();
+        if(result != null)
+            Value = result.FullPath;
+
+        Callback(Value);
+    }
+}

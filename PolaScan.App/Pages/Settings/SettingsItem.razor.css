@@ -1,0 +1,17 @@
+﻿.settings-item {
+    width: 100%;
+    display: flex;
+    margin-bottom: 0.5rem;
+    justify-content: space-between;
+}
+.settings-item-label{
+    width: 30%;
+    min-width: 10rem;
+}
+.settings-item-value {
+    width: 70%;
+    min-width: 20rem;
+}
+.settings-item-existing {
+    margin-left: 1rem;
+}

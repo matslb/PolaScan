@@ -1,0 +1,30 @@
+﻿@page "/settings";
+
+@using PolaScan.App.Models;
+@using System.Globalization
+@using System.Text.RegularExpressions
+@using static PolaScan.App.Models.Enums;
+
+<h3>Settings</h3>
+<div>
+
+    <SettingsItem Label="Destination folder" Slug="@Constants.Settings.DesitnationPath" displayValue=true fieldType=InputType.folder></SettingsItem>
+    <SettingsItem Label="Google Timeline records.json" Slug="@Constants.Settings.GoogleTimelinePath" displayValue=true fieldType=InputType.file></SettingsItem>
+    
+    <h4>Date settings</h4>
+    <SettingsItem Label="Date format" Slug="@Constants.Settings.DateFormat" Options="@GetDateFormatSelections()" fieldType=InputType.select></SettingsItem>
+    <SettingsItem Label="Assumed hour" Slug="@Constants.Settings.AssumedHour" fieldType=InputType.number></SettingsItem>
+   
+    <SettingsItem Label="Copyright text" Slug="@Constants.Settings.CopyRightText"  fieldType=InputType.text></SettingsItem>
+    <SettingsItem Label="Camera model" Slug="@Constants.Settings.CameraModel" fieldType=InputType.text></SettingsItem>
+
+</div>
+
+@code {
+
+    private List<string> GetDateFormatSelections()
+    {
+        CultureInfo[] cinfos = CultureInfo.GetCultures(CultureTypes.SpecificCultures);
+        return cinfos.Select(c => Regex.Replace(c.DateTimeFormat.ShortDatePattern.ToUpper(), @"[^dDmMyY]", " ").Trim().Replace(" ", "/")).Distinct().ToList();
+    }
+}
