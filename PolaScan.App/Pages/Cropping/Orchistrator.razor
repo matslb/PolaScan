@@ -22,6 +22,17 @@
            </li> 
         }
         </ul>
+        if (!IsWorking)
+        {
+            <button @onclick="ExportImages">Export @LocationCount images</button>
+        }
+    }
+    else
+    {
+        if (IsExported)
+        {
+            <button @onclick="OpenDestinationFolder">See photos</button>
+        }
     }
 }
 @code {
@@ -40,10 +51,10 @@
     public async Task StartCropping()
     {
         IsStarted = true;
+        IsWorking = true;
         var result = await FilePicker.Default.PickMultipleAsync();
         if (result.Any())
         {
-            IsWorking = true;
             ScanFileCount = result.Count();
             StateHasChanged();
             var locationDic = new Dictionary<string, List<BoundingBox>>(); 
@@ -65,7 +76,7 @@
                 });
                 StateHasChanged();
             }
-          
+
             StateHasChanged();
             foreach (var p in PolaroidsWithMeta)
             {
@@ -86,6 +97,7 @@
             await imageHandler.MoveToDestination(p);
         }
         IsExported = true;
+        IsStarted = false;
     }
 
     public void OpenDestinationFolder()

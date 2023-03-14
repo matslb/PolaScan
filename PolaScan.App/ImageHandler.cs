@@ -176,7 +176,7 @@ public class ImageHandler
         var verticalHits = new List<int>();
         var side = 0;
         var top = 0;
-        var consectutiveReq = 20;
+        var consectutiveReq = 40;
         image.ProcessPixelRows(accessor =>
         {
             var pixelRange = image.Width / 3;
@@ -188,13 +188,11 @@ public class ImageHandler
 
                 ref Rgba32 topPixel = ref pixelRow[pixelRange];
 
-                // Finn øverste linje fra toppen
                 if (IsWhitePixel(topPixel))
                 {
                     top = y;
                     pixelsInLine.Clear();
 
-                    // Iterer over piksler mot venstre til Det ikke lenger er noen. 
                     var startingpoint = left ? pixelRange : image.Width - pixelRange;
                     for (int j = 0; j < startingpoint; j++)
                     {
@@ -208,7 +206,6 @@ public class ImageHandler
                         }
                         else if (pixelsInLine.Count > consectutiveReq)
                         {
-                            // Sjekk hver piksel om det finnes flere hvite under den.
                             foreach (var coords in pixelsInLine)
                             {
                                 for (int i = 1; i < consectutiveReq + 1; i++)
