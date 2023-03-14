@@ -13,8 +13,8 @@ public class PolaScanApiClient
     private readonly HttpClient client;
     public PolaScanApiClient()
     {
-        // baseUrl = ConfigurationManager.AppSettings["PolaScanApiUrl"].ToString();
         baseUrl = "https://polascanapi.azurewebsites.net/";
+        //baseUrl = "https://localhost:7231";
         client = new HttpClient
         {
             BaseAddress = new Uri(baseUrl)
