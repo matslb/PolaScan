@@ -29,7 +29,7 @@ public class CognitiveService
 
         httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", settings.AzureCognitiveSubscriptionKey);
-        httpClient.DefaultRequestHeaders.Add("Training-Key", settings.CustomVisionKey.ToString());
+        httpClient.DefaultRequestHeaders.Add("Training-Key", settings.CustomVisionKey);
 
         customVisionPredictionClient = new CustomVisionPredictionClient(new ApiKeyServiceClientCredentials(settings.CustomVisionPredictionKey))
         {
@@ -43,7 +43,9 @@ public class CognitiveService
     {
         var result = await customVisionPredictionClient.DetectImageAsync(customVisionProjectId, customVisionIterationName, imageStream);
         imageStream.Dispose();
+
         await httpClient.DeleteAsync($"{CustomVisionEndpoint}customvision/v3.3/training/projects/{customVisionProjectId}/predictions?ids={result.Id}");
+
         return result.Predictions.Where(p => p.TagName == "Polaroid" && p.Probability > 0.999).Select(p => p.BoundingBox).ToList();
     }
 
