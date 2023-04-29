@@ -5,15 +5,34 @@
 @using System.Diagnostics;
 
 @{
-    <Button @onclick="StartCropping">Select scans</Button>
+    <div class="button-menu">
+        @if (!IsStarted)
+        {
+            <Button class="green btn" @onclick="StartCropping">Select scans</Button>
+        }
+        @if ( IsStarted && !IsExported && !IsWorking)
+        {
+            <button class="green btn" @onclick="ExportImages">Save selected</button>
+        }
+        @if (IsExported)
+        {
+            <button class="blue btn" @onclick="OpenDestinationFolder">See photos</button>
+        }
+        @if (IsStarted)
+        {            
+            <Button class="red btn" @onclick="Cancel">Cancel</Button>
+        }
+    </div>
+    if (IsWorking)
+    {
+        <div class="status-message">
+            <Icon IconName="spinner" />
+            <br />
+            @StatusMessage
+        </div>
+    }
     if (IsStarted)
     {
-        if (IsWorking)
-        {
-            <h3>Analyzing @ScanFileCount scans</h3>
-            <Icon IconName="spinner" />
-        }
-
         <ul class="image-preview">
         @foreach (var photo in PolaroidsWithMeta)
         {
@@ -22,18 +41,8 @@
            </li> 
         }
         </ul>
-        if (!IsWorking)
-        {
-            <button @onclick="ExportImages">Export @LocationCount images</button>
-        }
     }
-    else
-    {
-        if (IsExported)
-        {
-            <button @onclick="OpenDestinationFolder">See photos</button>
-        }
-    }
+
 }
 @code {
     public ObservableCollection<PolaroidWithMeta> PolaroidsWithMeta { get; set; } = new();
@@ -43,6 +52,8 @@
     public bool IsStarted { get; set; }
     public bool IsExported { get; set; }
     public bool IsWorking { get; set; }
+
+    public string StatusMessage{ get; set; }
 
     public PolaScanApiClient polaScanClient = new PolaScanApiClient();
     public GoogleTimelineService timelineService = new GoogleTimelineService();
@@ -56,13 +67,16 @@
         if (result.Any())
         {
             ScanFileCount = result.Count();
+            LocationCount = 0;
+            StatusMessage = $"Analyzing {ScanFileCount} {(ScanFileCount > 1 ? "scans" : "scan")}";
             StateHasChanged();
-            var locationDic = new Dictionary<string, List<BoundingBox>>(); 
+            var locationDic = new Dictionary<string, List<BoundingBox>>();
 
             foreach (var file in result)
             {
                 var locations = await polaScanClient.DetectPolaroidsInImage(file.FullPath);
                 LocationCount += locations.Count();
+                StatusMessage = $"{LocationCount} photos detected";
                 locationDic.Add(file.FullPath , locations);
                 StateHasChanged();
             }
@@ -71,23 +85,39 @@
             {
                 (await imageHandler.GetPolaroidsFromScan(file.FullPath, locationDic[file.FullPath] )).ToList().ForEach(p =>
                 {
-                    LocationCount -= 1;
+                    p.ToBeSaved = true;
                     PolaroidsWithMeta.Add(p);
                 });
+                StatusMessage = $"{PolaroidsWithMeta.Count} of {LocationCount} photos cropped";
                 StateHasChanged();
             }
 
             StateHasChanged();
+
+            StatusMessage = $"Parsing dates and adding metadata";
             foreach (var p in PolaroidsWithMeta)
             {
                 var polaroidLipSectionName = await imageHandler.SavePolaroidLipSection(p);
                 p.Date = await polaScanClient.DetectDateInImage(polaroidLipSectionName, CultureInfo.CurrentCulture);
-
-                p.Location = timelineService.GetDateLocation(p.Date, int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12")));
+                if(p.Date != null)
+                {
+                    p.Location = timelineService.GetDateLocation(p.Date.Value, int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12")));
+                }
                 StateHasChanged();
             };
-            IsWorking = false;
         }
+        IsWorking = false;
+        StatusMessage = $"Finished";
+        StateHasChanged();
+    }
+
+    public async Task Cancel()
+    {
+        PolaroidsWithMeta.Clear();
+        IsStarted = false;
+        IsExported = false;
+        IsWorking = false;
+        StatusMessage = string.Empty;
     }
 
     public async Task ExportImages()
@@ -96,6 +126,8 @@
         {
             await imageHandler.MoveToDestination(p);
         }
+        PolaroidsWithMeta.Clear();
+        Helpers.DeleteTemporaryFiles();
         IsExported = true;
         IsStarted = false;
     }

@@ -13,7 +13,7 @@
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
 
         <!-- Display name -->
-        <ApplicationTitle>PolaScan.App</ApplicationTitle>
+        <ApplicationTitle>PolaScan</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.companyname.polascan.app</ApplicationId>
@@ -33,10 +33,10 @@
 
     <ItemGroup>
         <!-- App Icon -->
-        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
-
+        <MauiIcon Include="Resources\AppIcon\logo.png" ForegroundFile="Resources\AppIcon\logo.png" Color="#512BD4" />
+        
         <!-- Splash Screen -->
-        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+        <MauiSplashScreen Include="Resources\AppIcon\logo.png" Color="#512BD4" BaseSize="128,128" />
 
         <!-- Images -->
         <MauiImage Include="Resources\Images\*" />
@@ -51,6 +51,7 @@
 
     <ItemGroup>
       <None Remove="Pages\index.razor.css" />
+      <None Remove="Resources\AppIcon\logo.png" />
     </ItemGroup>
 
     <ItemGroup>
@@ -92,6 +93,9 @@
 	</ItemGroup>
 	
 	<ItemGroup>
+	  <Resource Include="Resources\AppIcon\logo.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Resource>
 	  <Resource Include="wwwroot\media\logo.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Resource>

@@ -5,11 +5,11 @@ namespace PolaScan.App.Models;
 
 public class PolaroidWithMeta
 {
-    public string FileName(int i) => $"{(Date == DateTimeOffset.MinValue ? "img" : Date.Date.ToString("dd-MM-yyyy"))}-{i}.{Format}";
+    public string FileName(int i) => $"{(Date == null ? "img" : Date.Value.Date.ToString("dd-MM-yyyy"))}-{i}.{Format}";
     public string AbsolutePath { get; set; }
     public string TempFileName { get; set; }
     public string ScanFile { get; set; }
-    public DateTimeOffset Date { get; set; }
+    public DateTimeOffset? Date { get; set; }
     public string PreviewData { get; set; }
     public float Rotation { get; set; }
     public Rectangle Crop { get; set; }

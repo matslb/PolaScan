@@ -25,7 +25,7 @@ public class ImageHandler
     public async Task MoveToDestination(PolaroidWithMeta polaroid)
     {
         var destSetting = Preferences.Default.Get(Constants.Settings.DesitnationPath, "");
-        var destinationPath = polaroid.Date != DateTimeOffset.MinValue ? $"{destSetting}\\{polaroid.Date.Year}\\{polaroid.Date.Month}" : destSetting;
+        var destinationPath = polaroid.Date != null ? $"{destSetting}\\{polaroid.Date.Value.Year}\\{polaroid.Date.Value.Month}" : destSetting;
         Directory.CreateDirectory(destinationPath);
         var i = 0;
         var uniqueName = destinationPath + $"\\{polaroid.FileName(i)}";
@@ -48,7 +48,10 @@ public class ImageHandler
         image.Metadata.ExifProfile.SetValue(ExifTag.Make, "Polaroid");
         image.Metadata.ExifProfile.SetValue(ExifTag.Model, Preferences.Default.Get(Constants.Settings.CameraModel, ""));
         image.Metadata.ExifProfile.SetValue(ExifTag.Copyright, Preferences.Default.Get(Constants.Settings.CopyRightText, ""));
-        image.Metadata.ExifProfile.SetValue(ExifTag.DateTimeOriginal, polaroid.Date.ToString("yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture));
+        
+        if(polaroid.Date != null)
+            image.Metadata.ExifProfile.SetValue(ExifTag.DateTimeOriginal, polaroid.Date.Value.ToString("yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture));
+        
         await image.SaveAsync(uniqueName);
     }
 

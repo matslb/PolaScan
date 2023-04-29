@@ -1,6 +1,35 @@
 ﻿.image-preview{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     list-style: none;
+    gap: 1.5rem;
+    width: 100%;
+    padding: 1rem;
+    justify-content: center;
+}
+
+.button-menu{
+    display: flex;
+    justify-content: center;
     gap: 1rem;
+}
+.btn{
+    color: white;
+}
+
+.green {
+    background:#4aaa4a;
+}
+
+.blue {
+    background: #14aada;
+}
+
+.red {
+    background: #d43c84;
+}
+.status-message {
+    color: white;
+    text-align: center;
+    margin: 1rem auto; 
 }

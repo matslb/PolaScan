@@ -2,12 +2,19 @@
 <div>
 	<nav class="flex-row">
 		<div class="nav-item">
-			<NavLink class="nav-link" href="">
-				<Icon Size=2 IconName ="arrow-left" />
-			</NavLink>
-			<NavLink class="nav-link" href="settings">
-				<Icon Size=2 IconName="cog"/>
-			</NavLink>
+			
+			@if(!currentUrl.Contains("settings"))
+			{
+				<NavLink href="settings" @onclick="Setul">
+					<Icon Size=2 IconName="cog"/>
+				</NavLink>
+			}
+			else
+			{
+				<NavLink href="" @onclick="Setul">
+					<Icon Size=2 IconName="arrow-left" />
+				</NavLink>
+			}
 		</div>
 	</nav>
 </div>

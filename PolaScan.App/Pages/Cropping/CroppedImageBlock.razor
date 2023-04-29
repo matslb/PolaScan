@@ -1,10 +1,10 @@
 ﻿@using PolaScan.App.Models;
 @using static PolaScan.App.Models.Enums;
 
-<div class="image-block">
+<div class="image-block @GetClass(@Polaroid.ToBeSaved)">
 
     <div class="preview">
-        <img src="@Polaroid.PreviewData" width="150" />
+        <img src="@Polaroid.PreviewData" width="300" />
         <div class="button-group">
             <button class="rotate-left" @onclick="() => Rotate(-.1)"><Icon IconName="rotate-left" /></button>
             <button class="left" @onclick="() => Move(2, 0)"><Icon IconName="arrow-left" /></button>
@@ -15,21 +15,30 @@
         </div>
     </div>
     <div class="meta">
-        <label>
-            <Icon IconName="save" />
-            <input type="checkbox" value="@Polaroid.ToBeSaved" @onchange="SetShouldSave">
-        </label>
-
-        <label>
-         
-        @if(Polaroid.Date == DateTimeOffset.MinValue)
-        {
-            <Icon IconName="spinner" />
-        }
-        else{
-            <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Polaroid.Date.ToString("yyyy-MM-dd")" />
-        }
-        </label>
+        <span>
+            @if(Polaroid.Date == null)
+            {
+                <Icon IconName="spinner" />
+            }
+            else{
+                <Icon IconName="calendar" />
+                <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Polaroid.Date.Value.ToString("yyyy-MM-dd")" />
+            }
+        </span>
+        <span>
+            @if (Polaroid.Location != null)
+            {
+                <Icon IconName="map-pin" />
+                <br />
+                <label>
+                    Latitude: <InputField Callback="@SetDate" Type="@InputType.text" Value="@Polaroid.Location.Latitude.ToString()"/>
+                </label>
+                <br />
+                <label>
+                    Longditude: <InputField Callback="@SetDate" Type="@InputType.text"  Value="@Polaroid.Location.Latitude.ToString()" />
+                </label>
+            }
+        </span>
         </div>
 </div>
 
@@ -45,6 +54,12 @@
         Polaroid.Date = DateTimeOffset.Parse(date);
         return date;
     }
+
+    private string GetClass(bool tobesaved)
+    {
+        return tobesaved ? "save" : "";
+    }
+
     private void SetShouldSave(ChangeEventArgs e)
     {
         Polaroid.ToBeSaved = (bool) e.Value;
