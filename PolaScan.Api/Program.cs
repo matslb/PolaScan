@@ -13,7 +13,6 @@ var app = builder.Build();
 var settings = builder.Configuration.GetSection("Settings").Get<Settings>();
 var cognitiveService = new CognitiveService(settings);
 
-
 var credential = new AzureKeyCredential(settings.AzureMapsSubscriptionKey!);
 var mapsClient = new MapsSearchClient(credential);
 
