@@ -12,10 +12,13 @@
             <button class="bottom" @onclick="() => Move(0, -2)"><Icon IconName="arrow-down" /></button>
             <button class="right" @onclick="() => Move(-2,0)"><Icon IconName="arrow-right" /></button>
             <button class="rotate-right" @onclick="() => Rotate(.1)"><Icon IconName="rotate-right" /></button>
+            <button class="zoom-in" @onclick="() => Zoom(2)"><Icon IconName="magnifying-glass-plus" /></button>
+            <button class="zoom-out" @onclick="() => Zoom(-2)"><Icon IconName="magnifying-glass-minus" /></button>
+
         </div>
     </div>
     <div class="meta">
-        <span>
+        <div>
             @if(Polaroid.Date == null)
             {
                 <Icon IconName="spinner" />
@@ -24,21 +27,14 @@
                 <Icon IconName="calendar" />
                 <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Polaroid.Date.Value.ToString("yyyy-MM-dd")" />
             }
-        </span>
-        <span>
+        </div>
+        <div>
             @if (Polaroid.Location != null)
             {
                 <Icon IconName="map-pin" />
-                <br />
-                <label>
-                    Latitude: <InputField Callback="@SetDate" Type="@InputType.text" Value="@Polaroid.Location.Latitude.ToString()"/>
-                </label>
-                <br />
-                <label>
-                    Longditude: <InputField Callback="@SetDate" Type="@InputType.text"  Value="@Polaroid.Location.Latitude.ToString()" />
-                </label>
+               <span>@Polaroid.Location.Name</span>
             }
-        </span>
+        </div>
         </div>
 </div>
 
@@ -49,9 +45,14 @@
     [Parameter]
     public ImageHandler imageHander { get; set; }
 
+    [Parameter]
+    public GoogleTimelineService googleTimelineService { get; set; }
+    
     private string SetDate(string date)
     {
         Polaroid.Date = DateTimeOffset.Parse(date);
+        Polaroid.Location = googleTimelineService.GetDateLocation(Polaroid.Date!.Value, int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12")));
+        StateHasChanged();
         return date;
     }
 
@@ -81,6 +82,12 @@
     private async Task Rotate(double degrees)
     {
         Polaroid.Rotation += (float)degrees;
+        Polaroid = await imageHander.CutPolaroidFromScan(Polaroid);
+    }
+
+    private async Task Zoom(int x)
+    {
+        Polaroid.Crop = new SixLabors.ImageSharp.Rectangle(Polaroid.Crop.X + x, Polaroid.Crop.Y + x, Polaroid.Crop.Width - x, Polaroid.Crop.Height - x );
         Polaroid = await imageHander.CutPolaroidFromScan(Polaroid);
     }
 }

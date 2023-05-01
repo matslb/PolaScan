@@ -12,4 +12,5 @@ public class Settings
     public Guid? CustomVisionProjectId { get; set; }
     public string? CustomVisionIterationName { get; set; }
     public string? AzureBlobStorageContainer { get; set; }
+    public string? AzureMapsSubscriptionKey { get; set; }
 }

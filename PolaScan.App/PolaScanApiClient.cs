@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 using Newtonsoft.Json;
+using PolaScan.App.Models;
 using SixLabors.ImageSharp.Processing;
 using System.Globalization;
 using Image = SixLabors.ImageSharp.Image;
@@ -38,6 +39,7 @@ public class PolaScanApiClient
 
         return JsonConvert.DeserializeObject<List<BoundingBox>>(await result.Content.ReadAsStringAsync());
     }
+
     public async Task<DateTimeOffset> DetectDateInImage(string tempImagePath, CultureInfo cultureInfo)
     {
         var content = GetImageStreamContent(tempImagePath);
@@ -69,4 +71,9 @@ public class PolaScanApiClient
         return multipartFormContent;
     }
 
+    public  async Task<string> GetAddressFromCoordinates(LocationMeta location)
+    {
+        var result = await client.GetAsync($"/location-lookup?lat={location.Latitude}&lng={location.Longitude}");
+        return await result.Content.ReadAsStringAsync();
+    }
 }

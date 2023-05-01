@@ -107,7 +107,6 @@ public class ImageHandler
             .Crop(PolaroidSizeWithMargin(image, polaroid.LocationInScan, 1))
             .Rotate(polaroid.Rotation)
             .Crop(polaroid.Crop)
-            .BackgroundColor(Color.White)
             );
 
         if (polaroid.AbsolutePath == null)
@@ -162,7 +161,7 @@ public class ImageHandler
 
         var topCrop = leftTop + 5;
         var width = rightCrop - leftCrop;
-        var height = (int)Math.Min((width * 1.23529411765), image.Height - topCrop);
+        var height = (int)Math.Min((width * 1.21590909), image.Height - topCrop);
         var crop = new Rectangle(
             x: leftCrop * testImageModifier,
             y: topCrop * testImageModifier,

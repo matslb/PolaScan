@@ -39,7 +39,7 @@
             @foreach (var photo in State.PolaroidsWithMeta)
         {
            <li>
-            <CroppedImageBlock imageHander="@imageHandler" Polaroid="@photo"/>
+            <CroppedImageBlock imageHander="@imageHandler" googleTimelineService="@timelineService" Polaroid="@photo"/>
            </li> 
         }
         </ul>
@@ -50,12 +50,11 @@
     private ProcessingState State { get; set; }
 
     private PolaScanApiClient polaScanClient = new PolaScanApiClient();
-    private GoogleTimelineService timelineService;
+    private GoogleTimelineService timelineService = new GoogleTimelineService();
     private ImageHandler imageHandler = new ImageHandler();
 
     private async Task StartCropping()
     {
-        timelineService = new GoogleTimelineService();
         State.IsStarted = true;
         State.IsWorking = true;
         var result = await FilePicker.Default.PickMultipleAsync();
@@ -97,6 +96,10 @@
                 if(p.Date != null)
                 {
                     p.Location = timelineService.GetDateLocation(p.Date.Value, int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12")));
+                }
+                if(p.Location != null)
+                {
+                    p.Location.Name = await polaScanClient.GetAddressFromCoordinates(p.Location);
                 }
                 StateHasChanged();
             };
