@@ -160,7 +160,7 @@ public class ImageHandler
         var (rightCrop, rightTop) = GetImageCorner(image, false);
 
 
-        var topCrop = leftTop;
+        var topCrop = leftTop + 5;
         var width = rightCrop - leftCrop;
         var height = (int)Math.Min((width * 1.23529411765), image.Height - topCrop);
         var crop = new Rectangle(

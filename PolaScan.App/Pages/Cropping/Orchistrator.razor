@@ -1,40 +1,42 @@
 ﻿@using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
+@using Newtonsoft.Json;
 @using PolaScan.App.Models;
 @using System.Globalization;
 @using System.Collections.ObjectModel;
 @using System.Diagnostics;
+@implements IDisposable
 
 @{
     <div class="button-menu">
-        @if (!IsStarted)
+        @if (!State.IsStarted)
         {
             <Button class="green btn" @onclick="StartCropping">Select scans</Button>
         }
-        @if ( IsStarted && !IsExported && !IsWorking)
+        @if (State.IsStarted && !State.IsExported && !State.IsWorking)
         {
             <button class="green btn" @onclick="ExportImages">Save selected</button>
         }
-        @if (IsExported)
+        @if (State.IsExported)
         {
             <button class="blue btn" @onclick="OpenDestinationFolder">See photos</button>
         }
-        @if (IsStarted)
+        @if (State.IsStarted)
         {            
             <Button class="red btn" @onclick="Cancel">Cancel</Button>
         }
     </div>
-    if (IsWorking)
+    if (State.IsWorking)
     {
         <div class="status-message">
             <Icon IconName="spinner" />
             <br />
-            @StatusMessage
+            @State.StatusMessage
         </div>
     }
-    if (IsStarted)
+    if (State.IsStarted)
     {
         <ul class="image-preview">
-        @foreach (var photo in PolaroidsWithMeta)
+            @foreach (var photo in State.PolaroidsWithMeta)
         {
            <li>
             <CroppedImageBlock imageHander="@imageHandler" Polaroid="@photo"/>
@@ -45,38 +47,31 @@
 
 }
 @code {
-    public ObservableCollection<PolaroidWithMeta> PolaroidsWithMeta { get; set; } = new();
-    public int ScanFileCount { get; set; } = 0;
-    public int LocationCount { get; set; } = 0;
+    private ProcessingState State { get; set; }
 
-    public bool IsStarted { get; set; }
-    public bool IsExported { get; set; }
-    public bool IsWorking { get; set; }
+    private PolaScanApiClient polaScanClient = new PolaScanApiClient();
+    private GoogleTimelineService timelineService;
+    private ImageHandler imageHandler = new ImageHandler();
 
-    public string StatusMessage{ get; set; }
-
-    public PolaScanApiClient polaScanClient = new PolaScanApiClient();
-    public GoogleTimelineService timelineService = new GoogleTimelineService();
-    public ImageHandler imageHandler = new ImageHandler();
-
-    public async Task StartCropping()
+    private async Task StartCropping()
     {
-        IsStarted = true;
-        IsWorking = true;
+        timelineService = new GoogleTimelineService();
+        State.IsStarted = true;
+        State.IsWorking = true;
         var result = await FilePicker.Default.PickMultipleAsync();
         if (result.Any())
         {
-            ScanFileCount = result.Count();
-            LocationCount = 0;
-            StatusMessage = $"Analyzing {ScanFileCount} {(ScanFileCount > 1 ? "scans" : "scan")}";
+            State.ScanFileCount = result.Count();
+            State.LocationCount = 0;
+            State.StatusMessage = $"Analyzing {State.ScanFileCount} {(State.ScanFileCount > 1 ? "scans" : "scan")}";
             StateHasChanged();
             var locationDic = new Dictionary<string, List<BoundingBox>>();
 
             foreach (var file in result)
             {
                 var locations = await polaScanClient.DetectPolaroidsInImage(file.FullPath);
-                LocationCount += locations.Count();
-                StatusMessage = $"{LocationCount} photos detected";
+                State.LocationCount += locations.Count();
+                State.StatusMessage = $"{State.LocationCount} photos detected";
                 locationDic.Add(file.FullPath , locations);
                 StateHasChanged();
             }
@@ -86,16 +81,16 @@
                 (await imageHandler.GetPolaroidsFromScan(file.FullPath, locationDic[file.FullPath] )).ToList().ForEach(p =>
                 {
                     p.ToBeSaved = true;
-                    PolaroidsWithMeta.Add(p);
+                    State.PolaroidsWithMeta.Add(p);
                 });
-                StatusMessage = $"{PolaroidsWithMeta.Count} of {LocationCount} photos cropped";
+                State.StatusMessage = $"{State.PolaroidsWithMeta.Count} of {State.LocationCount} photos cropped";
                 StateHasChanged();
             }
 
             StateHasChanged();
 
-            StatusMessage = $"Parsing dates and adding metadata";
-            foreach (var p in PolaroidsWithMeta)
+            State.StatusMessage = $"Parsing dates and adding metadata";
+            foreach (var p in State.PolaroidsWithMeta)
             {
                 var polaroidLipSectionName = await imageHandler.SavePolaroidLipSection(p);
                 p.Date = await polaScanClient.DetectDateInImage(polaroidLipSectionName, CultureInfo.CurrentCulture);
@@ -106,34 +101,53 @@
                 StateHasChanged();
             };
         }
-        IsWorking = false;
-        StatusMessage = $"Finished";
+        State.IsWorking = false;
+        State.StatusMessage = $"Finished";
         StateHasChanged();
     }
 
-    public async Task Cancel()
+    private void Cancel()
     {
-        PolaroidsWithMeta.Clear();
-        IsStarted = false;
-        IsExported = false;
-        IsWorking = false;
-        StatusMessage = string.Empty;
+        State = new();
+        Helpers.DeleteTemporaryFiles();
     }
 
-    public async Task ExportImages()
+    private async Task ExportImages()
     {
-        foreach (var p in PolaroidsWithMeta.Where(p => p.ToBeSaved))
+        foreach (var p in State.PolaroidsWithMeta.Where(p => p.ToBeSaved))
         {
             await imageHandler.MoveToDestination(p);
         }
-        PolaroidsWithMeta.Clear();
-        Helpers.DeleteTemporaryFiles();
-        IsExported = true;
-        IsStarted = false;
+        Cancel();
+        State.IsExported = true;
     }
 
-    public void OpenDestinationFolder()
+    private void OpenDestinationFolder()
     {
         Process.Start("explorer.exe", Preferences.Default.Get(Constants.Settings.DesitnationPath, ""));
+    }
+
+    private void SaveState()
+    {
+        foreach( var p in State.PolaroidsWithMeta)
+        {
+            p.PreviewData = string.Empty;
+        }
+        Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(State));
+    }
+
+    protected override void OnInitialized()
+    {
+        RetrieveStoredState();
+    }
+
+    public void Dispose()
+    {
+        SaveState();
+    }
+
+    public void RetrieveStoredState()
+    {
+        State = JsonConvert.DeserializeObject<ProcessingState>(Preferences.Default.Get(nameof(ProcessingState), "")) ?? new ProcessingState();
     }
 }

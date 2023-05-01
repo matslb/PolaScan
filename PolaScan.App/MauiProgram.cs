@@ -23,7 +23,6 @@ namespace PolaScan.App
 
             builder.Services.AddSingleton(FolderPicker.Default);
 
-            Helpers.DeleteTemporaryFiles();
             return builder.Build();
         }
     }

@@ -66,6 +66,12 @@
         StateHasChanged();
     }
 
+    protected override void OnInitialized()
+    {
+        if (Polaroid.PreviewData == string.Empty)
+            Move(0, 0);
+
+    }
     private async Task Move(int x, int y)
     {
         Polaroid.Crop = new SixLabors.ImageSharp.Rectangle(Polaroid.Crop.X + x, Polaroid.Crop.Y + y, Polaroid.Crop.Width, Polaroid.Crop.Height);

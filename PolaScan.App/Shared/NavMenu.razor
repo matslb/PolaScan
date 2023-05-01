@@ -1,33 +1,47 @@
 ﻿@inject NavigationManager NavigationManager
+@implements IDisposable
+
 <div>
 	<nav class="flex-row">
 		<div class="nav-item">
-			
-			@if(!currentUrl.Contains("settings"))
+
+		@if(CurrentPage != "settings")
 			{
-				<NavLink href="settings" @onclick="Setul">
-					<Icon Size=2 IconName="cog"/>
-				</NavLink>
+				<button class="btn btn-primary" @onclick="NavigateToSettings">
+					Settings
+				</button>
 			}
 			else
 			{
-				<NavLink href="" @onclick="Setul">
-					<Icon Size=2 IconName="arrow-left" />
-				</NavLink>
+				<button class="btn btn-primary" @onclick="NavigateToHome">
+					Back
+				</button>
 			}
+		
 		</div>
 	</nav>
 </div>
 
 @code {
-	private string currentUrl { get; set; } = "";
-	protected void Setul()
+	private string CurrentPage { get; set; } = "";
+
+	private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
 	{
-		currentUrl = NavigationManager.Uri;
+		CurrentPage = e.Location.Split("/").Last();
+		StateHasChanged();
 	}
+
 	protected override void OnInitialized()
 	{
-		base.OnInitialized();
-		Setul();
+		NavigationManager.LocationChanged += HandleLocationChanged;
 	}
+
+	public void Dispose()
+	{
+		NavigationManager.LocationChanged -= HandleLocationChanged;
+	}
+
+	private void NavigateToSettings() => NavigationManager.NavigateTo("settings");
+	private void NavigateToHome() => NavigationManager.NavigateTo("");
+
 }
