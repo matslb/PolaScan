@@ -7,7 +7,7 @@ using PolaScan.Api.Models;
 using System.Globalization;
 using System.Text;
 
-namespace PolaScan;
+namespace PolaScan.Api.Services;
 
 public class CognitiveService
 {

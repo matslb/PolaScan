@@ -1,10 +1,8 @@
 using Azure.Maps.Search;
 using Azure;
-using Microsoft.AspNetCore.Mvc;
-using PolaScan;
 using PolaScan.Api;
-using Azure.Core;
-using System.Data;
+using PolaScan.Api.Services;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationInsightsTelemetry();
@@ -55,14 +53,18 @@ app.MapPost("/DetectDateInImage", async Task<IResult> (HttpRequest request) =>
 
 app.MapGet("/location-lookup", async (HttpRequest request) =>
 {
+    CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
     var lat = double.Parse(request.Query["lat"]);
     var lng = double.Parse(request.Query["lng"]);
 
-    var locationRes = await mapsClient.ReverseSearchAddressAsync( new ReverseSearchOptions
+    var locationRes = await mapsClient.ReverseSearchAddressAsync(new ReverseSearchOptions
     {
         Coordinates = new Azure.Core.GeoJson.GeoPosition(lng, lat)
     });
-    return Results.Ok(locationRes.Value.Addresses.First().Address.LocalName);
+    if(locationRes?.Value?.Addresses?.FirstOrDefault()?.Address != null)
+        return Results.Ok(locationRes.Value.Addresses.First().Address.FreeformAddress);
+
+    return Results.NotFound();
 });
 
 app.Run();
