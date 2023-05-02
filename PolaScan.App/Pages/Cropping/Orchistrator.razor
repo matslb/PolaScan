@@ -97,10 +97,10 @@
                 {
                     p.Location = timelineService.GetDateLocation(p.Date.Value, int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12")));
                 }
-              //  if(p.Location != null)
-              //  {
-              //      p.Location.Name = await polaScanClient.GetAddressFromCoordinates(p.Location);
-              //  }
+                if(p.Location != null)
+                {
+                    p.Location.Name = await polaScanClient.GetAddressFromCoordinates(p.Location);
+                }
                 StateHasChanged();
             };
         }
