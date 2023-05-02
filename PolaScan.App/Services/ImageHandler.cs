@@ -134,6 +134,7 @@ public class ImageHandler
             .Crop(PolaroidSizeWithMargin(image, polaroid.LocationInScan, 1))
             .Rotate(polaroid.Rotation)
             .Crop(polaroid.Crop)
+            .BackgroundColor(Color.White)
             );
 
         if (polaroid.AbsolutePath == null)
@@ -185,14 +186,13 @@ public class ImageHandler
         var (leftCrop, leftTop) = GetImageCorner(image, true);
         var (rightCrop, rightTop) = GetImageCorner(image, false);
 
-
-        var topCrop = leftTop + 5;
+        var topCrop = leftTop + 2;
         var width = rightCrop - leftCrop;
-        var height = (int)Math.Min(width * 1.21590909, image.Height - topCrop);
+        var height = (int)Math.Min(width * 1.235, image.Height - topCrop);
         var crop = new Rectangle(
-            x: leftCrop * testImageModifier,
+            x: (leftCrop) * testImageModifier,
             y: topCrop * testImageModifier,
-            width: width * testImageModifier,
+            width: (width) * testImageModifier,
             height: height * testImageModifier
        );
 
@@ -205,7 +205,7 @@ public class ImageHandler
         var verticalHits = new List<int>();
         var side = 0;
         var top = 0;
-        var consectutiveReq = 40;
+        var consectutiveReq = 50;
         image.ProcessPixelRows(accessor =>
         {
             var pixelRange = image.Width / 3;
@@ -244,7 +244,7 @@ public class ImageHandler
 
                                     var rowCheck = accessor.GetRowSpan(coords.y + i);
                                     ref Rgba32 p = ref rowCheck[coords.x];
-                                    p = Color.Green;
+                                    //p = Color.Green;
 
                                     if (i == consectutiveReq)
                                     {
@@ -291,17 +291,24 @@ public class ImageHandler
         var rightTop = -1;
         var pictureIsNotLevel = true;
 
+        var fromMiddle = (int)(image.Width / 3.5);
 
         while (pictureIsNotLevel && degrees < 30 && degrees > -30)
         {
+            if (degrees != 0 && Math.Abs(rightTop - leftTop) < 5)
+            {
+                (var leftCrop, leftTop) = GetImageCorner(image, true);
+                (var rightCrop, rightTop) = GetImageCorner(image, false);
+            }
+            else
+            {
+                leftTop = FindTopOfPolaroid(image, fromMiddle);
+                rightTop = FindTopOfPolaroid(image, image.Width - fromMiddle);
+            }
+
             float iterationDegrees = 0;
             var diff = Math.Abs(rightTop - leftTop);
             var deg = diff >= 2 ? (double)diff / 6 : 0.2;
-
-            var fromMiddle = (int)(image.Width / 3.5);
-
-            leftTop = FindTopOfPolaroid(image, fromMiddle);
-            rightTop = FindTopOfPolaroid(image, image.Width - fromMiddle);
 
             if (leftTop < rightTop)
                 iterationDegrees = (float)-deg;
@@ -316,7 +323,6 @@ public class ImageHandler
             image.Mutate(x =>
                  x.Rotate(iterationDegrees)
              );
-            await Helpers.SaveTempImage(image, "test.jpg");
         }
 
         image.Dispose();
@@ -338,6 +344,7 @@ public class ImageHandler
 
                 if (IsWhitePixel(currentPixel))
                 {
+                    // currentPixel = Color.Green;
                     consecutive++;
                     if (consecutive == 3)
                     {
