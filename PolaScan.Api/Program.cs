@@ -1,7 +1,8 @@
-﻿using Azure;
+﻿using System.Globalization;
+using Azure;
+using Azure.Maps.Search;
 using PolaScan.Api;
 using PolaScan.Api.Services;
-using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationInsightsTelemetry();
@@ -10,8 +11,8 @@ var app = builder.Build();
 var settings = builder.Configuration.GetSection("Settings").Get<Settings>();
 var cognitiveService = new CognitiveService(settings);
 
-//var credential = new AzureKeyCredential(settings.AzureMapsSubscriptionKey!);
-//var mapsClient = new MapsSearchClient(credential);
+var credential = new AzureKeyCredential(settings.AzureMapsSubscriptionKey!);
+var mapsClient = new MapsSearchClient(credential);
 
 app.MapGet("/", async (HttpContext ctx) =>
 {
@@ -49,10 +50,11 @@ app.MapPost("/DetectDateInImage", async Task<IResult> (HttpRequest request) =>
     return Results.Ok(res);
 
 });
-/*
+
 app.MapGet("/location-lookup", async (HttpRequest request) =>
 {
     CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
     var lat = double.Parse(request.Query["lat"]);
     var lng = double.Parse(request.Query["lng"]);
 
@@ -65,5 +67,5 @@ app.MapGet("/location-lookup", async (HttpRequest request) =>
 
     return Results.NotFound();
 });
-*/
+
 app.Run();

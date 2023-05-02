@@ -112,6 +112,7 @@
     private void Cancel()
     {
         State = new();
+        Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(State));
         Helpers.DeleteTemporaryFiles();
     }
 
