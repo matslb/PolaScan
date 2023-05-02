@@ -1,10 +1,23 @@
 ﻿@using PolaScan.App.Models;
 @using static PolaScan.App.Models.Enums;
+@using PolaScan.App.Services;
+
+@inject PolaScanApiService polaScanClient;
+@inject GoogleTimelineService timelineService;
+@inject ImageHandler imageHandler;
 
 <div class="image-block @GetClass(@Polaroid.ToBeSaved)">
 
     <div class="preview">
-        <img src="@Polaroid.PreviewData" width="300" />
+        @if(Polaroid.PreviewData == null || Polaroid.PreviewData == string.Empty)
+        {
+        <div class="placeholder">
+            <Icon IconName="spinner" Size="2"></Icon>
+        </div>
+        }else{
+            <img src="@Polaroid.PreviewData" width="300" />
+        }
+      
         <div class="button-group">
             <button class="rotate-left" @onclick="() => Rotate(-.1)"><Icon IconName="rotate-left" /></button>
             <button class="left" @onclick="() => Move(2, 0)"><Icon IconName="arrow-left" /></button>
@@ -14,27 +27,23 @@
             <button class="rotate-right" @onclick="() => Rotate(.1)"><Icon IconName="rotate-right" /></button>
             <button class="zoom-in" @onclick="() => Zoom(2)"><Icon IconName="magnifying-glass-plus" /></button>
             <button class="zoom-out" @onclick="() => Zoom(-2)"><Icon IconName="magnifying-glass-minus" /></button>
-
         </div>
     </div>
     <div class="meta">
-        <div>
-            @if(Polaroid.Date == null)
+            @if(Polaroid.Date != null)
             {
-                <Icon IconName="spinner" />
+                <div class="meta-item date">
+                        <Icon IconName="calendar-days" Size="1"/>
+                        <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Polaroid.Date.Value.ToString("yyyy-MM-dd")" />
+                </div>
             }
-            else{
-                <Icon IconName="calendar" />
-                <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Polaroid.Date.Value.ToString("yyyy-MM-dd")" />
-            }
-        </div>
-        <div>
             @if (Polaroid.Location != null)
             {
-                <Icon IconName="map-pin" />
-               <span>@Polaroid.Location.Name</span>
+                <div class="meta-item location">
+                        <Icon IconName="map-pin" Size="1"/>
+                       <span>@Polaroid.Location.Name</span>
+                </div>
             }
-        </div>
         </div>
 </div>
 
@@ -42,18 +51,18 @@
     [Parameter]
     public PolaroidWithMeta Polaroid {get;set;}
 
-    [Parameter]
-    public ImageHandler imageHander { get; set; }
-
-    [Parameter]
-    public GoogleTimelineService googleTimelineService { get; set; }
-    
     private string SetDate(string date)
     {
         Polaroid.Date = DateTimeOffset.Parse(date);
-        Polaroid.Location = googleTimelineService.GetDateLocation(Polaroid.Date!.Value, int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12")));
-        StateHasChanged();
+        UpdatePhotoMeta().ConfigureAwait(false);
         return date;
+    }
+
+    private async Task UpdatePhotoMeta()
+    {
+        Polaroid.Location = timelineService.GetDateLocation(Polaroid.Date!.Value, int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12")));
+        Polaroid.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Polaroid.Location);
+        StateHasChanged();
     }
 
     private string GetClass(bool tobesaved)
@@ -67,27 +76,28 @@
         StateHasChanged();
     }
 
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
-        if (Polaroid.PreviewData == string.Empty)
-            Move(0, 0);
+        if (Polaroid.TempFileName == null)
+            Polaroid = await imageHandler.GetPolaroidFromScan(Polaroid);
 
+       await UpdatePhotoMeta();
     }
     private async Task Move(int x, int y)
     {
         Polaroid.Crop = new SixLabors.ImageSharp.Rectangle(Polaroid.Crop.X + x, Polaroid.Crop.Y + y, Polaroid.Crop.Width, Polaroid.Crop.Height);
-        Polaroid = await imageHander.CutPolaroidFromScan(Polaroid);
+        Polaroid = await imageHandler.CutPolaroidFromScan(Polaroid);
     }
 
     private async Task Rotate(double degrees)
     {
         Polaroid.Rotation += (float)degrees;
-        Polaroid = await imageHander.CutPolaroidFromScan(Polaroid);
+        Polaroid = await imageHandler.CutPolaroidFromScan(Polaroid);
     }
 
     private async Task Zoom(int x)
     {
         Polaroid.Crop = new SixLabors.ImageSharp.Rectangle(Polaroid.Crop.X + x, Polaroid.Crop.Y + x, Polaroid.Crop.Width - x, Polaroid.Crop.Height - x );
-        Polaroid = await imageHander.CutPolaroidFromScan(Polaroid);
+        Polaroid = await imageHandler.CutPolaroidFromScan(Polaroid);
     }
 }

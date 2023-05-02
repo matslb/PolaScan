@@ -4,6 +4,12 @@
 @using System.Globalization;
 @using System.Collections.ObjectModel;
 @using System.Diagnostics;
+@using PolaScan.App.Services;
+
+@inject PolaScanApiService polaScanClient;
+@inject GoogleTimelineService timelineService;
+@inject ImageHandler imageHandler;
+
 @implements IDisposable
 
 @{
@@ -37,21 +43,18 @@
     {
         <ul class="image-preview">
             @foreach (var photo in State.PolaroidsWithMeta)
-        {
-           <li>
-            <CroppedImageBlock imageHander="@imageHandler" googleTimelineService="@timelineService" Polaroid="@photo"/>
-           </li> 
-        }
+            {
+               <li>
+                    <CroppedImageBlock Polaroid="@photo" />
+               </li> 
+            }
         </ul>
     }
 
 }
 @code {
-    private ProcessingState State { get; set; }
 
-    private PolaScanApiClient polaScanClient = new PolaScanApiClient();
-    private GoogleTimelineService timelineService = new GoogleTimelineService();
-    private ImageHandler imageHandler = new ImageHandler();
+    private ProcessingState State { get; set; }
 
     private async Task StartCropping()
     {
@@ -64,45 +67,26 @@
             State.LocationCount = 0;
             State.StatusMessage = $"Analyzing {State.ScanFileCount} {(State.ScanFileCount > 1 ? "scans" : "scan")}";
             StateHasChanged();
-            var locationDic = new Dictionary<string, List<BoundingBox>>();
 
             foreach (var file in result)
             {
                 var locations = await polaScanClient.DetectPolaroidsInImage(file.FullPath);
                 State.LocationCount += locations.Count();
                 State.StatusMessage = $"{State.LocationCount} photos detected";
-                locationDic.Add(file.FullPath , locations);
                 StateHasChanged();
-            }
-
-            foreach (var file in result)
-            {
-                (await imageHandler.GetPolaroidsFromScan(file.FullPath, locationDic[file.FullPath] )).ToList().ForEach(p =>
+                foreach (var location in locations)
                 {
-                    p.ToBeSaved = true;
-                    State.PolaroidsWithMeta.Add(p);
-                });
-                State.StatusMessage = $"{State.PolaroidsWithMeta.Count} of {State.LocationCount} photos cropped";
-                StateHasChanged();
-            }
-
-            StateHasChanged();
-
-            State.StatusMessage = $"Parsing dates and adding metadata";
-            foreach (var p in State.PolaroidsWithMeta)
-            {
-                var polaroidLipSectionName = await imageHandler.SavePolaroidLipSection(p);
-                p.Date = await polaScanClient.DetectDateInImage(polaroidLipSectionName, CultureInfo.CurrentCulture);
-                if(p.Date != null)
-                {
-                    p.Location = timelineService.GetDateLocation(p.Date.Value, int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12")));
+                    State.PolaroidsWithMeta.Add(new PolaroidWithMeta
+                        {
+                            Id = Guid.NewGuid(),
+                            ToBeSaved = true,
+                            LocationInScan = location,
+                            ScanFile = file.FullPath
+                        }
+                    );
+                    StateHasChanged();
                 }
-                if(p.Location != null)
-                {
-                    p.Location.Name = await polaScanClient.GetAddressFromCoordinates(p.Location);
-                }
-                StateHasChanged();
-            };
+            }
         }
         State.IsWorking = false;
         State.StatusMessage = $"Finished";
@@ -113,7 +97,7 @@
     {
         State = new();
         Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(State));
-        Helpers.DeleteTemporaryFiles();
+        imageHandler.ClearTempFiles();
     }
 
     private async Task ExportImages()
@@ -133,6 +117,7 @@
 
     private void SaveState()
     {
+        State ??= new();
         foreach( var p in State.PolaroidsWithMeta)
         {
             p.PreviewData = string.Empty;
@@ -142,12 +127,12 @@
 
     protected override void OnInitialized()
     {
-        RetrieveStoredState();
+       RetrieveStoredState();
     }
 
     public void Dispose()
     {
-        SaveState();
+      SaveState();
     }
 
     public void RetrieveStoredState()

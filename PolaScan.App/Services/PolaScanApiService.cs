@@ -6,13 +6,13 @@ using System.Globalization;
 using Image = SixLabors.ImageSharp.Image;
 using Size = SixLabors.ImageSharp.Size;
 
-namespace PolaScan;
+namespace PolaScan.App.Services;
 
-public class PolaScanApiClient
+public class PolaScanApiService
 {
     private readonly string baseUrl;
     private readonly HttpClient client;
-    public PolaScanApiClient()
+    public PolaScanApiService()
     {
         baseUrl = "https://polascanapi.azurewebsites.net/";
         //baseUrl = "https://localhost:7231";
@@ -71,9 +71,9 @@ public class PolaScanApiClient
         return multipartFormContent;
     }
 
-    public async Task<string> GetAddressFromCoordinates(LocationMeta location)
+    public async Task<string> GetAddressFromCoordinatesAsync(LocationMeta location)
     {
-        var result = await client.GetAsync($"/location-lookup?lat={location.Latitude}&lng={location.Longitude}");
-        return await result.Content.ReadAsStringAsync();
+        var result = await client.GetAsync($"/location-lookup?lat={location.Latitude.ToString(CultureInfo.InvariantCulture)}&lng={location.Longitude.ToString(CultureInfo.InvariantCulture)}");
+        return JsonConvert.DeserializeObject<string>(await result.Content.ReadAsStringAsync());
     }
 }

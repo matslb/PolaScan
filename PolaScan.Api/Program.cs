@@ -6,12 +6,13 @@ using PolaScan.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationInsightsTelemetry();
+
 var app = builder.Build();
 
 var settings = builder.Configuration.GetSection("Settings").Get<Settings>();
 var cognitiveService = new CognitiveService(settings);
 
-var credential = new AzureKeyCredential(settings.AzureMapsSubscriptionKey!);
+var credential = new AzureKeyCredential(settings.AzureMapsSubscriptionKey ?? "");
 var mapsClient = new MapsSearchClient(credential);
 
 app.MapGet("/", async (HttpContext ctx) =>

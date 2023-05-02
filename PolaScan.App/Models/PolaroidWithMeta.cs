@@ -5,6 +5,7 @@ namespace PolaScan.App.Models;
 
 public class PolaroidWithMeta
 {
+    public Guid Id { get; set; }
     public string FileName(int i) => $"{(Date == null ? "img" : Date.Value.Date.ToString("dd-MM-yyyy"))}-{i}.{Format}";
     public string AbsolutePath { get; set; }
     public string TempFileName { get; set; }
@@ -23,5 +24,5 @@ public class LocationMeta
 {
     public double Latitude { get; set; }
     public double Longitude { get; set; }
-    public string Name { get; set; }    
+    public string Name { get; set; }
 }

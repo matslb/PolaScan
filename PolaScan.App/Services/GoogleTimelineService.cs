@@ -1,20 +1,23 @@
 ﻿using Newtonsoft.Json;
 using PolaScan.App.Models;
 
-namespace PolaScan;
+namespace PolaScan.App.Services;
 
 public class GoogleTimelineService
 {
     private GoogleTimeline Timeline { get; set; }
 
-    public GoogleTimelineService()
+    public void Initialize()
     {
+        if (Timeline != null)
+            return;
+
         try
         {
-            using (StreamReader r = new StreamReader(Preferences.Default.Get(Constants.Settings.GoogleTimelinePath, "")))
+            using (var r = new StreamReader(Preferences.Default.Get(Constants.Settings.GoogleTimelinePath, "")))
             {
                 using JsonReader reader = new JsonTextReader(r);
-                JsonSerializer serializer = new JsonSerializer();
+                var serializer = new JsonSerializer();
                 Timeline = serializer.Deserialize<GoogleTimeline>(reader);
             }
         }
@@ -25,8 +28,9 @@ public class GoogleTimelineService
             Timeline = new() { Locations = new() };
     }
 
-    public LocationMeta? GetDateLocation(DateTimeOffset date, int timeOfDay)
+    public LocationMeta GetDateLocation(DateTimeOffset date, int timeOfDay)
     {
+        Initialize();
         var closestHour = timeOfDay;
         var possibleLocations = Timeline.Locations.Where(x => x.Date.UtcDateTime.ToShortDateString() == date.Date.ToShortDateString());
         var location = possibleLocations.OrderBy(x => x.Date.Hour > closestHour ? x.Date.Hour - closestHour : closestHour - x.Date.Hour).FirstOrDefault();

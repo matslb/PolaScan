@@ -2,12 +2,11 @@
     display: grid;
     gap: 2.5rem;
     position: relative;
-    padding: 3.5rem;
+    padding: 3.5rem 3.5rem 1.5rem;
     box-shadow: 0 0 0 1px rgb(87 87 87 / 10%), 0 8px 8px 0 rgb(234 224 218 / 30%);
     background: white;
     border-radius: 8px;
 }
-
 
 .button-group {
     width: 100%;
@@ -16,29 +15,46 @@
 .image-block .preview {
     position: relative;
     width: 300px;
-    background: black;
+    background: white;
+    border: 2px solid #00000030;
+    border-radius: 3px;
 }
-.image-block .preview img{
+
+.preview .placeholder {
+    background: #00000083;
+    min-height: 260px;
+    opacity: 1;
+    margin: 20px 20px 80px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 2px;
+}
+
+.preview img {
     display: block;
     width: 100%;
     height: auto;
 }
+
 .image-block .preview::after {
     content: "";
-    box-shadow: 0 0 0 2px #4aaa4a;
+    box-shadow: 0 0 0 2px #00000083;
     position: absolute;
     top: 20px;
     bottom: 80px;
     left: 20px;
     right: 20px;
+    border-radius: 2px;
 }
+
 /*
 .image-block.save {
     box-shadow: 0px 0px 1px 3px inset #4aaa4a;
 }
     */
 
-    .button-group button {
+.button-group button {
     position: absolute;
     height: 2rem;
     width: 2rem;
@@ -50,49 +66,65 @@
 }
 
 .button-group .left {
-    left: -2rem;
+    left: -2.5rem;
     bottom: 0;
     top: 0;
     margin: auto;
 }
 
 .button-group .right {
-    right: -2rem;
+    right: -2.5rem;
     bottom: 0;
     top: 0;
     margin: auto;
 }
 
 .button-group .top {
-    top: -2rem;
+    top: -2.5rem;
     left: 0;
     right: 0;
     margin: auto;
 }
 
 .button-group .bottom {
-    bottom: -2rem;
+    bottom: -2.5rem;
     left: 0;
     right: 0;
     margin: auto;
 }
 
 .button-group .rotate-right {
-    top: -2rem;
-    right: -2rem;
+    top: -2.5rem;
+    right: -2.5rem;
 }
 
 .button-group .rotate-left {
-    top: -2rem;
-    left: -2rem;
+    top: -2.5rem;
+    left: -2.5rem;
 }
 
 .button-group .zoom-in {
-    bottom: -2rem;
-    right: -2rem;
+    bottom: -2.5rem;
+    right: -2.5rem;
 }
 
 .button-group .zoom-out {
-    bottom: -2rem;
-    left: -2rem;
+    bottom: -2.5rem;
+    left: -2.5rem;
+}
+
+.meta {
+    margin-top: 1rem;
+}
+
+.meta-item {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    justify-items: end;
+    align-items: center;
+    margin-top: 1rem;
+    padding: 0 0.5rem 1rem;
+    border-bottom: 1px solid #00000083;
+}
+.meta-item .icon {
 }

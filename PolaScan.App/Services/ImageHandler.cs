@@ -9,17 +9,29 @@ using Color = SixLabors.ImageSharp.Color;
 using Image = SixLabors.ImageSharp.Image;
 using Size = SixLabors.ImageSharp.Size;
 
-namespace PolaScan.App;
+
+namespace PolaScan.App.Services;
 
 public class ImageHandler
 {
     public Dictionary<string, string> SavedTemporaryFiles { get; set; }
     private readonly static int testImageModifier = 4;
     private readonly static int padding = 250;
-    public ImageHandler()
+    private readonly PolaScanApiService polaScanService;
+    private readonly GoogleTimelineService timelineService;
+
+    public ImageHandler(PolaScanApiService polaScanService, GoogleTimelineService timelineService)
     {
         SavedTemporaryFiles = new();
         Directory.CreateDirectory(Helpers.GetTempFilePath(string.Empty));
+        this.polaScanService = polaScanService;
+        this.timelineService = timelineService;
+    }
+
+    public void ClearTempFiles()
+    {
+        SavedTemporaryFiles.Clear();
+        Helpers.DeleteTemporaryFiles();
     }
 
     public async Task MoveToDestination(PolaroidWithMeta polaroid)
@@ -34,7 +46,7 @@ public class ImageHandler
             uniqueName = destinationPath + $"\\{polaroid.FileName(i)}";
             i++;
         }
-        using Image image = Image.Load(polaroid.AbsolutePath);
+        using var image = Image.Load(polaroid.AbsolutePath);
         image.Metadata.ExifProfile ??= new();
         if (polaroid.Location != null)
         {
@@ -43,21 +55,35 @@ public class ImageHandler
             image.Metadata.ExifProfile.SetValue(ExifTag.GPSLatitudeRef, polaroid.Location.Latitude > 0 ? "N" : "S");
             image.Metadata.ExifProfile.SetValue(ExifTag.GPSLongitudeRef, polaroid.Location.Longitude > 0 ? "E" : "W");
             image.Metadata.ExifProfile.SetValue(ExifTag.GPSAltitude, Rational.FromDouble(100));
+            image.Metadata.ExifProfile.SetValue(ExifTag.ImageDescription, $"{polaroid.Location.Name} - {polaroid.Date.Value!.ToString("dd.MM.yyyy")}");
         }
         image.Metadata.ExifProfile.SetValue(ExifTag.Software, nameof(PolaScan));
         image.Metadata.ExifProfile.SetValue(ExifTag.Make, "Polaroid");
         image.Metadata.ExifProfile.SetValue(ExifTag.Model, Preferences.Default.Get(Constants.Settings.CameraModel, ""));
         image.Metadata.ExifProfile.SetValue(ExifTag.Copyright, Preferences.Default.Get(Constants.Settings.CopyRightText, ""));
-        
-        if(polaroid.Date != null)
+
+        if (polaroid.Date != null)
             image.Metadata.ExifProfile.SetValue(ExifTag.DateTimeOriginal, polaroid.Date.Value.ToString("yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture));
-        
+
         await image.SaveAsync(uniqueName);
     }
 
-    public async Task<string> SavePolaroidLipSection(PolaroidWithMeta polaroid)
+    public async Task<PolaroidWithMeta> GetDateOnPolaroid(PolaroidWithMeta polaroid)
     {
-        using Image image = Image.Load(polaroid.AbsolutePath);
+        var lip = await GetPolaroidLipSection(polaroid).ConfigureAwait(false);
+        polaroid.Date = await polaScanService.DetectDateInImage(lip, CultureInfo.CurrentCulture).ConfigureAwait(false);
+        if (polaroid.Date != null)
+        {
+            polaroid.Location = timelineService.GetDateLocation(polaroid.Date!.Value, int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12")));
+            polaroid.Location.Name = await polaScanService.GetAddressFromCoordinatesAsync(polaroid.Location) ?? null;
+        }
+
+        return polaroid;
+    }
+
+    private async Task<string> GetPolaroidLipSection(PolaroidWithMeta polaroid)
+    {
+        using var image = Image.Load(polaroid.AbsolutePath);
         image.Mutate(x => x
              .Crop(new Rectangle(0, Convert.ToInt32(Math.Floor(image.Height * 0.8)), image.Width, Convert.ToInt32(Math.Floor(image.Height * 0.2))))
              .Grayscale()
@@ -69,36 +95,37 @@ public class ImageHandler
         return tempFileName;
     }
 
-    public async Task<ICollection<PolaroidWithMeta>> GetPolaroidsFromScan(string scanFile, List<BoundingBox>? locations)
+    private async Task<string> SaveCompressedScanFile(string scanFile)
     {
-        var polaroidsInScan = new List<PolaroidWithMeta>();
+        var tempName = await SaveCompressedTestImage(scanFile).ConfigureAwait(false);
+        SavedTemporaryFiles.Add(scanFile, tempName);
+        return tempName;
+    }
 
-        string compressedScanFileName = await SaveCompressedTestImage(scanFile);
+    public async Task<PolaroidWithMeta> GetPolaroidFromScan(PolaroidWithMeta polaroid)
+    {
 
-        foreach (var position in locations)
+        if (!SavedTemporaryFiles.TryGetValue(polaroid.ScanFile, out var compressedScanFileName))
         {
-            var degrees = GetImageRotationDegrees(compressedScanFileName, (position));
-            var crop = GetImageCropRectangle(compressedScanFileName, (position), degrees);
-
-            var polaroid = new PolaroidWithMeta()
-            {
-                LocationInScan = position,
-                Crop = crop,
-                Format = scanFile.Split(".")[1],
-                Rotation = degrees,
-                ScanFile = scanFile,
-            };
-
-            polaroid = await CutPolaroidFromScan(polaroid);
-
-            polaroidsInScan.Add(polaroid);
+            compressedScanFileName = await SaveCompressedScanFile(polaroid.ScanFile);
         }
-        return polaroidsInScan;
+
+        var degrees = await GetImageRotationDegrees(compressedScanFileName, polaroid.LocationInScan);
+        var crop = GetImageCropRectangle(compressedScanFileName, polaroid.LocationInScan, degrees);
+
+        polaroid.Crop = crop;
+        polaroid.Format = polaroid.ScanFile.Split(".")[1];
+        polaroid.Rotation = degrees;
+
+        polaroid = await CutPolaroidFromScan(polaroid);
+        polaroid = await GetDateOnPolaroid(polaroid);
+
+        return polaroid;
     }
 
     public async Task<PolaroidWithMeta> CutPolaroidFromScan(PolaroidWithMeta polaroid)
     {
-        using Image<Rgba32> image = Image.Load<Rgba32>(polaroid.ScanFile, out var format);
+        using var image = Image.Load<Rgba32>(polaroid.ScanFile, out var format);
 
         /// Cropping image with margin to adjust rotation
         image.Mutate(x => x
@@ -136,7 +163,7 @@ public class ImageHandler
         .GaussianBlur()
         .GaussianSharpen()
         .DetectEdges()
-        .Pad((image.Width) + (padding / testImageModifier), (image.Height) + (padding / testImageModifier))
+        .Pad(image.Width + padding / testImageModifier, image.Height + padding / testImageModifier)
         .BlackWhite()
         );
 
@@ -148,7 +175,7 @@ public class ImageHandler
 
     private Rectangle GetImageCropRectangle(string fileName, BoundingBox position, float degrees)
     {
-        using Image<Rgba32> image = Image.Load<Rgba32>(fileName);
+        using var image = Image.Load<Rgba32>(fileName);
 
         image.Mutate(x => x
               .Crop(PolaroidSizeWithMargin(image, position, testImageModifier))
@@ -161,7 +188,7 @@ public class ImageHandler
 
         var topCrop = leftTop + 5;
         var width = rightCrop - leftCrop;
-        var height = (int)Math.Min((width * 1.21590909), image.Height - topCrop);
+        var height = (int)Math.Min(width * 1.21590909, image.Height - topCrop);
         var crop = new Rectangle(
             x: leftCrop * testImageModifier,
             y: topCrop * testImageModifier,
@@ -183,10 +210,10 @@ public class ImageHandler
         {
             var pixelRange = image.Width / 3;
 
-            for (int y = 10; y < accessor.Height / 2; y++)
+            for (var y = 10; y < accessor.Height / 2; y++)
             {
                 var pixelsInLine = new List<(int x, int y)>();
-                Span<Rgba32> pixelRow = accessor.GetRowSpan(y);
+                var pixelRow = accessor.GetRowSpan(y);
 
                 ref Rgba32 topPixel = ref pixelRow[pixelRange];
 
@@ -196,7 +223,7 @@ public class ImageHandler
                     pixelsInLine.Clear();
 
                     var startingpoint = left ? pixelRange : image.Width - pixelRange;
-                    for (int j = 0; j < startingpoint; j++)
+                    for (var j = 0; j < startingpoint; j++)
                     {
                         var x = left ? startingpoint - j : startingpoint + j;
 
@@ -210,14 +237,14 @@ public class ImageHandler
                         {
                             foreach (var coords in pixelsInLine)
                             {
-                                for (int i = 1; i < consectutiveReq + 1; i++)
+                                for (var i = 1; i < consectutiveReq + 1; i++)
                                 {
                                     if (!IsWhitePixel(image[coords.x, coords.y + i]))
                                         break;
 
-                                    Span<Rgba32> rowCheck = accessor.GetRowSpan(coords.y + i);
+                                    var rowCheck = accessor.GetRowSpan(coords.y + i);
                                     ref Rgba32 p = ref rowCheck[coords.x];
-                                    // p = Color.Green;
+                                    p = Color.Green;
 
                                     if (i == consectutiveReq)
                                     {
@@ -246,12 +273,13 @@ public class ImageHandler
         });
         return (side, top);
     }
-    private static bool IsWhitePixel(Rgba32 pixel) => (pixel.B >= 100 && pixel.G >= 100 && pixel.R >= 100 && pixel.A != 0)
-        || (pixel.B == 0 && pixel.G == 128 && pixel.R == 0 && pixel.A != 0);
 
-    private static float GetImageRotationDegrees(string fileName, BoundingBox position)
+    private static bool IsWhitePixel(Rgba32 pixel) => pixel.B >= 100 && pixel.G >= 100 && pixel.R >= 100 && pixel.A != 0
+        || pixel.B == 0 && pixel.G == 128 && pixel.R == 0 && pixel.A != 0;
+
+    private static async Task<float> GetImageRotationDegrees(string fileName, BoundingBox position)
     {
-        using Image<Rgba32> image = Image.Load<Rgba32>(fileName);
+        using var image = Image.Load<Rgba32>(fileName);
 
         /// Cropping image with margin to adjust rotation
         image.Mutate(x => x
@@ -259,34 +287,36 @@ public class ImageHandler
               );
         float degrees = 0;
 
-        var leftTopOfPolaroid = -1;
-        var rightTopOfPolaroid = -1;
+        var leftTop = -1;
+        var rightTop = -1;
         var pictureIsNotLevel = true;
+
 
         while (pictureIsNotLevel && degrees < 30 && degrees > -30)
         {
             float iterationDegrees = 0;
-            var diff = Math.Abs(rightTopOfPolaroid - leftTopOfPolaroid);
-            double deg = diff >= 1 ? (double)diff / 6 : 0.2;
+            var diff = Math.Abs(rightTop - leftTop);
+            var deg = diff >= 2 ? (double)diff / 6 : 0.2;
 
-            int fromMiddle = (int)(image.Width / 3.5);
+            var fromMiddle = (int)(image.Width / 3.5);
 
-            leftTopOfPolaroid = FindTopOfPolaroid(image, fromMiddle);
-            rightTopOfPolaroid = FindTopOfPolaroid(image, image.Width - fromMiddle);
+            leftTop = FindTopOfPolaroid(image, fromMiddle);
+            rightTop = FindTopOfPolaroid(image, image.Width - fromMiddle);
 
-            if (leftTopOfPolaroid < rightTopOfPolaroid)
+            if (leftTop < rightTop)
                 iterationDegrees = (float)-deg;
 
-            if (leftTopOfPolaroid > rightTopOfPolaroid)
+            if (leftTop > rightTop)
                 iterationDegrees = (float)deg;
 
-            if (leftTopOfPolaroid == rightTopOfPolaroid)
+            if (leftTop == rightTop)
                 pictureIsNotLevel = false;
 
             degrees += iterationDegrees;
             image.Mutate(x =>
                  x.Rotate(iterationDegrees)
              );
+            await Helpers.SaveTempImage(image, "test.jpg");
         }
 
         image.Dispose();
@@ -300,9 +330,9 @@ public class ImageHandler
         var targetPixel = -1;
         image.ProcessPixelRows(accessor =>
         {
-            for (int y = 0; y < accessor.Height; y++)
+            for (var y = 0; y < accessor.Height; y++)
             {
-                Span<Rgba32> pixelRow = accessor.GetRowSpan(y);
+                var pixelRow = accessor.GetRowSpan(y);
 
                 ref Rgba32 currentPixel = ref pixelRow[x];
 
@@ -324,8 +354,8 @@ public class ImageHandler
     private static Rational[] GPSRational(double x)
     {
         uint denominator = 1;
-        double absAngleInDeg = Math.Abs(x);
-        var degreesInt = (uint)(absAngleInDeg);
+        var absAngleInDeg = Math.Abs(x);
+        var degreesInt = (uint)absAngleInDeg;
         absAngleInDeg -= degreesInt;
         var minutesInt = (uint)(absAngleInDeg * 60.0);
         absAngleInDeg -= minutesInt / 60.0;
