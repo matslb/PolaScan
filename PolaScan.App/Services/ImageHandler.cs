@@ -72,7 +72,7 @@ public class ImageHandler
     {
         var lip = await GetPolaroidLipSection(polaroid).ConfigureAwait(false);
         polaroid.Date = await polaScanService.DetectDateInImage(lip, CultureInfo.CurrentCulture).ConfigureAwait(false);
-        if (polaroid.Date != null)
+        if (polaroid.Date != null && polaroid.Date != DateTimeOffset.MinValue)
         {
             polaroid.Location = timelineService.GetDateLocation(polaroid.Date!.Value, int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12")));
             polaroid.Location.Name = await polaScanService.GetAddressFromCoordinatesAsync(polaroid.Location) ?? null;
@@ -188,7 +188,7 @@ public class ImageHandler
 
         var topCrop = leftTop + 2;
         var width = rightCrop - leftCrop;
-        var height = (int)Math.Min(width * 1.235, image.Height - topCrop);
+        var height = (int)Math.Min(width * 1.23, image.Height - topCrop);
         var crop = new Rectangle(
             x: (leftCrop) * testImageModifier,
             y: topCrop * testImageModifier,

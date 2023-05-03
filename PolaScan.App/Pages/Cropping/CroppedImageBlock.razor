@@ -53,15 +53,26 @@
 
     private string SetDate(string date)
     {
-        Polaroid.Date = DateTimeOffset.Parse(date);
-        UpdatePhotoMeta().ConfigureAwait(false);
+        try
+        {
+            Polaroid.Date = DateTimeOffset.Parse(date);
+            UpdatePhotoMeta().ConfigureAwait(false);
+        }
+        catch
+        {
+            
+        }
         return date;
     }
 
     private async Task UpdatePhotoMeta()
     {
-        Polaroid.Location = timelineService.GetDateLocation(Polaroid.Date!.Value, int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12")));
-        Polaroid.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Polaroid.Location);
+        if (Polaroid.Date != null && Polaroid.Date.Value.Year != DateTimeOffset.MinValue.Year)
+        {
+            Polaroid.Location = timelineService.GetDateLocation(Polaroid.Date!.Value, int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12")));
+            if(Polaroid.Location != null)
+                Polaroid.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Polaroid.Location);
+        }
         StateHasChanged();
     }
 
@@ -80,7 +91,8 @@
     {
         if (Polaroid.TempFileName == null)
             Polaroid = await imageHandler.GetPolaroidFromScan(Polaroid);
-
+        if (string.IsNullOrEmpty(Polaroid.PreviewData))
+            Polaroid = await imageHandler.CutPolaroidFromScan(Polaroid);
        await UpdatePhotoMeta();
     }
     private async Task Move(int x, int y)
