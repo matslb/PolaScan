@@ -11,6 +11,7 @@ public class PolaroidWithMeta
     public string TempFileName { get; set; }
     public string ScanFile { get; set; }
     public DateTimeOffset? Date { get; set; }
+    public int Hour { get; set; }
     public string PreviewData { get; set; }
     public float Rotation { get; set; }
     public Rectangle Crop { get; set; }

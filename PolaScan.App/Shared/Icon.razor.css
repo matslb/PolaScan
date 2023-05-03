@@ -1,5 +1,5 @@
 ﻿
-.fa-spinner {
+.fa-spinner, .fa-circle-notch {
     animation: spin 1.2s linear infinite;
 }
 

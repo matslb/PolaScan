@@ -34,7 +34,7 @@
     if (State.IsWorking)
     {
         <div class="status-message">
-            <Icon IconName="spinner" />
+            <Icon IconName="circle-notch" Size="2" />
             <br />
             @State.StatusMessage
         </div>
@@ -60,6 +60,7 @@
     {
         State.IsStarted = true;
         State.IsWorking = true;
+        var defaultHour = int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12"));
         var result = await FilePicker.Default.PickMultipleAsync();
         if (result.Any())
         {
@@ -80,6 +81,7 @@
                         {
                             Id = Guid.NewGuid(),
                             ToBeSaved = true,
+                            Hour = defaultHour,
                             LocationInScan = location,
                             ScanFile = file.FullPath
                         }

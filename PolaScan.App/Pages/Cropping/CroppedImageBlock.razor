@@ -30,24 +30,33 @@
         </div>
     </div>
     <div class="meta">
+
             @if(Polaroid.Date != null)
             {
                 <div class="meta-item date">
-                        <Icon IconName="calendar-days" Size="1"/>
-                        <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Polaroid.Date.Value.ToString("yyyy-MM-dd")" />
+                    <Icon IconName="calendar-days" Size="1"/>
+                    <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Polaroid.Date.Value.ToString("yyyy-MM-dd")" />
                 </div>
-                <div class="meta-item date">
+                <div class="meta-item hour">
                     <Icon IconName="clock" Size="1" />
-                    <InputField Callback="@SetHour" Type="@InputType.number" Value="@Hour.ToString()" />
-                </div>
-            }
+                    <input type="number" value="@Polaroid.Hour" max="24" min="1" @onchange="SetHour" />
+            </div>
+        }
+        else
+        {
+            <div class="spinner">
+                <Icon IconName="circle-notch" Size="2" />
+                <span>Parsing date</span>
+            </div>
+        }
             @if (Polaroid.Location != null)
             {
                 <div class="meta-item location">
-                        <Icon IconName="map-pin" Size="1"/>
-                       <span>@Polaroid.Location.Name</span>
+                    <Icon IconName="map-location-dot" Size="1"/>
+                <a href="@GetLocationLink()">@Polaroid.Location.Name</a>
                 </div>
             }
+      
         </div>
 </div>
 
@@ -55,7 +64,6 @@
     [Parameter]
     public PolaroidWithMeta Polaroid {get;set;}
 
-    public int Hour { get; set; } = 12;
 
     private string SetDate(string date)
     {
@@ -71,20 +79,28 @@
         return date;
     }
 
-    private string SetHour(string hour)
+    private void SetHour(ChangeEventArgs e)
     {
-        var parsed = int.Parse(hour);
-        Hour = parsed > 24 ? 24 : parsed < 1 ? 1 : parsed;
-        
+        Polaroid.Hour = int.Parse((string)e.Value);
+
         UpdatePhotoMeta().ConfigureAwait(false);
-        return Hour.ToString();
     }
+
+    private string GetLocationLink()
+    {
+        if(Polaroid.Location?.Name != null)
+            return $"https://www.google.com/maps/place/{Polaroid.Location.Name.Replace(" ", "+")}";
+
+        return string.Empty;
+    }
+
     private async Task UpdatePhotoMeta()
     {
         if (Polaroid.Date != null && Polaroid.Date.Value.Year != DateTimeOffset.MinValue.Year)
         {
-            Polaroid.Location = timelineService.GetDateLocation(Polaroid.Date!.Value, Hour);
-            Polaroid.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Polaroid.Location);
+            Polaroid.Location = timelineService.GetDateLocation(Polaroid.Date!.Value, Polaroid.Hour);
+            if(Polaroid.Location != null)
+                Polaroid.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Polaroid.Location);
         }
         StateHasChanged();
     }

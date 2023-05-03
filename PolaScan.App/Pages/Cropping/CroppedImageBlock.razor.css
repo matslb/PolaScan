@@ -3,10 +3,8 @@
     gap: 2.5rem;
     position: relative;
     padding: 3.5rem 3.5rem 1.5rem;
-    box-shadow: 0 0 0 1px rgb(87 87 87 / 10%), 0 8px 8px 0 rgb(234 224 218 / 30%);
-    background: white;
+    background: #ffffffe4;
     border-radius: 8px;
-    max-width: 365px;
     box-sizing: content-box;
 }
 
@@ -116,24 +114,53 @@
 }
 
 .meta {
-    margin-top: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: end;
+    margin-top: .5rem;
+    display: grid;
+    grid-template-areas: "hour hour" "date date" "loc loc";
+    grid-template-colums: 1fr 1fr 1fr 1fr;
+    gap: 1rem;
+    align-content: center;
+    align-items: center;
+    padding: 1rem;
 }
 
-.meta-item {
-    display: grid;
-    grid-template-columns: 30px 1fr;
-    justify-items: end;
-    align-items: center;
-    margin-top: 1rem;
-    padding: 0 0.5rem 1rem;
-    border-bottom: 1px solid #00000083;
-    word-break: break-word;
-    width: 100%;
-    text-align: end;
+.meta .spinner{
+    position: absolute;
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content:center;
 }
-.meta-item span{
-    max-width: 15rem;
+.meta-item {
+    align-items: center;
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    gap: 0.25rem;
+    word-break: break-word;
+}
+
+.meta-item.date {
+    grid-area: date;
+    color: #14aada;
+}
+
+.meta-item.hour {
+    grid-area: hour;
+    color: #4aaa4a;
+}
+
+.meta-item.hour input {
+    width: 2.5rem;
+    border: none;
+    border-radius: 3px;
+}
+
+.meta-item.location {
+    grid-area: loc;
+    color: #d43c84;
+}
+.meta-item.location a {
+    color: black;
+    max-width: 14rem;
 }
