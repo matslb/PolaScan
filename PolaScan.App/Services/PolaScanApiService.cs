@@ -71,8 +71,10 @@ public class PolaScanApiService
         return multipartFormContent;
     }
 
-    public async Task<string> GetAddressFromCoordinatesAsync(LocationMeta location)
+    public async Task<string> GetAddressFromCoordinatesAsync(LocationMeta? location)
     {
+        if (location == null)
+            return null;
         var result = await client.GetAsync($"/location-lookup?lat={location.Latitude.ToString(CultureInfo.InvariantCulture)}&lng={location.Longitude.ToString(CultureInfo.InvariantCulture)}");
         return JsonConvert.DeserializeObject<string>(await result.Content.ReadAsStringAsync());
     }

@@ -70,8 +70,7 @@
         if (Polaroid.Date != null && Polaroid.Date.Value.Year != DateTimeOffset.MinValue.Year)
         {
             Polaroid.Location = timelineService.GetDateLocation(Polaroid.Date!.Value, int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12")));
-            if(Polaroid.Location != null)
-                Polaroid.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Polaroid.Location);
+            Polaroid.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Polaroid.Location);
         }
         StateHasChanged();
     }
