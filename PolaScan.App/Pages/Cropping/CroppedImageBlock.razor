@@ -36,6 +36,10 @@
                         <Icon IconName="calendar-days" Size="1"/>
                         <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Polaroid.Date.Value.ToString("yyyy-MM-dd")" />
                 </div>
+                <div class="meta-item date">
+                    <Icon IconName="clock" Size="1" />
+                    <InputField Callback="@SetHour" Type="@InputType.number" Value="@Hour.ToString()" />
+                </div>
             }
             @if (Polaroid.Location != null)
             {
@@ -51,6 +55,8 @@
     [Parameter]
     public PolaroidWithMeta Polaroid {get;set;}
 
+    public int Hour { get; set; } = 12;
+
     private string SetDate(string date)
     {
         try
@@ -60,16 +66,24 @@
         }
         catch
         {
-            
+
         }
         return date;
     }
 
+    private string SetHour(string hour)
+    {
+        var parsed = int.Parse(hour);
+        Hour = parsed > 24 ? 24 : parsed < 1 ? 1 : parsed;
+        
+        UpdatePhotoMeta().ConfigureAwait(false);
+        return Hour.ToString();
+    }
     private async Task UpdatePhotoMeta()
     {
         if (Polaroid.Date != null && Polaroid.Date.Value.Year != DateTimeOffset.MinValue.Year)
         {
-            Polaroid.Location = timelineService.GetDateLocation(Polaroid.Date!.Value, int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12")));
+            Polaroid.Location = timelineService.GetDateLocation(Polaroid.Date!.Value, Hour);
             Polaroid.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Polaroid.Location);
         }
         StateHasChanged();
