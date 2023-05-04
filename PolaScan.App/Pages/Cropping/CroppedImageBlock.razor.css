@@ -124,14 +124,16 @@
     padding: 1rem;
 }
 
-.meta .spinner{
+.meta .spinner {
     position: absolute;
     margin: 0 auto;
     left: 0;
     right: 0;
     display: flex;
-    justify-content:center;
+    flex-direction: column;
+    align-items: center;
 }
+
 .meta-item {
     align-items: center;
     display: grid;
@@ -160,6 +162,7 @@
     grid-area: loc;
     color: #d43c84;
 }
+
 .meta-item.location a {
     color: black;
     max-width: 14rem;
