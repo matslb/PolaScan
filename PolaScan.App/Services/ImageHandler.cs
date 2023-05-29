@@ -15,7 +15,7 @@ namespace PolaScan.App.Services;
 public class ImageHandler
 {
     public Dictionary<string, string> SavedTemporaryFiles { get; set; }
-    private readonly static int testImageModifier = 4;
+    private readonly static int testImageModifier = 6;
     private readonly static int padding = 250;
     private readonly PolaScanApiService polaScanService;
     private readonly GoogleTimelineService timelineService;
@@ -128,7 +128,7 @@ public class ImageHandler
     {
         using var image = Image.Load<Rgba32>(polaroid.ScanFile, out var format);
 
-        /// Cropping image with margin to adjust rotation
+        // Cropping image with margin to adjust rotation
         image.Mutate(x => x
             .Pad(image.Width + padding, image.Height + padding));
         image.Mutate(x => x
@@ -282,7 +282,7 @@ public class ImageHandler
     {
         using var image = Image.Load<Rgba32>(fileName);
 
-        /// Cropping image with margin to adjust rotation
+        // Cropping image with margin to adjust rotation
         image.Mutate(x => x
               .Crop(PolaroidSizeWithMargin(image, position, testImageModifier))
               );

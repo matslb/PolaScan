@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
+﻿using System.Globalization;
+using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 using SixLabors.ImageSharp;
 
 namespace PolaScan.App.Models;

@@ -1,0 +1,92 @@
+﻿@using GoogleMapsComponents
+@using GoogleMapsComponents.Maps
+@using PolaScan.App.Models;
+
+<GoogleMap @ref="@map" Id="map" Height="100%" Options="@CreateMapOptions()" OnAfterInit="@OnAfterInitAsync" />
+
+@code {
+
+    [Parameter]
+    public LocationMeta LocationMeta { get; set; }
+
+    [Parameter]
+    public Action<LocationMeta> LocationUpdateCallback { get; set; }
+
+    private GoogleMap map;
+    private Stack<Marker> markers = new Stack<Marker>();
+
+    private MapOptions CreateMapOptions() => new MapOptions()
+            {
+                Zoom = 15,
+                DisableDoubleClickZoom = true,
+                FullscreenControl = false,
+                Center = new LatLngLiteral()
+                {
+                    Lat = LocationMeta?.Latitude ?? 0,
+                    Lng = LocationMeta?.Longitude ?? 0
+                },
+                MapTypeId = MapTypeId.Hybrid
+            };
+
+    private async Task OnAfterInitAsync()
+    {
+        await map.InteropObject.AddListener("dblclick", OnDoubleClick);
+        await SetMarker();
+
+    }
+
+    private void OnDoubleClick()
+    {
+        SetMarker().ConfigureAwait(false);
+    }
+
+    public async Task SetMarker(LocationMeta locationMeta)
+    {
+        await RemoveMarker();
+        var location = new LatLngLiteral { Lat = locationMeta.Latitude, Lng = locationMeta.Longitude };
+        var marker = await Marker.CreateAsync(map.JsRuntime,
+            new MarkerOptions()
+                {
+                    Position = location,
+                    Map = map.InteropObject,
+                    Draggable = false
+                });
+       await map.InteropObject.SetCenter(location);
+        markers.Push(marker);
+    }
+
+    private async Task SetMarker()
+    {
+        await RemoveMarker();
+        var position = await map.InteropObject.GetCenter();    
+        var marker = await Marker.CreateAsync(map.JsRuntime,
+            new MarkerOptions()
+                {
+                    Position = position,
+                    Map = map.InteropObject,
+                    Draggable = false
+                });
+
+        markers.Push(marker);
+
+        LocationUpdateCallback(new LocationMeta
+            {
+                Latitude = position.Lat,
+                Longitude = position.Lng
+            });
+
+    }
+
+    private async Task RemoveMarker()
+    {
+        if (!markers.Any())
+        {
+            return;
+        }
+
+        var lastMarker = markers.Pop();
+        await lastMarker.SetMap(null);
+    }
+
+
+}

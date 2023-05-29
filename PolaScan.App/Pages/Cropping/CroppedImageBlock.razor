@@ -6,6 +6,7 @@
 @inject GoogleTimelineService timelineService;
 @inject ImageHandler imageHandler;
 
+
 <div class="image-block @GetClass(@Polaroid.ToBeSaved)">
 
     <div class="preview">
@@ -53,10 +54,14 @@
             {
                 <div class="meta-item location">
                     <Icon IconName="map-location-dot" Size="1"/>
-                <a href="@GetLocationLink()">@Polaroid.Location.Name</a>
+                    <div class="map_wrapper">
+                        <a href="@GetLocationLink()">@Polaroid.Location.Name</a>
+                    <LocationSelector @ref="@locationSelector" LocationMeta="@Polaroid.Location" LocationUpdateCallback="UpdateLocation" />
+                    </div>
                 </div>
             }
-      
+
+
         </div>
 </div>
 
@@ -64,6 +69,7 @@
     [Parameter]
     public PolaroidWithMeta Polaroid {get;set;}
 
+    private LocationSelector locationSelector{ get; set; }
 
     private string SetDate(string date)
     {
@@ -71,6 +77,8 @@
         {
             Polaroid.Date = DateTimeOffset.Parse(date);
             UpdatePhotoMeta().ConfigureAwait(false);
+            if (Polaroid.Location != null)
+                locationSelector.SetMarker(Polaroid.Location).ConfigureAwait(false);
         }
         catch
         {
@@ -82,8 +90,16 @@
     private void SetHour(ChangeEventArgs e)
     {
         Polaroid.Hour = int.Parse((string)e.Value);
-
         UpdatePhotoMeta().ConfigureAwait(false);
+        if(Polaroid.Location != null)
+            locationSelector.SetMarker(Polaroid.Location).ConfigureAwait(false);
+    }
+
+    private void UpdateLocation(LocationMeta locationMeta)
+    {
+        Polaroid.Location = locationMeta;
+        UpdatePhotoMeta(false).ConfigureAwait(false);
+       
     }
 
     private string GetLocationLink()
@@ -94,13 +110,17 @@
         return string.Empty;
     }
 
-    private async Task UpdatePhotoMeta()
+    private async Task UpdatePhotoMeta(bool useTimeLineService = true)
     {
         if (Polaroid.Date != null && Polaroid.Date.Value.Year != DateTimeOffset.MinValue.Year)
         {
-            Polaroid.Location = timelineService.GetDateLocation(Polaroid.Date!.Value, Polaroid.Hour);
+            if(useTimeLineService)
+                Polaroid.Location = timelineService.GetDateLocation(Polaroid.Date!.Value, Polaroid.Hour);
+            
             if(Polaroid.Location != null)
+            {
                 Polaroid.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Polaroid.Location);
+            }
         }
         StateHasChanged();
     }
@@ -118,12 +138,14 @@
 
     protected override async void OnInitialized()
     {
+
         if (Polaroid.TempFileName == null)
             Polaroid = await imageHandler.GetPolaroidFromScan(Polaroid);
         if (string.IsNullOrEmpty(Polaroid.PreviewData))
             Polaroid = await imageHandler.CutPolaroidFromScan(Polaroid);
-       await UpdatePhotoMeta();
+        await UpdatePhotoMeta();
     }
+
     private async Task Move(int x, int y)
     {
         Polaroid.Crop = new SixLabors.ImageSharp.Rectangle(Polaroid.Crop.X + x, Polaroid.Crop.Y + y, Polaroid.Crop.Width, Polaroid.Crop.Height);
