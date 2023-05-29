@@ -18,7 +18,7 @@
         {
             <Button class="blue btn" @onclick="StartCropping">Select scans</Button>
         }
-        @if (State.IsStarted && !State.IsExported && !State.IsWorking)
+        @if (State.PolaroidsWithMeta.Count > 0 && !State.IsWorking)
         {
             <button class="green btn" @onclick="ExportImages">Save selected</button>
         }

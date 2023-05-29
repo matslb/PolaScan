@@ -37,6 +37,7 @@
     private string UpdateSetting(string value){
         Preferences.Default.Set(Slug, value);
         Value = value;
+        StateHasChanged();
         return value;
     }
 }

@@ -55,7 +55,7 @@ public class ImageHandler
             image.Metadata.ExifProfile.SetValue(ExifTag.GPSLatitudeRef, polaroid.Location.Latitude > 0 ? "N" : "S");
             image.Metadata.ExifProfile.SetValue(ExifTag.GPSLongitudeRef, polaroid.Location.Longitude > 0 ? "E" : "W");
             image.Metadata.ExifProfile.SetValue(ExifTag.GPSAltitude, Rational.FromDouble(100));
-            image.Metadata.ExifProfile.SetValue(ExifTag.ImageDescription, $"{polaroid.Location.Name} - {polaroid.Date.Value!.ToString("dd.MM.yyyy")}");
+            image.Metadata.ExifProfile.SetValue(ExifTag.ImageDescription, $"{polaroid.Location.Name}");
         }
         image.Metadata.ExifProfile.SetValue(ExifTag.Software, nameof(PolaScan));
         image.Metadata.ExifProfile.SetValue(ExifTag.Make, "Polaroid");
@@ -63,7 +63,11 @@ public class ImageHandler
         image.Metadata.ExifProfile.SetValue(ExifTag.Copyright, Preferences.Default.Get(Constants.Settings.CopyRightText, ""));
 
         if (polaroid.Date != null)
-            image.Metadata.ExifProfile.SetValue(ExifTag.DateTimeOriginal, polaroid.Date.Value.ToString("yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture));
+        {
+            var hour = new TimeOnly(polaroid.Hour, 0, 0);
+            var dateTime = polaroid.Date.Value.ToDateTime(hour, DateTimeKind.Unspecified);
+            image.Metadata.ExifProfile.SetValue(ExifTag.DateTimeOriginal, dateTime.ToString("yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture));
+        }
 
         await image.SaveAsync(uniqueName);
     }
@@ -75,8 +79,6 @@ public class ImageHandler
         if (polaroid.Date != null && polaroid.Date != DateOnly.MinValue)
         {
             polaroid.Location = timelineService.GetDateLocation(polaroid.Date!.Value, polaroid.Hour);
-            //   if (polaroid.Location != null && string.IsNullOrEmpty(polaroid.Location.Name))
-            //   polaroid.Location.Name = await polaScanService.GetAddressFromCoordinatesAsync(polaroid.Location).ConfigureAwait(false);
         }
 
         return polaroid;
@@ -245,7 +247,6 @@ public class ImageHandler
 
                                     var rowCheck = accessor.GetRowSpan(coords.y + i);
                                     ref Rgba32 p = ref rowCheck[coords.x];
-                                    //p = Color.Green;
 
                                     if (i == consectutiveReq)
                                     {
@@ -345,7 +346,6 @@ public class ImageHandler
 
                 if (IsWhitePixel(currentPixel))
                 {
-                    // currentPixel = Color.Green;
                     consecutive++;
                     if (consecutive == 3)
                     {
