@@ -75,8 +75,8 @@ public class ImageHandler
         if (polaroid.Date != null && polaroid.Date != DateOnly.MinValue)
         {
             polaroid.Location = timelineService.GetDateLocation(polaroid.Date!.Value, polaroid.Hour);
-            if (polaroid.Location != null)
-                polaroid.Location.Name = await polaScanService.GetAddressFromCoordinatesAsync(polaroid.Location).ConfigureAwait(false);
+            //   if (polaroid.Location != null && string.IsNullOrEmpty(polaroid.Location.Name))
+            //   polaroid.Location.Name = await polaScanService.GetAddressFromCoordinatesAsync(polaroid.Location).ConfigureAwait(false);
         }
 
         return polaroid;

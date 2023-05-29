@@ -121,7 +121,6 @@
     {
         Polaroid.Location = locationMeta;
         UpdatePhotoMeta(false).ConfigureAwait(false);
-
     }
 
     private string GetLocationLink()
@@ -139,8 +138,8 @@
             if(useTimeLineService)
                 Polaroid.Location = timelineService.GetDateLocation(Polaroid.Date!.Value, Polaroid.Hour);
 
-            if(Polaroid.Location != null)
-            {
+           if(Polaroid.Location != null && string.IsNullOrEmpty(Polaroid.Location.Name))
+          {
                 Polaroid.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Polaroid.Location);
             }
         }

@@ -31,7 +31,7 @@
     private async Task OnAfterInitAsync()
     {
         await map.InteropObject.AddListener("dblclick", OnDoubleClick);
-        await SetMarker();
+        await SetMarker(LocationMeta);
 
     }
 

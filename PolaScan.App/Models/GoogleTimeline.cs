@@ -2,5 +2,5 @@
 
 public class GoogleTimeline
 {
-    public List<GoogleTimelineLocation> Locations { get; set; }
+    public List<GoogleTimelineLocation> Locations { get; set; } = new List<GoogleTimelineLocation>();
 }

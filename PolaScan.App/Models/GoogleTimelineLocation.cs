@@ -9,8 +9,10 @@ public class GoogleTimelineLocation
 
     [JsonProperty("longitudeE7")]
     public int Longitude { get; set; }
-    public int Accuracy { get; set; }
+    public float Accuracy { get; set; }
 
     [JsonProperty("timestamp")]
     public DateTimeOffset Date { get; set; }
+
+    public string Name { get; set; }
 }
