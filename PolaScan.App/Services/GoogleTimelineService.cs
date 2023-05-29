@@ -28,11 +28,11 @@ public class GoogleTimelineService
             Timeline = new() { Locations = new() };
     }
 
-    public LocationMeta GetDateLocation(DateTimeOffset date, int timeOfDay)
+    public LocationMeta GetDateLocation(DateOnly date, int timeOfDay)
     {
         Initialize();
         var closestHour = timeOfDay;
-        var possibleLocations = Timeline.Locations.Where(x => x.Date.UtcDateTime.ToShortDateString() == date.Date.ToShortDateString());
+        var possibleLocations = Timeline.Locations.Where(x => x.Date.UtcDateTime.ToShortDateString() == date.ToShortDateString());
         var location = possibleLocations.OrderBy(x => x.Date.Hour > closestHour ? x.Date.Hour - closestHour : closestHour - x.Date.Hour).FirstOrDefault();
         return location != null ? new LocationMeta { Latitude = location.Latitude / 1e7, Longitude = location.Longitude / 1e7 } : null;
     }

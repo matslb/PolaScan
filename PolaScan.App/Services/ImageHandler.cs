@@ -72,7 +72,7 @@ public class ImageHandler
     {
         var lip = await GetPolaroidLipSection(polaroid).ConfigureAwait(false);
         polaroid.Date = await polaScanService.DetectDateInImage(lip, CultureInfo.CurrentCulture).ConfigureAwait(false);
-        if (polaroid.Date != null && polaroid.Date != DateTimeOffset.MinValue)
+        if (polaroid.Date != null && polaroid.Date != DateOnly.MinValue)
         {
             polaroid.Location = timelineService.GetDateLocation(polaroid.Date!.Value, polaroid.Hour);
             if (polaroid.Location != null)
@@ -111,15 +111,15 @@ public class ImageHandler
             compressedScanFileName = await SaveCompressedScanFile(polaroid.ScanFile);
         }
 
-        var degrees = await GetImageRotationDegrees(compressedScanFileName, polaroid.LocationInScan);
+        var degrees = await GetImageRotationDegrees(compressedScanFileName, polaroid.LocationInScan).ConfigureAwait(false);
         var crop = GetImageCropRectangle(compressedScanFileName, polaroid.LocationInScan, degrees);
 
         polaroid.Crop = crop;
         polaroid.Format = polaroid.ScanFile.Split(".")[1];
         polaroid.Rotation = degrees;
 
-        polaroid = await CutPolaroidFromScan(polaroid);
-        polaroid = await GetDateOnPolaroid(polaroid);
+        polaroid = await CutPolaroidFromScan(polaroid).ConfigureAwait(false);
+        polaroid = await GetDateOnPolaroid(polaroid).ConfigureAwait(false);
 
         return polaroid;
     }

@@ -12,4 +12,11 @@ public class Enums
         select,
         check
     }
+    public enum AppColor
+    {
+        red,
+        green,
+        blue,
+        white
+    }
 }

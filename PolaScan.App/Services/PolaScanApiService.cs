@@ -40,20 +40,20 @@ public class PolaScanApiService
         return JsonConvert.DeserializeObject<List<BoundingBox>>(await result.Content.ReadAsStringAsync());
     }
 
-    public async Task<DateTimeOffset> DetectDateInImage(string tempImagePath, CultureInfo cultureInfo)
+    public async Task<DateOnly?> DetectDateInImage(string tempImagePath, CultureInfo cultureInfo)
     {
         var content = GetImageStreamContent(tempImagePath);
 
-        var result = await client.PostAsync("/DetectDateInImage", content);
+        var result = await client.PostAsync("/DetectDateInImage", content).ConfigureAwait(false);
         content.Dispose();
 
         var res = JsonConvert.DeserializeObject<string>(await result.Content.ReadAsStringAsync());
 
-        if (DateTimeOffset.TryParse(res.Replace("\\n", string.Empty), cultureInfo, DateTimeStyles.AssumeUniversal, out var dateTime))
+        if (DateTime.TryParse(res.Replace("\\n", string.Empty), cultureInfo, DateTimeStyles.AssumeUniversal, out var date))
         {
-            return dateTime.AddHours(12);
+            return DateOnly.FromDateTime(date);
         }
-        return DateTimeOffset.MinValue;
+        return null;
     }
 
     private MultipartFormDataContent GetImageStreamContent(string fileName)

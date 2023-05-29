@@ -1,35 +1,32 @@
-﻿.image-preview{
+﻿.image-preview {
     display: flex;
     flex-wrap: wrap;
     list-style: none;
     gap: 1.5rem;
     width: 100%;
-    padding: 1rem;
+    padding: 1.5rem;
     justify-content: center;
 }
 
-.button-menu{
+.button-menu {
     display: flex;
     justify-content: center;
     gap: 1rem;
 }
-.btn{
-    color: white;
-}
 
-.green {
-    background:#4aaa4a;
-}
-
-.blue {
-    background: #14aada;
-}
-
-.red {
-    background: #d43c84;
-}
 .status-message {
     color: white;
     text-align: center;
-    margin: 1rem auto; 
+    margin: 1rem auto;
+}
+
+.image-item{
+    position: relative;
+}
+.image-item button {
+    position: absolute;
+    left: -1rem;
+    top: -1rem;
+    padding: 0.25rem .5rem;
+    z-index: 1;
 }

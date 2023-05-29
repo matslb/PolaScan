@@ -48,12 +48,6 @@
     border-radius: 2px;
 }
 
-/*
-.image-block.save {
-    box-shadow: 0px 0px 1px 3px inset #4aaa4a;
-}
-    */
-
 .button-group button {
     position: absolute;
     height: 2rem;
@@ -124,16 +118,6 @@
     padding: 1rem;
 }
 
-    .meta .spinner {
-        position: absolute;
-        margin: 0 auto;
-        left: 0;
-        right: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
 .meta-item {
     align-items: center;
     display: grid;
@@ -142,34 +126,35 @@
     word-break: break-word;
 }
 
-    .meta-item.date {
-        grid-area: date;
-        color: #14aada;
-    }
+.meta-item.date {
+    grid-area: date;
+    color: #14aada;
+}
 
-    .meta-item.hour {
-        grid-area: hour;
-        color: #4aaa4a;
-    }
+.meta-item.hour {
+    grid-area: hour;
+    color: #4aaa4a;
+}
 
-        .meta-item.hour input {
-            width: 2.5rem;
-            border: none;
-            border-radius: 3px;
-        }
+.meta-item.hour input {
+    width: 2.5rem;
+    border: none;
+    border-radius: 3px;
+}
 
-    .meta-item.location {
-        grid-area: loc;
-        color: #d43c84;
-    }
+.meta-item.location {
+    grid-area: loc;
+    color: #d43c84;
+    display:block
+}
 
-        .meta-item.location a {
-            color: black;
-            max-width: 14rem;
-        }
+.meta-item.location a {
+    color: black;
+    max-width: 14rem;
+}
 
 .map_wrapper {
     height: 150px;
     width: 100%;
-    max-width: 100%;
+    max-width: 15rem;
 }

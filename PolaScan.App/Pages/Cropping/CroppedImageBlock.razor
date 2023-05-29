@@ -18,7 +18,7 @@
         }else{
             <img src="@Polaroid.PreviewData" width="300" />
         }
-      
+        
         <div class="button-group">
             <button class="rotate-left" @onclick="() => Rotate(-.1)"><Icon IconName="rotate-left" /></button>
             <button class="left" @onclick="() => Move(2, 0)"><Icon IconName="arrow-left" /></button>
@@ -32,57 +32,79 @@
     </div>
     <div class="meta">
 
-            @if(Polaroid.Date != null)
-            {
-                <div class="meta-item date">
-                    <Icon IconName="calendar-days" Size="1"/>
-                    <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Polaroid.Date.Value.ToString("yyyy-MM-dd")" />
+        @if(Polaroid.Date != null)
+        {
+            <div class="meta-item date">
+                <Icon IconName="calendar-days" Size="1"/>
+                <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Polaroid.Date.Value.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="meta-item hour">
+                <Icon IconName="clock" Size="1" />
+                <input type="number" value="@Polaroid.Hour" max="24" min="1" @onchange="SetHour" />
+            </div>
+        }
+        else if (DetectDateHasRun && Polaroid.Date is null)
+        {
+            <div class="meta-item date">
+                <Icon IconName="calendar-days" Size="1" />
+                <div>
+                    <button class="btn green" @onclick="async() => Polaroid.Date = DateOnly.FromDateTime(DateTime.Today)">Add Date</button>
                 </div>
-                <div class="meta-item hour">
-                    <Icon IconName="clock" Size="1" />
-                    <input type="number" value="@Polaroid.Hour" max="24" min="1" @onchange="SetHour" />
             </div>
         }
         else
         {
-            <div class="spinner">
-                <Icon IconName="circle-notch" Size="2" />
-                <span>Detecting date</span>
+            <div class="meta-item date">
+                <Icon IconName="calendar-days" Size="1" />
+                <div>
+                    <button disabled class="btn green"><Icon IconName="circle-notch" Size="1" /><span>Detecting date</span></button>
+                </div>
             </div>
         }
+
+        <div class="meta-item location">
+            <Icon IconName="map-location-dot" Size="1"/>
+            <div>
             @if (Polaroid.Location != null)
             {
-                <div class="meta-item location">
-                    <Icon IconName="map-location-dot" Size="1"/>
-                    <div class="map_wrapper">
-                        <a href="@GetLocationLink()">@Polaroid.Location.Name</a>
+                <a href="@GetLocationLink()">@Polaroid.Location.Name</a>
+                <div class="map_wrapper">
                     <LocationSelector @ref="@locationSelector" LocationMeta="@Polaroid.Location" LocationUpdateCallback="UpdateLocation" />
-                    </div>
                 </div>
             }
-
-
+            else
+            {
+                <button class="btn red" @onclick="async() =>
+                    {
+                        var location = await Geolocation.Default.GetLastKnownLocationAsync();
+                        Polaroid.Location = new LocationMeta{
+                            Latitude = location.Latitude,
+                            Longitude = location.Longitude
+                        };
+                    }">Add location</button>
+            }
+            </div>
         </div>
+    </div>
 </div>
 
 @code {
     [Parameter]
     public PolaroidWithMeta Polaroid {get;set;}
-
-    private LocationSelector locationSelector{ get; set; }
+    private bool DetectDateHasRun = false;
+    private LocationSelector locationSelector { get; set; }
 
     private string SetDate(string date)
     {
         try
         {
-            Polaroid.Date = DateTimeOffset.Parse(date);
+            Polaroid.Date = DateOnly.Parse(date);
             UpdatePhotoMeta().ConfigureAwait(false);
             if (Polaroid.Location != null)
-                locationSelector.SetMarker(Polaroid.Location).ConfigureAwait(false);
+                locationSelector?.SetMarker(Polaroid.Location).ConfigureAwait(false);
         }
         catch
         {
-
         }
         return date;
     }
@@ -92,14 +114,14 @@
         Polaroid.Hour = int.Parse((string)e.Value);
         UpdatePhotoMeta().ConfigureAwait(false);
         if(Polaroid.Location != null)
-            locationSelector.SetMarker(Polaroid.Location).ConfigureAwait(false);
+            locationSelector?.SetMarker(Polaroid.Location).ConfigureAwait(false);
     }
 
     private void UpdateLocation(LocationMeta locationMeta)
     {
         Polaroid.Location = locationMeta;
         UpdatePhotoMeta(false).ConfigureAwait(false);
-       
+
     }
 
     private string GetLocationLink()
@@ -116,7 +138,7 @@
         {
             if(useTimeLineService)
                 Polaroid.Location = timelineService.GetDateLocation(Polaroid.Date!.Value, Polaroid.Hour);
-            
+
             if(Polaroid.Location != null)
             {
                 Polaroid.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Polaroid.Location);
@@ -138,11 +160,11 @@
 
     protected override async void OnInitialized()
     {
-
         if (Polaroid.TempFileName == null)
             Polaroid = await imageHandler.GetPolaroidFromScan(Polaroid);
         if (string.IsNullOrEmpty(Polaroid.PreviewData))
             Polaroid = await imageHandler.CutPolaroidFromScan(Polaroid);
+        DetectDateHasRun = true;
         await UpdatePhotoMeta();
     }
 

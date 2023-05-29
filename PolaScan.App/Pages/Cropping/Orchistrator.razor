@@ -14,9 +14,9 @@
 
 @{
     <div class="button-menu">
-        @if (!State.IsStarted)
+        @if (!State.IsWorking)
         {
-            <Button class="green btn" @onclick="StartCropping">Select scans</Button>
+            <Button class="blue btn" @onclick="StartCropping">Select scans</Button>
         }
         @if (State.IsStarted && !State.IsExported && !State.IsWorking)
         {
@@ -24,11 +24,7 @@
         }
         @if (State.IsExported)
         {
-            <button class="blue btn" @onclick="OpenDestinationFolder">See photos</button>
-        }
-        @if (State.IsStarted)
-        {            
-            <Button class="red btn" @onclick="Cancel">Cancel</Button>
+            <button class="red btn" @onclick="OpenDestinationFolder">See photos</button>
         }
     </div>
     if (State.IsWorking)
@@ -44,7 +40,8 @@
         <ul class="image-preview">
             @foreach (var photo in State.PolaroidsWithMeta)
             {
-               <li>
+               <li class="image-item">
+                    <button class="btn red zoom-out" @onclick="() => State.PolaroidsWithMeta.Remove(photo)"><Icon IconName="trash-can" /></button>
                     <CroppedImageBlock Polaroid="@photo" />
                </li> 
             }

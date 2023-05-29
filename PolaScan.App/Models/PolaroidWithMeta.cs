@@ -7,11 +7,11 @@ namespace PolaScan.App.Models;
 public class PolaroidWithMeta
 {
     public Guid Id { get; set; }
-    public string FileName(int i) => $"{(Date == null ? "img" : Date.Value.Date.ToString("dd-MM-yyyy"))}-{i}.{Format}";
+    public string FileName(int i) => $"{(Date == null ? "img" : Date.Value.ToString("dd-MM-yyyy"))}-{i}.{Format}";
     public string AbsolutePath { get; set; }
     public string TempFileName { get; set; }
     public string ScanFile { get; set; }
-    public DateTimeOffset? Date { get; set; }
+    public DateOnly? Date { get; set; }
     public int Hour { get; set; }
     public string PreviewData { get; set; }
     public float Rotation { get; set; }
