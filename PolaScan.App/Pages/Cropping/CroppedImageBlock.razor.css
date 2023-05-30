@@ -21,7 +21,7 @@
 }
 
 .preview .placeholder {
-    background: #00000083;
+    background: black;
     min-height: 260px;
     opacity: 1;
     margin: 20px 20px 80px 20px;
@@ -110,8 +110,6 @@
 .meta {
     margin-top: .5rem;
     display: grid;
-    grid-template-areas: "hour hour" "date date" "loc loc";
-    grid-template-colums: 1fr 1fr 1fr 1fr;
     gap: 1rem;
     align-content: center;
     align-items: center;
@@ -119,21 +117,11 @@
 }
 
 .meta-item {
-    align-items: center;
+    align-items: baseline;
     display: grid;
     grid-template-columns: 1.5rem 1fr;
     gap: 0.25rem;
     word-break: break-word;
-}
-
-.meta-item.date {
-    grid-area: date;
-    color: #14aada;
-}
-
-.meta-item.hour {
-    grid-area: hour;
-    color: #4aaa4a;
 }
 
 .meta-item.hour input {
@@ -142,19 +130,15 @@
     border-radius: 3px;
 }
 
-.meta-item.location {
-    grid-area: loc;
-    color: #d43c84;
-    display:block
-}
-
 .meta-item.location a {
     color: black;
-    max-width: 14rem;
+    display: block;
+    max-width: 15rem;
 }
 
 .map_wrapper {
     height: 150px;
     width: 100%;
-    max-width: 15rem;
+    border-radius: 3px;
+    overflow: hidden;
 }

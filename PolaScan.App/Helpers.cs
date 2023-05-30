@@ -19,6 +19,12 @@ public static class Helpers
         return filename;
     }
 
+    public static void DeleteTemporaryFile(string filename)
+    {
+        filename = GetAppDataFilePath(GetTempFilePath(filename));
+        File.Delete(filename);
+    }
+
     public static void DeleteTemporaryFiles()
     {
         Directory.CreateDirectory(GetTempFilePath(string.Empty));

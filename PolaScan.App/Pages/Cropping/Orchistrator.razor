@@ -16,11 +16,11 @@
     <div class="button-menu">
         @if (!State.IsWorking)
         {
-            <Button class="blue btn" @onclick="StartCropping">Select scans</Button>
+            <Button class="green btn" @onclick="SelectScans">Select scans</Button>
         }
         @if (State.PolaroidsWithMeta.Count > 0 && !State.IsWorking)
         {
-            <button class="green btn" @onclick="ExportImages">Save selected</button>
+            <button class="blue btn" @onclick="ExportImages">Save selected</button>
         }
         @if (State.IsExported)
         {
@@ -38,22 +38,22 @@
     if (State.IsStarted)
     {
         <ul class="image-preview">
+                
             @foreach (var photo in State.PolaroidsWithMeta)
             {
-               <li class="image-item">
-                    <button class="btn red zoom-out" @onclick="() => State.PolaroidsWithMeta.Remove(photo)"><Icon IconName="trash-can" /></button>
+                <li class="image-item">
+                    <button class="btn red zoom-out" @onclick="() => RemovePhoto(photo)"><Icon IconName="trash-can" /></button>
                     <CroppedImageBlock Polaroid="@photo" />
-               </li> 
+                </li> 
             }
+            
         </ul>
     }
-
 }
 @code {
 
     private ProcessingState State { get; set; }
-
-    private async Task StartCropping()
+    private async Task SelectScans()
     {
         State.IsStarted = true;
         State.IsWorking = true;
@@ -81,14 +81,13 @@
                             Hour = defaultHour,
                             LocationInScan = location,
                             ScanFile = file.FullPath
-                        }
+                }
                     );
                     StateHasChanged();
-                }
+                }       
             }
         }
         State.IsWorking = false;
-        State.StatusMessage = $"Finished";
         StateHasChanged();
     }
 
@@ -124,9 +123,18 @@
         Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(State));
     }
 
+    public void RemovePhoto(PolaroidWithMeta polaroid)
+    {
+        State.PolaroidsWithMeta.Remove(polaroid);
+        if(State.PolaroidsWithMeta.Count() == 0)
+        {
+            Cancel();
+        }
+    }
+    
     protected override void OnInitialized()
     {
-       RetrieveStoredState();
+        RetrieveStoredState();
     }
 
     public void Dispose()

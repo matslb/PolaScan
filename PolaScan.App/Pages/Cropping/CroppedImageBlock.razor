@@ -13,7 +13,7 @@
         @if(Polaroid.PreviewData == null || Polaroid.PreviewData == string.Empty)
         {
         <div class="placeholder">
-            <Icon IconName="spinner" Size="2"></Icon>
+            <Icon IconName="spinner" Color="AppColor.white" Size="2"></Icon>
         </div>
         }else{
             <img src="@Polaroid.PreviewData" width="300" />
@@ -26,27 +26,27 @@
             <button class="bottom" @onclick="() => Move(0, -2)"><Icon IconName="arrow-down" /></button>
             <button class="right" @onclick="() => Move(-2,0)"><Icon IconName="arrow-right" /></button>
             <button class="rotate-right" @onclick="() => Rotate(.1)"><Icon IconName="rotate-right" /></button>
-            <button class="zoom-in" @onclick="() => Zoom(2)"><Icon IconName="magnifying-glass-plus" /></button>
-            <button class="zoom-out" @onclick="() => Zoom(-2)"><Icon IconName="magnifying-glass-minus" /></button>
+            <button class="zoom-in" @onclick="() => Zoom(5)"><Icon IconName="magnifying-glass-plus" /></button>
+            <button class="zoom-out" @onclick="() => Zoom(-5)"><Icon IconName="magnifying-glass-minus" /></button>
         </div>
     </div>
     <div class="meta">
 
         @if(Polaroid.Date != null)
         {
-            <div class="meta-item date">
-                <Icon IconName="calendar-days" Size="1"/>
-                <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Polaroid.Date.Value.ToString("yyyy-MM-dd")" />
-            </div>
             <div class="meta-item hour">
-                <Icon IconName="clock" Size="1" />
+                <Icon IconName="clock" Size="1" Color="AppColor.green" />
                 <input type="number" value="@Polaroid.Hour" max="24" min="1" @onchange="SetHour" />
+            </div>
+            <div class="meta-item date">
+                <Icon IconName="calendar-days" Color="AppColor.blue"  Size="1" />
+                <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Polaroid.Date.Value.ToString("yyyy-MM-dd")" />
             </div>
         }
         else if (DetectDateHasRun && Polaroid.Date is null)
         {
             <div class="meta-item date">
-                <Icon IconName="calendar-days" Size="1" />
+                <Icon IconName="calendar-days" Color="AppColor.blue" Size="1" />
                 <div>
                     <button class="btn green" @onclick="async() => Polaroid.Date = DateOnly.FromDateTime(DateTime.Today)">Add Date</button>
                 </div>
@@ -55,15 +55,15 @@
         else
         {
             <div class="meta-item date">
-                <Icon IconName="calendar-days" Size="1" />
+                <Icon IconName="calendar-days" Size="1" Color="AppColor.blue" />
                 <div>
-                    <button disabled class="btn green"><Icon IconName="circle-notch" Size="1" /><span>Detecting date</span></button>
+                    <button disabled class="btn green"><Icon IconName="circle-notch" Size="1" />&nbsp Detecting date</button>
                 </div>
             </div>
         }
 
         <div class="meta-item location">
-            <Icon IconName="map-location-dot" Size="1"/>
+            <Icon IconName="map-location-dot" Color="AppColor.red" Size="1" />
             <div>
             @if (Polaroid.Location != null)
             {
@@ -78,9 +78,10 @@
                     {
                         var location = await Geolocation.Default.GetLastKnownLocationAsync();
                         Polaroid.Location = new LocationMeta{
-                            Latitude = location.Latitude,
-                            Longitude = location.Longitude
+                            Latitude = location?.Latitude ?? 59.9170144331894,
+                            Longitude = location?.Longitude ?? 10.727637941021577
                         };
+                        StateHasChanged();
                     }">Add location</button>
             }
             </div>
@@ -157,14 +158,17 @@
         StateHasChanged();
     }
 
-    protected override async void OnInitialized()
+    protected override async void OnAfterRender(bool firstRender)
     {
-        if (Polaroid.TempFileName == null)
-            Polaroid = await imageHandler.GetPolaroidFromScan(Polaroid);
-        if (string.IsNullOrEmpty(Polaroid.PreviewData))
-            Polaroid = await imageHandler.CutPolaroidFromScan(Polaroid);
-        DetectDateHasRun = true;
-        await UpdatePhotoMeta();
+        if (firstRender)
+        {
+            if (Polaroid.TempFileName == null)
+                Polaroid = await imageHandler.GetPolaroidFromScan(Polaroid);
+            if (string.IsNullOrEmpty(Polaroid.PreviewData))
+                Polaroid = await imageHandler.CutPolaroidFromScan(Polaroid);
+            DetectDateHasRun = true;
+            await UpdatePhotoMeta();
+        }
     }
 
     private async Task Move(int x, int y)

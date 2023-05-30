@@ -26,8 +26,8 @@ public class PolaScanApiService
     {
         using var image = Image.Load(scanPath);
         image.Mutate(x =>
-        x.Pad(image.Width + 250, image.Height + 250)
-        .Resize(new Size { Width = image.Width / 8 })
+        x.Pad(image.Width + Constants.ImageProcessing.ScanFilePadding, image.Height + Constants.ImageProcessing.ScanFilePadding)
+        .Resize(new Size { Width = image.Width / Constants.ImageProcessing.TempImageModifier })
         );
 
         var tempFileName = await Helpers.SaveTempImage(image, $"{Guid.NewGuid()}.jpg");
