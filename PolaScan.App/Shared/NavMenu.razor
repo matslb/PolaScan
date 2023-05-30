@@ -7,13 +7,13 @@
 
 		@if(CurrentPage != "settings")
 			{
-				<button class="btn btn-primary" @onclick="NavigateToSettings">
+				<button class="btn blue" @onclick="NavigateToSettings">
 					Settings
 				</button>
 			}
 			else
 			{
-				<button class="btn btn-primary" @onclick="NavigateToHome">
+				<button class="btn blue" @onclick="NavigateToHome">
 					Back
 				</button>
 			}
@@ -23,25 +23,27 @@
 </div>
 
 @code {
-	private string CurrentPage { get; set; } = "";
+    private string CurrentPage { get; set; } = "";
 
-	private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
-	{
-		CurrentPage = e.Location.Split("/").Last();
-		StateHasChanged();
-	}
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        CurrentPage = e.Location.Split("/").Last();
+        StateHasChanged();
+    }
 
-	protected override void OnInitialized()
-	{
-		NavigationManager.LocationChanged += HandleLocationChanged;
-	}
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += HandleLocationChanged;
+    }
 
-	public void Dispose()
-	{
-		NavigationManager.LocationChanged -= HandleLocationChanged;
-	}
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= HandleLocationChanged;
+    }
 
-	private void NavigateToSettings() => NavigationManager.NavigateTo("settings");
+    private void NavigateToSettings(){
+        NavigationManager.NavigateTo("settings");
+    }
 	private void NavigateToHome() => NavigationManager.NavigateTo("");
 
 }

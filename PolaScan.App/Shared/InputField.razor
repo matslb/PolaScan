@@ -59,15 +59,15 @@
 
     public async Task SelectFolder(){
         var result = await FolderPicker.Default.PickAsync("", new CancellationToken());
-        Callback(result.Folder.Path);
+        
+        if(result.IsSuccessful)
+            Callback(result.Folder.Path);
     }
 
     public async Task SelectFile()
     {
         var result = await FilePicker.Default.PickAsync();
         if(result != null)
-            Value = result.FullPath;
-
-        Callback(Value);
+            Callback(result.FullPath);
     }
 }

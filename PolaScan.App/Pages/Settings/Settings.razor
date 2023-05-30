@@ -12,7 +12,7 @@
     <SettingsItem Label="Google Timeline folder" Slug="@Constants.Settings.GoogleTimelineFolder" displayValue=true fieldType=InputType.folder></SettingsItem>
 
     <h4>Date settings</h4>
-    <SettingsItem Label="Date format" Slug="@Constants.Settings.DateFormat" Options="@GetDateFormatSelections()" fieldType=InputType.select></SettingsItem>
+    <SettingsItem Label="Date format" Slug="@Constants.Settings.DateFormat" Options="@dateFormats" fieldType=InputType.select></SettingsItem>
     <SettingsItem Label="Assumed hour" Slug="@Constants.Settings.AssumedHour" fieldType=InputType.number></SettingsItem>
    
     <SettingsItem Label="Copyright text" Slug="@Constants.Settings.CopyRightText"  fieldType=InputType.text></SettingsItem>
@@ -21,10 +21,20 @@
 </div>
 
 @code {
+    private List<string> dateFormats { get; set; } = new();
 
-    private List<string> GetDateFormatSelections()
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            LoadDateFormats();
+            StateHasChanged();
+        }
+    }
+
+    private void LoadDateFormats()
     {
         CultureInfo[] cinfos = CultureInfo.GetCultures(CultureTypes.SpecificCultures);
-        return cinfos.Select(c => Regex.Replace(c.DateTimeFormat.ShortDatePattern.ToUpper(), @"[^dDmMyY]", " ").Trim().Replace(" ", "/")).Distinct().ToList();
+        dateFormats = cinfos.Select(c => Regex.Replace(c.DateTimeFormat.ShortDatePattern.ToUpper(), @"[^dDmMyY]", " ").Trim().Replace(" ", "/")).Distinct().ToList();
     }
 }
