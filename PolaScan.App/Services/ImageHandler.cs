@@ -202,16 +202,25 @@ public class ImageHandler
 
         var (leftCrop, leftTop) = await GetImageCorner(image, true).ConfigureAwait(false);
         var (rightCrop, rightTop) = await GetImageCorner(image, false).ConfigureAwait(false);
-
-        var width = 25 + (rightCrop - leftCrop) * tempImageModifier;
-        var height = (int)(width * Constants.ImageProcessing.HeightToWidthRatio);
+        /*
+         var width = 25 + (rightCrop - leftCrop) * tempImageModifier;
+         var height = (int)(width * Constants.ImageProcessing.HeightToWidthRatio);
+         var crop = new Rectangle(
+             x: (leftCrop * tempImageModifier) - 4,
+             y: 10 + ((leftTop + rightTop) / 2) * tempImageModifier,
+             width: width,
+             height: height
+        );
+         */
+        var topCrop = leftTop + 4;
+        var width = rightCrop - leftCrop;
+        var height = (int)Math.Min(width * 1.23, image.Height - topCrop);
         var crop = new Rectangle(
-            x: (leftCrop * tempImageModifier) - 4,
-            y: 10 + ((leftTop + rightTop) / 2) * tempImageModifier,
-            width: width,
-            height: height
-       );
-
+            x: (leftCrop) * tempImageModifier,
+            y: topCrop * tempImageModifier,
+            width: (width) * tempImageModifier,
+            height: height * tempImageModifier
+            );
         image.Dispose();
         return crop;
     }
