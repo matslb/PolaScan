@@ -200,27 +200,20 @@ public class ImageHandler
               .Rotate(degrees)
            );
 
+        await Helpers.SaveTempImage(image, Guid.NewGuid().ToString() + ".jpg");
+
         var (leftCrop, leftTop) = await GetImageCorner(image, true).ConfigureAwait(false);
         var (rightCrop, rightTop) = await GetImageCorner(image, false).ConfigureAwait(false);
-        /*
-         var width = 25 + (rightCrop - leftCrop) * tempImageModifier;
-         var height = (int)(width * Constants.ImageProcessing.HeightToWidthRatio);
-         var crop = new Rectangle(
-             x: (leftCrop * tempImageModifier) - 4,
-             y: 10 + ((leftTop + rightTop) / 2) * tempImageModifier,
-             width: width,
-             height: height
-        );
-         */
-        var topCrop = leftTop + 4;
-        var width = rightCrop - leftCrop;
-        var height = (int)Math.Min(width * 1.23, image.Height - topCrop);
+
+        var width = 10 + (rightCrop - leftCrop) * tempImageModifier;
+        var height = (int)(width * Constants.ImageProcessing.HeightToWidthRatio);
         var crop = new Rectangle(
-            x: (leftCrop) * tempImageModifier,
-            y: topCrop * tempImageModifier,
-            width: (width) * tempImageModifier,
-            height: height * tempImageModifier
-            );
+             x: (leftCrop * tempImageModifier) - 10,
+             y: 10 + ((leftTop + rightTop) / 2) * tempImageModifier,
+            width: width,
+            height: height
+       );
+
         image.Dispose();
         return crop;
     }
@@ -230,7 +223,7 @@ public class ImageHandler
         var verticalHits = new List<int>();
         var side = 0;
         var top = 0;
-        var consectutiveReq = 25;
+        var consectutiveReq = 50;
         image.ProcessPixelRows(accessor =>
         {
             var pixelRange = image.Width / 3;
@@ -269,6 +262,7 @@ public class ImageHandler
 
                                     var rowCheck = accessor.GetRowSpan(coords.y + i);
                                     ref Rgba32 p = ref rowCheck[coords.x];
+                                    //p = Color.Green;
 
                                     if (i == consectutiveReq)
                                     {
@@ -315,7 +309,7 @@ public class ImageHandler
         var rightTop = -1;
         var pictureIsNotLevel = true;
 
-        var fromMiddle = (int)(image.Width / 3.5);
+        var fromMiddle = (int)(image.Width / 5);
 
         while (pictureIsNotLevel && degrees < 30 && degrees > -30)
         {
@@ -332,7 +326,7 @@ public class ImageHandler
 
             float iterationDegrees = 0;
             var diff = Math.Abs(rightTop - leftTop);
-            var deg = diff > 1 ? (double)diff / 10 : 0.1;
+            var deg = diff > 1 ? 1 : 0.1;
 
             if (leftTop < rightTop)
                 iterationDegrees = (float)-deg;
@@ -347,7 +341,6 @@ public class ImageHandler
             image.Mutate(x =>
                  x.Rotate(iterationDegrees)
              );
-            await Helpers.SaveTempImage(image, Guid.NewGuid().ToString() + ".jpg");
         }
 
         image.Dispose();
@@ -401,10 +394,20 @@ public class ImageHandler
             new Rational(secondsInt*1000000, 1000000),
         };
     }
-    private static Rectangle PolaroidSizeWithMargin(Image image, BoundingBox position, int mod) => new Rectangle(
-             (int)(image.Width * position.Left) - 60 / mod,
-             (int)(image.Height * position.Top) - 70 / mod,
-             (int)(image.Width * position.Width) + 100 / mod,
-             (int)(image.Height * position.Height) + 100 / mod);
+    private static Rectangle PolaroidSizeWithMargin(Image image, BoundingBox position, int mod)
+    {
+        var left = (int)(image.Width * position.Left);
+        left -= Math.Max(100 / mod, 0);
 
+        var top = (int)(image.Height * position.Top);
+        top -= Math.Max(100 / mod, 0);
+
+        var width = (int)(image.Width * position.Width);
+        width += Math.Min((width / 3) / mod, image.Width - (width + left));
+
+        var height = (int)(image.Height * position.Height);
+        height += Math.Min(height / 2, image.Height - (height + top));
+
+        return new Rectangle(left, top, width, height);
+    }
 }
