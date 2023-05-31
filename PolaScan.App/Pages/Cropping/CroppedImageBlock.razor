@@ -13,7 +13,7 @@
         @if(Polaroid.PreviewData == null || Polaroid.PreviewData == string.Empty)
         {
         <div class="placeholder">
-            <Icon IconName="spinner" Color="AppColor.white" Size="2"></Icon>
+                <Icon IconName="circle-notch" Color="AppColor.white" Size="2"></Icon>
         </div>
         }else{
             <img src="@Polaroid.PreviewData" width="300" />
@@ -185,7 +185,7 @@
 
     private async Task Zoom(int x)
     {
-        Polaroid.Crop = new SixLabors.ImageSharp.Rectangle(Polaroid.Crop.X + x, Polaroid.Crop.Y + x, Polaroid.Crop.Width - x, Polaroid.Crop.Height - x );
+        Polaroid.Crop = new SixLabors.ImageSharp.Rectangle(Polaroid.Crop.X + x, Polaroid.Crop.Y + x, Polaroid.Crop.Width - x*2, Polaroid.Crop.Height - x*2 );
         Polaroid = await imageHandler.CutPolaroidFromScan(Polaroid);
     }
 }

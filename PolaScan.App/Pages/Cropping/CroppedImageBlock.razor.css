@@ -24,7 +24,7 @@
     background: black;
     min-height: 260px;
     opacity: 1;
-    margin: 20px 20px 80px 20px;
+    margin: 22px 20px 78px 20px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -39,10 +39,10 @@
 
 .image-block .preview::after {
     content: "";
-    box-shadow: 0 0 0 2px #00000083;
+    box-shadow: 0 0 0 1px #00000083;
     position: absolute;
-    top: 20px;
-    bottom: 80px;
+    top: 22px;
+    bottom: 78px;
     left: 20px;
     right: 20px;
     border-radius: 2px;

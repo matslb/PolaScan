@@ -114,7 +114,7 @@ public class ImageHandler
         }
 
         var degrees = await GetImageRotationDegrees(compressedScanFileName, polaroid.LocationInScan).ConfigureAwait(false);
-        var crop = GetImageCropRectangle(compressedScanFileName, polaroid.LocationInScan, degrees);
+        var crop = await GetImageCropRectangle(compressedScanFileName, polaroid.LocationInScan, degrees);
 
         polaroid.Crop = crop;
         polaroid.Format = polaroid.ScanFile.Split(".")[1];
@@ -132,7 +132,7 @@ public class ImageHandler
 
         try
         {
-            /// Cropping image with margin to adjust rotation
+            // Cropping image with margin to adjust rotation
             scanFile.Mutate(x => x
                 .Pad(scanFile.Width + padding, scanFile.Height + padding));
             scanFile.Mutate(x => x
@@ -191,7 +191,7 @@ public class ImageHandler
         return tempFileName;
     }
 
-    private Rectangle GetImageCropRectangle(string fileName, BoundingBox position, float degrees)
+    private async Task<Rectangle> GetImageCropRectangle(string fileName, BoundingBox position, float degrees)
     {
         using var image = Image.Load<Rgba32>(fileName);
 
@@ -200,24 +200,23 @@ public class ImageHandler
               .Rotate(degrees)
            );
 
-        var (leftCrop, leftTop) = GetImageCorner(image, true);
-        var (rightCrop, rightTop) = GetImageCorner(image, false);
+        var (leftCrop, leftTop) = await GetImageCorner(image, true).ConfigureAwait(false);
+        var (rightCrop, rightTop) = await GetImageCorner(image, false).ConfigureAwait(false);
 
-        var topCrop = leftTop + 4;
-        var width = rightCrop - leftCrop;
-        var height = (int)Math.Min(width * 1.23, image.Height - topCrop);
+        var width = 25 + (rightCrop - leftCrop) * tempImageModifier;
+        var height = (int)(width * Constants.ImageProcessing.HeightToWidthRatio);
         var crop = new Rectangle(
-            x: (leftCrop) * tempImageModifier,
-            y: topCrop * tempImageModifier,
-            width: (width) * tempImageModifier,
-            height: height * tempImageModifier
+            x: (leftCrop * tempImageModifier) - 4,
+            y: 10 + ((leftTop + rightTop) / 2) * tempImageModifier,
+            width: width,
+            height: height
        );
 
         image.Dispose();
         return crop;
     }
 
-    private static (int side, int top) GetImageCorner(Image<Rgba32> image, bool left = true)
+    private static async Task<(int side, int top)> GetImageCorner(Image<Rgba32> image, bool left = true)
     {
         var verticalHits = new List<int>();
         var side = 0;
@@ -313,8 +312,8 @@ public class ImageHandler
         {
             if (degrees != 0 && Math.Abs(rightTop - leftTop) < 5)
             {
-                (var leftCrop, leftTop) = GetImageCorner(image, true);
-                (var rightCrop, rightTop) = GetImageCorner(image, false);
+                (var leftCrop, leftTop) = await GetImageCorner(image, true);
+                (var rightCrop, rightTop) = await GetImageCorner(image, false);
             }
             else
             {
@@ -324,7 +323,7 @@ public class ImageHandler
 
             float iterationDegrees = 0;
             var diff = Math.Abs(rightTop - leftTop);
-            var deg = diff >= 2 ? (double)diff / 6 : 0.2;
+            var deg = diff > 1 ? (double)diff / 10 : 0.1;
 
             if (leftTop < rightTop)
                 iterationDegrees = (float)-deg;
@@ -339,6 +338,7 @@ public class ImageHandler
             image.Mutate(x =>
                  x.Rotate(iterationDegrees)
              );
+            await Helpers.SaveTempImage(image, Guid.NewGuid().ToString() + ".jpg");
         }
 
         image.Dispose();
@@ -366,6 +366,10 @@ public class ImageHandler
                         targetPixel = y;
                         break;
                     }
+                }
+                else
+                {
+                    currentPixel = Color.Blue;
                 }
             }
 

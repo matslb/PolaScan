@@ -16,6 +16,7 @@ public static class Constants
     public static class ImageProcessing
     {
         public static int ScanFilePadding = 250;
-        public static int TempImageModifier = 10;
+        public static int TempImageModifier = 5;
+        public static double HeightToWidthRatio = 1.222;
     }
 }
