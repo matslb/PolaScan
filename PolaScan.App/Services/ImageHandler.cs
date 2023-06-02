@@ -200,16 +200,14 @@ public class ImageHandler
               .Rotate(degrees)
            );
 
-        await Helpers.SaveTempImage(image, Guid.NewGuid().ToString() + ".jpg");
-
         var (leftCrop, leftTop) = await GetImageCorner(image, true).ConfigureAwait(false);
         var (rightCrop, rightTop) = await GetImageCorner(image, false).ConfigureAwait(false);
 
-        var width = 10 + (rightCrop - leftCrop) * tempImageModifier;
+        var width = (rightCrop - leftCrop) * tempImageModifier;
         var height = (int)(width * Constants.ImageProcessing.HeightToWidthRatio);
         var crop = new Rectangle(
-             x: (leftCrop * tempImageModifier) - 10,
-             y: 10 + ((leftTop + rightTop) / 2) * tempImageModifier,
+             x: (leftCrop * tempImageModifier) + 15 ,
+             y: 20 + ((leftTop + rightTop) / 2) * tempImageModifier,
             width: width,
             height: height
        );
@@ -309,7 +307,7 @@ public class ImageHandler
         var rightTop = -1;
         var pictureIsNotLevel = true;
 
-        var fromMiddle = (int)(image.Width / 5);
+        var fromMiddle = (int)(image.Width / 2.5);
 
         while (pictureIsNotLevel && degrees < 30 && degrees > -30)
         {
@@ -326,7 +324,7 @@ public class ImageHandler
 
             float iterationDegrees = 0;
             var diff = Math.Abs(rightTop - leftTop);
-            var deg = diff > 1 ? 1 : 0.1;
+            var deg = diff > 2 ? 1 : 0.1;
 
             if (leftTop < rightTop)
                 iterationDegrees = (float)-deg;
@@ -403,7 +401,7 @@ public class ImageHandler
         top -= Math.Max(100 / mod, 0);
 
         var width = (int)(image.Width * position.Width);
-        width += Math.Min((width / 3) / mod, image.Width - (width + left));
+        width += Math.Min((width / 2) / mod, image.Width - (width + left));
 
         var height = (int)(image.Height * position.Height);
         height += Math.Min(height / 2, image.Height - (height + top));
