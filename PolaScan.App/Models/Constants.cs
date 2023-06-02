@@ -11,12 +11,13 @@ public static class Constants
         public static string CameraModel = nameof(CameraModel);
         public static string DateFormat = nameof(DateFormat);
         public static string CultureName = nameof(CultureName);
+        public static string TempImageModifier = nameof(TempImageModifier);
     }
 
     public static class ImageProcessing
     {
         public static int ScanFilePadding = 250;
-        public static int TempImageModifier = 8;
+        public static int TempImageModifier = 4;
         public static double HeightToWidthRatio = 1.222;
     }
 }

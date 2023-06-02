@@ -15,7 +15,7 @@ namespace PolaScan.App.Services;
 public class ImageHandler
 {
     public Dictionary<string, string> SavedTemporaryFiles { get; set; }
-    private readonly static int tempImageModifier = Constants.ImageProcessing.TempImageModifier;
+    private static int tempImageModifier() => int.Parse(Preferences.Default.Get(Constants.Settings.TempImageModifier, Constants.ImageProcessing.TempImageModifier + ""));
     private readonly static int padding = Constants.ImageProcessing.ScanFilePadding;
     private readonly PolaScanApiService polaScanService;
     private readonly GoogleTimelineService timelineService;
@@ -164,7 +164,7 @@ public class ImageHandler
 
         await Helpers.SaveTempImage(scanFile, polaroid.TempFileName);
 
-        scanFile.Mutate(x => x.Resize(scanFile.Width / tempImageModifier, scanFile.Height / tempImageModifier));
+        scanFile.Mutate(x => x.Resize(scanFile.Width / tempImageModifier(), scanFile.Height / tempImageModifier()));
         polaroid.PreviewData = scanFile.ToBase64String(format);
         scanFile.Dispose();
 
@@ -176,12 +176,12 @@ public class ImageHandler
         using var image = Image.Load<Rgba32>(fileName);
         image.Mutate(x =>
         x
-        .Resize(new Size { Width = image.Width / tempImageModifier })
+        .Resize(new Size { Width = image.Width / tempImageModifier() })
         .GaussianSharpen()
         .GaussianBlur()
         .GaussianSharpen()
         .DetectEdges()
-        .Pad(image.Width + padding / tempImageModifier, image.Height + padding / tempImageModifier)
+        .Pad(image.Width + padding / tempImageModifier(), image.Height + padding / tempImageModifier())
         .BlackWhite()
         );
 
@@ -195,19 +195,26 @@ public class ImageHandler
     {
         using var image = Image.Load<Rgba32>(fileName);
 
+        var originalImageWidth = image.Width * tempImageModifier();
+        var originalImageHeight = image.Height * tempImageModifier();
+
         image.Mutate(x => x
-              .Crop(PolaroidSizeWithMargin(image, position, tempImageModifier))
+              .Crop(PolaroidSizeWithMargin(image, position, tempImageModifier()))
               .Rotate(degrees)
            );
 
         var (leftCrop, leftTop) = await GetImageCorner(image, true).ConfigureAwait(false);
         var (rightCrop, rightTop) = await GetImageCorner(image, false).ConfigureAwait(false);
 
-        var width = (rightCrop - leftCrop) * tempImageModifier;
+        var width = (rightCrop - leftCrop) * tempImageModifier();
         var height = (int)(width * Constants.ImageProcessing.HeightToWidthRatio);
+        var x = leftCrop * tempImageModifier();
+        var y = leftTop * tempImageModifier();
+        var paddingTop = 50 / tempImageModifier();
+        var paddingLeft = 40 / tempImageModifier();
         var crop = new Rectangle(
-             x: (leftCrop * tempImageModifier) + 15 ,
-             y: 20 + ((leftTop + rightTop) / 2) * tempImageModifier,
+             x: width + x + paddingLeft >= originalImageWidth ? x : x + paddingLeft,
+             y: height + y + paddingTop >= originalImageHeight ? y : y + paddingTop,
             width: width,
             height: height
        );
@@ -299,7 +306,7 @@ public class ImageHandler
 
         // Cropping image with margin to adjust rotation
         image.Mutate(x => x
-              .Crop(PolaroidSizeWithMargin(image, position, tempImageModifier))
+              .Crop(PolaroidSizeWithMargin(image, position, tempImageModifier()))
               );
         float degrees = 0;
 
@@ -366,10 +373,6 @@ public class ImageHandler
                         targetPixel = y;
                         break;
                     }
-                }
-                else
-                {
-                    currentPixel = Color.Blue;
                 }
             }
 
