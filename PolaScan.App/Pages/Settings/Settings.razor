@@ -10,7 +10,6 @@
 
     <SettingsItem Label="Destination folder" Slug="@Constants.Settings.DesitnationPath" displayValue=true fieldType=InputType.folder></SettingsItem>
     <SettingsItem Label="Google Timeline folder" Slug="@Constants.Settings.GoogleTimelineFolder" displayValue=true fieldType=InputType.folder></SettingsItem>
-    <SettingsItem Label="Image processing compression:" Slug="@Constants.Settings.TempImageModifier" fieldType=InputType.number></SettingsItem>
 
     <h4>Date settings</h4>
     <SettingsItem Label="Date format" Slug="@Constants.Settings.DateFormat" Options="@dateFormats" fieldType=InputType.select></SettingsItem>
@@ -19,6 +18,8 @@
     <SettingsItem Label="Copyright text" Slug="@Constants.Settings.CopyRightText"  fieldType=InputType.text></SettingsItem>
     <SettingsItem Label="Camera model" Slug="@Constants.Settings.CameraModel" fieldType=InputType.text></SettingsItem>
 
+    <h4>Advanced</h4>
+    <SettingsItem Label="Image processing compression:" Slug="@Constants.Settings.TempImageModifier" fieldType=InputType.number></SettingsItem>
 </div>
 
 @code {

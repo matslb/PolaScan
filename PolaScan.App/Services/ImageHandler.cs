@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
+using Microsoft.Maui.Storage;
 using PolaScan.App.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
@@ -34,9 +35,10 @@ public class ImageHandler
         Helpers.DeleteTemporaryFiles();
     }
 
-    public async Task MoveToDestination(PolaroidWithMeta polaroid)
+    public async Task PublishImage(PolaroidWithMeta polaroid)
     {
-        var destSetting = Preferences.Default.Get(Constants.Settings.DesitnationPath, "");
+        polaroid = await CutFromScan(polaroid, false);
+        var destSetting = $"{Preferences.Default.Get(Constants.Settings.DesitnationPath, "")}\\PolaScan";
         var destinationPath = polaroid.Date != null ? $"{destSetting}\\{polaroid.Date.Value.Year}\\{polaroid.Date.Value.Month}" : destSetting;
         Directory.CreateDirectory(destinationPath);
         var i = 0;
@@ -100,9 +102,34 @@ public class ImageHandler
 
     private async Task<string> SaveCompressedScanFile(string scanFile)
     {
-        var tempName = await SaveCompressedTestImage(scanFile).ConfigureAwait(false);
-        SavedTemporaryFiles.Add(scanFile, tempName);
-        return tempName;
+        if (!SavedTemporaryFiles.TryGetValue(scanFile, out var compressedScanFileName))
+        {
+            var tempName = await SaveCompressedTestImage(scanFile).ConfigureAwait(false);
+            SavedTemporaryFiles.Add(scanFile, tempName);
+            compressedScanFileName = tempName;
+        }
+        return compressedScanFileName;
+    }
+
+    private async Task<string> GetCompressedPreviewFile(string scanFile)
+    {
+        var key = $"{scanFile}-preview";
+        if (!SavedTemporaryFiles.TryGetValue(key, out var compressedScanFileName))
+        {
+            using var image = Image.Load<Rgba32>(scanFile);
+            image.Mutate(x =>
+            x
+            .Resize(new Size { Width = image.Width / tempImageModifier() })
+            );
+
+            var tempFileName = $"{Guid.NewGuid()}.{scanFile.Split(".")[1]}";
+            tempFileName = await Helpers.SaveTempImage(image, tempFileName);
+            image.Dispose();
+
+            SavedTemporaryFiles.Add(key, tempFileName);
+            compressedScanFileName = tempFileName;
+        }
+        return compressedScanFileName;
     }
 
     public async Task<PolaroidWithMeta> GetPolaroidFromScan(PolaroidWithMeta polaroid)
@@ -117,55 +144,45 @@ public class ImageHandler
         var crop = await GetImageCropRectangle(compressedScanFileName, polaroid.LocationInScan, degrees);
 
         polaroid.Crop = crop;
-        polaroid.Format = polaroid.ScanFile.Split(".")[1];
         polaroid.Rotation = degrees;
-
-        polaroid = await CutPolaroidFromScan(polaroid).ConfigureAwait(false);
+        polaroid.HasBeenAnalyzed = true;
+        polaroid = await CutFromScan(polaroid, true).ConfigureAwait(false);
         polaroid = await GetDateOnPolaroid(polaroid).ConfigureAwait(false);
 
         return polaroid;
     }
 
-    public async Task<PolaroidWithMeta> CutPolaroidFromScan(PolaroidWithMeta polaroid)
+    public async Task<PolaroidWithMeta> CutFromScan(PolaroidWithMeta polaroid, bool preview)
     {
-        using var scanFile = Image.Load<Rgba32>(polaroid.ScanFile, out var format);
+        var modifier = preview ? tempImageModifier() : 1;
 
+        var tempFileName = preview ? await GetCompressedPreviewFile(polaroid.ScanFile) : polaroid.ScanFile;
+
+        using var scanFile = Image.Load<Rgba32>(tempFileName, out var format);
+        scanFile.Mutate(x => x
+               .Pad(scanFile.Width + padding / modifier, scanFile.Height + padding / modifier)
+               .Crop(PolaroidSizeWithMargin(scanFile, polaroid.LocationInScan, modifier))
+               .Rotate(polaroid.Rotation));
         try
         {
-            // Cropping image with margin to adjust rotation
-            scanFile.Mutate(x => x
-                .Pad(scanFile.Width + padding, scanFile.Height + padding));
-            scanFile.Mutate(x => x
-                .Crop(PolaroidSizeWithMargin(scanFile, polaroid.LocationInScan, 1))
-                .Rotate(polaroid.Rotation)
-                .Crop(polaroid.Crop)
-                .BackgroundColor(Color.White)
-                );
+            scanFile.Mutate(x =>
+                x.Crop(new Rectangle
+                {
+                    Height = polaroid.Crop.Height / modifier,
+                    Width = polaroid.Crop.Width / modifier,
+                    X = polaroid.Crop.X / modifier,
+                    Y = polaroid.Crop.Y / modifier,
+                })
+            );
         }
-        catch
-        {
-            polaroid.Crop = PolaroidSizeWithMargin(scanFile, polaroid.LocationInScan, 1);
+        catch (Exception e)
+        { }
 
-            scanFile.Mutate(x => x
-              .Pad(scanFile.Width + padding, scanFile.Height + padding));
-            scanFile.Mutate(x => x
-                .Crop(PolaroidSizeWithMargin(scanFile, polaroid.LocationInScan, 1))
-                .BackgroundColor(Color.White)
-                );
-        }
+        if (preview)
+            polaroid.PreviewData = scanFile.ToBase64String(format);
 
-        if (polaroid.AbsolutePath == null)
-        {
-            var tempFileName = $"{Guid.NewGuid()}.{polaroid.Format}";
-            polaroid.TempFileName = tempFileName;
-            var path = await Helpers.SaveTempImage(scanFile, tempFileName);
-            polaroid.AbsolutePath = path;
-        }
-
-        await Helpers.SaveTempImage(scanFile, polaroid.TempFileName);
-
-        scanFile.Mutate(x => x.Resize(scanFile.Width / tempImageModifier(), scanFile.Height / tempImageModifier()));
-        polaroid.PreviewData = scanFile.ToBase64String(format);
+        var path = await Helpers.SaveTempImage(scanFile, polaroid.TempFileName);
+        polaroid.AbsolutePath = path;
         scanFile.Dispose();
 
         return polaroid;
@@ -197,21 +214,33 @@ public class ImageHandler
 
         var originalImageWidth = image.Width * tempImageModifier();
         var originalImageHeight = image.Height * tempImageModifier();
-
+        var detectedLocation = PolaroidSizeWithMargin(image, position, tempImageModifier());
         image.Mutate(x => x
-              .Crop(PolaroidSizeWithMargin(image, position, tempImageModifier()))
+              .Crop(detectedLocation)
               .Rotate(degrees)
            );
-
         var (leftCrop, leftTop) = await GetImageCorner(image, true).ConfigureAwait(false);
         var (rightCrop, rightTop) = await GetImageCorner(image, false).ConfigureAwait(false);
 
-        var width = (rightCrop - leftCrop) * tempImageModifier();
+
+        var width = (int)(rightCrop - leftCrop) * tempImageModifier();
+        if (width <= 0)
+        {
+            width = ((int)(originalImageWidth * (position.Width - 0.1)));
+            return new Rectangle(
+                x: (int)(originalImageWidth * (position.Left - 0.05)),
+                y: (int)(originalImageHeight * (position.Top - 0.05)),
+                width: width,
+                height: (int)(width * Constants.ImageProcessing.HeightToWidthRatio)
+            );
+        }
+
         var height = (int)(width * Constants.ImageProcessing.HeightToWidthRatio);
+
         var x = leftCrop * tempImageModifier();
         var y = leftTop * tempImageModifier();
-        var paddingTop = 50 / tempImageModifier();
-        var paddingLeft = 40 / tempImageModifier();
+        var paddingTop = 30 / tempImageModifier();
+        var paddingLeft = 20 / tempImageModifier();
         var crop = new Rectangle(
              x: width + x + paddingLeft >= originalImageWidth ? x : x + paddingLeft,
              y: height + y + paddingTop >= originalImageHeight ? y : y + paddingTop,
@@ -267,7 +296,7 @@ public class ImageHandler
 
                                     var rowCheck = accessor.GetRowSpan(coords.y + i);
                                     ref Rgba32 p = ref rowCheck[coords.x];
-                                    //p = Color.Green;
+                                    p = Color.White;
 
                                     if (i == consectutiveReq)
                                     {
@@ -346,6 +375,7 @@ public class ImageHandler
             image.Mutate(x =>
                  x.Rotate(iterationDegrees)
              );
+            //   Helpers.SaveTempImage(image, Guid.NewGuid() + ".jpg");
         }
 
         image.Dispose();
@@ -374,6 +404,9 @@ public class ImageHandler
                         break;
                     }
                 }
+                // else
+                //     currentPixel = Color.Blue;
+
             }
 
         });
@@ -404,10 +437,10 @@ public class ImageHandler
         top -= Math.Max(100 / mod, 0);
 
         var width = (int)(image.Width * position.Width);
-        width += Math.Min((width / 2) / mod, image.Width - (width + left));
+        width += Math.Min((width / 3) / mod, image.Width - (width + left));
 
         var height = (int)(image.Height * position.Height);
-        height += Math.Min(height / 2, image.Height - (height + top));
+        height += Math.Min((height / 3) / mod, image.Height - (height + top));
 
         return new Rectangle(left, top, width, height);
     }

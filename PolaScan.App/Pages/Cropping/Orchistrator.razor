@@ -77,7 +77,6 @@
                     State.PolaroidsWithMeta.Add(new PolaroidWithMeta
                         {
                             Id = Guid.NewGuid(),
-                            ToBeSaved = true,
                             Hour = defaultHour,
                             LocationInScan = location,
                             ScanFile = file.FullPath
@@ -96,13 +95,18 @@
         State = new();
         Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(State));
         imageHandler.ClearTempFiles();
+        StateHasChanged();
     }
 
     private async Task ExportImages()
     {
-        foreach (var p in State.PolaroidsWithMeta.Where(p => p.ToBeSaved))
+        while(State.PolaroidsWithMeta.Count > 0)
         {
-            await imageHandler.MoveToDestination(p);
+            var p = State.PolaroidsWithMeta.First();
+            State.PolaroidsWithMeta.Remove(p);
+            StateHasChanged();
+            
+            await imageHandler.PublishImage(p);
         }
         Cancel();
         State.IsExported = true;
@@ -110,7 +114,7 @@
 
     private void OpenDestinationFolder()
     {
-        Process.Start("explorer.exe", Preferences.Default.Get(Constants.Settings.DesitnationPath, ""));
+        Process.Start("explorer.exe", $"{Preferences.Default.Get(Constants.Settings.DesitnationPath, "")}\\PolaScan");
     }
 
     private void SaveState()
@@ -134,6 +138,7 @@
 
     protected override void OnInitialized()
     {
+        Cancel();
         RetrieveStoredState();
     }
 

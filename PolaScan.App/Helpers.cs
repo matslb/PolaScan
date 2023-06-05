@@ -31,7 +31,11 @@ public static class Helpers
         var tempFiles = Directory.GetFiles(GetAppDataFilePath("temp"));
         foreach (var fileName in tempFiles)
         {
-            File.Delete(fileName);
+            try
+            {
+                File.Delete(fileName);
+            }
+            catch { }
         }
     }
 }
