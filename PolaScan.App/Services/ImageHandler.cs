@@ -437,10 +437,10 @@ public class ImageHandler
         top -= Math.Max(100 / mod, 0);
 
         var width = (int)(image.Width * position.Width);
-        width += Math.Min((width / 3) / mod, image.Width - (width + left));
+        width += (int)(width * 0.1);
 
         var height = (int)(image.Height * position.Height);
-        height += Math.Min((height / 3) / mod, image.Height - (height + top));
+        height += (int)(height * 0.1);
 
         return new Rectangle(left, top, width, height);
     }
