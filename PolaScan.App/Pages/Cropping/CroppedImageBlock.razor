@@ -139,7 +139,7 @@
                 Polaroid.Location = timelineService.GetDateLocation(Polaroid.Date!.Value, Polaroid.Hour);
 
         } 
-        if(!useTimeLineService && Polaroid.Location != null && string.IsNullOrEmpty(Polaroid.Location.Name))
+        if(Polaroid.Location != null && string.IsNullOrEmpty(Polaroid.Location.Name))
         {
                 Polaroid.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Polaroid.Location);
         }

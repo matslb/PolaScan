@@ -20,7 +20,14 @@
         }
         @if (State.PolaroidsWithMeta.Count > 0 && !State.IsWorking)
         {
-            <button class="blue btn" @onclick="ExportImages">Save selected</button>
+            @if (!IsSaving)
+            {
+                <button class="blue btn" @onclick="ExportImages">Save selected</button>
+            }
+            else
+            {
+                <button class="blue btn" disabled><Icon IconName="circle-notch" Size="1" Color="Enums.AppColor.white" /> Saving</button>
+            }
         }
         @if (State.IsExported)
         {
@@ -53,6 +60,7 @@
 @code {
 
     private ProcessingState State { get; set; }
+    private bool IsSaving { get; set; }
     private async Task SelectScans()
     {
         State.IsStarted = true;
@@ -100,14 +108,17 @@
 
     private async Task ExportImages()
     {
+        IsSaving = true;
+        StateHasChanged();
         while(State.PolaroidsWithMeta.Count > 0)
         {
             var p = State.PolaroidsWithMeta.First();
             State.PolaroidsWithMeta.Remove(p);
             StateHasChanged();
-            
+
             await imageHandler.PublishImage(p);
         }
+        IsSaving = false;
         Cancel();
         State.IsExported = true;
     }

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using PolaScan.App.Models;
 using PolaScan.App.Services;
 
@@ -25,11 +26,10 @@ namespace PolaScan.App
 
             builder.Services.AddSingleton(FolderPicker.Default);
 
-            var polaScanApiService = new PolaScanApiService();
-            var timeLineService = new GoogleTimelineService();
-            builder.Services.AddSingleton(polaScanApiService);
-            builder.Services.AddSingleton(timeLineService);
-            builder.Services.AddSingleton(new ImageHandler(polaScanApiService, timeLineService));
+            builder.Services.AddTransient<PolaScanApiService, PolaScanApiService>();
+            builder.Services.AddSingleton<GoogleTimelineService, GoogleTimelineService>();
+            builder.Services.AddSingleton<ImageHandler, ImageHandler>();
+            //builder.Services.AddSingleton(new ImageHandler(polaScanApiService, timeLineService));
 
             if (Preferences.Default.Get(Constants.Settings.DesitnationPath, string.Empty) == string.Empty)
             {

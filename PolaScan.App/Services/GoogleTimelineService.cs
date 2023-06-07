@@ -7,15 +7,14 @@ namespace PolaScan.App.Services;
 public class GoogleTimelineService
 {
     private GoogleTimeline Timeline { get; set; } = new GoogleTimeline();
-
-    public void Initialize(DateOnly date)
+    private bool detailedLoaded = false;
+    public void InitializeSemantic(DateOnly date)
     {
-        if (Timeline != null && Timeline.Locations.Any(x => date.Year == x.Date.Year && date.Month == x.Date.Month))
+        if (Timeline.Locations.Any(x => date.Year == x.Date.Year && date.Month == x.Date.Month && x.Name != null))
             return;
-
         try
         {
-            var path = $"{Preferences.Default.Get(Constants.Settings.GoogleTimelineFolder, "")}\\{date.Year}\\{date.Year}_{date.ToString("MMMM", CultureInfo.InvariantCulture).ToUpperInvariant()}.json";
+            var path = $"{Preferences.Default.Get(Constants.Settings.GoogleTimelineFolder, "")}\\Semantic Location History\\{date.Year}\\{date.Year}_{date.ToString("MMMM", CultureInfo.InvariantCulture).ToUpperInvariant()}.json";
             using (var r = new StreamReader(path))
             {
                 using JsonReader reader = new JsonTextReader(r);
@@ -23,7 +22,7 @@ public class GoogleTimelineService
                 var semanticTimeLine = serializer.Deserialize<GoogleTimelineSemantic>(reader);
                 Timeline.Locations.AddRange(semanticTimeLine.Visits.Where(v => v.PlaceVisit != null).Select(v => new GoogleTimelineLocation
                 {
-                    Accuracy = v.PlaceVisit.Location.LocationConfidence,
+                    Accuracy = 80 - v.PlaceVisit.Location.LocationConfidence,
                     Date = v.PlaceVisit.Duration.StartDateTime,
                     Latitude = v.PlaceVisit.Location.Latitude,
                     Longitude = v.PlaceVisit.Location.Longitude,
@@ -37,12 +36,34 @@ public class GoogleTimelineService
         }
     }
 
+    public void InitializeDetailed()
+    {
+        if (detailedLoaded)
+            return;
+        detailedLoaded = true;
+        try
+        {
+            using (var r = new StreamReader($"{Preferences.Default.Get(Constants.Settings.GoogleTimelineFolder, "")}\\Records.json"))
+            {
+                using JsonReader reader = new JsonTextReader(r);
+                var serializer = new JsonSerializer();
+                var detailedTimeLine = serializer.Deserialize<GoogleTimeline>(reader);
+                Timeline.Locations.AddRange(detailedTimeLine.Locations);
+            }
+        }
+        catch (Exception e)
+        {
+        }
+    }
+
     public LocationMeta GetDateLocation(DateOnly date, int timeOfDay)
     {
-        Initialize(date);
+        InitializeDetailed();
+        InitializeSemantic(date);
         var closestHour = timeOfDay;
         var possibleLocations = Timeline.Locations.Where(x => x.Date.UtcDateTime.ToShortDateString() == date.ToShortDateString());
-        var location = possibleLocations.OrderBy(x => x.Date.Hour > closestHour ? x.Date.Hour - closestHour : closestHour - x.Date.Hour).FirstOrDefault();
+        var location = possibleLocations.OrderBy(x => Math.Abs(x.Date.Hour - closestHour)).ThenBy(x => x.Accuracy).FirstOrDefault();
+
         return location != null ? new LocationMeta
         {
             Latitude = location.Latitude / 1e7,

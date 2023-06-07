@@ -37,7 +37,7 @@ public class ImageHandler
 
     public async Task PublishImage(PolaroidWithMeta polaroid)
     {
-        polaroid = await CutFromScan(polaroid, false);
+        polaroid = await CutFromScan(polaroid, false).ConfigureAwait(false);
         var destSetting = $"{Preferences.Default.Get(Constants.Settings.DesitnationPath, "")}\\PolaScan";
         var destinationPath = polaroid.Date != null ? $"{destSetting}\\{polaroid.Date.Value.Year}\\{polaroid.Date.Value.Month}" : destSetting;
         Directory.CreateDirectory(destinationPath);
@@ -239,8 +239,8 @@ public class ImageHandler
 
         var x = leftCrop * tempImageModifier();
         var y = leftTop * tempImageModifier();
-        var paddingTop = 30 / tempImageModifier();
-        var paddingLeft = 20 / tempImageModifier();
+        var paddingTop = (int)(height * 0.005);
+        var paddingLeft = (int)(width * 0.005);
         var crop = new Rectangle(
              x: width + x + paddingLeft >= originalImageWidth ? x : x + paddingLeft,
              y: height + y + paddingTop >= originalImageHeight ? y : y + paddingTop,
