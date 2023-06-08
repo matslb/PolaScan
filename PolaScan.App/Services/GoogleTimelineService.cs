@@ -59,7 +59,6 @@ public class GoogleTimelineService
     public LocationMeta GetDateLocation(DateOnly date, int timeOfDay)
     {
         InitializeDetailed();
-        InitializeSemantic(date);
         var closestHour = timeOfDay;
         var possibleLocations = Timeline.Locations.Where(x => x.Date.UtcDateTime.ToShortDateString() == date.ToShortDateString());
         var location = possibleLocations.OrderBy(x => Math.Abs(x.Date.Hour - closestHour)).ThenBy(x => x.Accuracy).FirstOrDefault();

@@ -141,7 +141,7 @@
         } 
         if(Polaroid.Location != null && string.IsNullOrEmpty(Polaroid.Location.Name))
         {
-                Polaroid.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Polaroid.Location);
+            Polaroid.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Polaroid.Location);
         }
 
         StateHasChanged();
@@ -151,15 +151,19 @@
     {
         if (firstRender)
         {
-            if(!Polaroid.HasBeenAnalyzed)
-                Polaroid = await imageHandler.GetPolaroidFromScan(Polaroid);
-            
-            if (string.IsNullOrEmpty(Polaroid.PreviewData))
-                Polaroid = await imageHandler.CutFromScan(Polaroid, true);
-            
-            DetectDateHasRun = true;
-            await UpdatePhotoMeta();
+            await FirstRender();
         }
+    }
+    private async Task FirstRender()
+    {
+        if (!Polaroid.HasBeenAnalyzed)
+            Polaroid = await imageHandler.GetPolaroidFromScan(Polaroid);
+        await Task.Delay(1);
+        if (string.IsNullOrEmpty(Polaroid.PreviewData))
+            Polaroid = await imageHandler.CutFromScan(Polaroid, true);
+        await Task.Delay(1);
+        DetectDateHasRun = true;
+        await UpdatePhotoMeta();
     }
 
     private async Task Move(int x, int y)
@@ -171,6 +175,8 @@
     private async Task Rotate(double degrees)
     {
         Polaroid.Rotation += (float)degrees;
+        var x = degrees > 0 ? -1 : 1;
+        Polaroid.Crop = new SixLabors.ImageSharp.Rectangle(Polaroid.Crop.X + x, Polaroid.Crop.Y + x, Polaroid.Crop.Width, Polaroid.Crop.Height);
         Polaroid = await imageHandler.CutFromScan(Polaroid, true);
     }
 

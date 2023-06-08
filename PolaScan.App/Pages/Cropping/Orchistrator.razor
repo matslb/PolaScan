@@ -20,14 +20,7 @@
         }
         @if (State.PolaroidsWithMeta.Count > 0 && !State.IsWorking)
         {
-            @if (!IsSaving)
-            {
-                <button class="blue btn" @onclick="ExportImages">Save selected</button>
-            }
-            else
-            {
-                <button class="blue btn" disabled><Icon IconName="circle-notch" Size="1" Color="Enums.AppColor.white" /> Saving</button>
-            }
+             <button class="blue btn" @onclick="ExportImages">Export</button>
         }
         @if (State.IsExported)
         {
@@ -44,7 +37,7 @@
     }
     if (State.IsStarted)
     {
-        <ul class="image-preview">
+        <ul class="@ImageWrapperClass()">
                 
             @foreach (var photo in State.PolaroidsWithMeta)
             {
@@ -60,7 +53,9 @@
 @code {
 
     private ProcessingState State { get; set; }
-    private bool IsSaving { get; set; }
+
+    private string ImageWrapperClass() => $"image-preview {(State.IsWorking ? "disabled": string.Empty )}"; 
+
     private async Task SelectScans()
     {
         State.IsStarted = true;
@@ -80,6 +75,7 @@
                 State.LocationCount += locations.Count();
                 State.StatusMessage = $"{State.LocationCount} photos detected";
                 StateHasChanged();
+                await Task.Delay(1);
                 foreach (var location in locations)
                 {
                     State.PolaroidsWithMeta.Add(new PolaroidWithMeta
@@ -88,10 +84,11 @@
                             Hour = defaultHour,
                             LocationInScan = location,
                             ScanFile = file.FullPath
-                }
+                        }
                     );
+                    await Task.Delay(1);
                     StateHasChanged();
-                }       
+                }      
             }
         }
         State.IsWorking = false;
@@ -108,17 +105,17 @@
 
     private async Task ExportImages()
     {
-        IsSaving = true;
-        StateHasChanged();
-        while(State.PolaroidsWithMeta.Count > 0)
-        {
-            var p = State.PolaroidsWithMeta.First();
-            State.PolaroidsWithMeta.Remove(p);
-            StateHasChanged();
+        State.IsWorking = true;
 
+        for (int i = 0; i < State.PolaroidsWithMeta.Count; i++)
+        {
+            State.StatusMessage = $"{i} of {State.PolaroidsWithMeta.Count} photos exported";
+            await Task.Delay(1);
+            StateHasChanged();
+            var p = State.PolaroidsWithMeta[i];
             await imageHandler.PublishImage(p);
         }
-        IsSaving = false;
+
         Cancel();
         State.IsExported = true;
     }

@@ -6,7 +6,19 @@
     width: 100%;
     padding: 1.5rem;
     justify-content: center;
+    position: relative;
 }
+
+    .image-preview.disabled::after {
+        z-index: 1;
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 3px;
+    }
 
 .button-menu {
     display: flex;
@@ -20,9 +32,14 @@
     margin: 1rem auto;
 }
 
-.image-item{
+.image-item {
     position: relative;
 }
+
+.image-preview.disabled .image-item {
+    opacity: .3;
+}
+
 .image-item button {
     position: absolute;
     left: -1rem;

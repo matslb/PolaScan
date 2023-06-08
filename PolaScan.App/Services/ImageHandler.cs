@@ -148,7 +148,7 @@ public class ImageHandler
         polaroid.HasBeenAnalyzed = true;
         polaroid = await CutFromScan(polaroid, true).ConfigureAwait(false);
         polaroid = await GetDateOnPolaroid(polaroid).ConfigureAwait(false);
-
+                
         return polaroid;
     }
 
@@ -162,7 +162,8 @@ public class ImageHandler
         scanFile.Mutate(x => x
                .Pad(scanFile.Width + padding / modifier, scanFile.Height + padding / modifier)
                .Crop(PolaroidSizeWithMargin(scanFile, polaroid.LocationInScan, modifier))
-               .Rotate(polaroid.Rotation));
+               .Rotate(polaroid.Rotation)
+               .BackgroundColor(Color.White));
         try
         {
             scanFile.Mutate(x =>
@@ -431,16 +432,16 @@ public class ImageHandler
     private static Rectangle PolaroidSizeWithMargin(Image image, BoundingBox position, int mod)
     {
         var left = (int)(image.Width * position.Left);
-        left -= Math.Max(100 / mod, 0);
+        left -= (int)Math.Max(left * 0.05, 0);
 
         var top = (int)(image.Height * position.Top);
-        top -= Math.Max(100 / mod, 0);
+        top -= (int)Math.Max(top * 0.05, 0);
 
         var width = (int)(image.Width * position.Width);
-        width += (int)(width * 0.1);
+        width += (int) Math.Min((width * 0.1), image.Width - (width + left));
 
         var height = (int)(image.Height * position.Height);
-        height += (int)(height * 0.1);
+        height += (int) Math.Min((height * 0.1), image.Height - (height + top));
 
         return new Rectangle(left, top, width, height);
     }
