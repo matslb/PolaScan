@@ -43,7 +43,7 @@
             {
                 <li class="image-item">
                     <button class="btn red zoom-out" @onclick="() => RemovePhoto(photo)"><Icon IconName="trash-can" /></button>
-                    <CroppedImageBlock Polaroid="@photo" />
+                    <CroppedImageBlock Image="@photo" />
                 </li> 
             }
             
@@ -106,16 +106,16 @@
     private async Task ExportImages()
     {
         State.IsWorking = true;
-
         for (int i = 0; i < State.PolaroidsWithMeta.Count; i++)
         {
             State.StatusMessage = $"{i} of {State.PolaroidsWithMeta.Count} photos exported";
-            await Task.Delay(1);
-            StateHasChanged();
             var p = State.PolaroidsWithMeta[i];
             await imageHandler.PublishImage(p);
+            await Task.Delay(10);
+            StateHasChanged();
         }
 
+        await Task.Delay(100);
         Cancel();
         State.IsExported = true;
     }
@@ -146,7 +146,6 @@
 
     protected override void OnInitialized()
     {
-        Cancel();
         RetrieveStoredState();
     }
 

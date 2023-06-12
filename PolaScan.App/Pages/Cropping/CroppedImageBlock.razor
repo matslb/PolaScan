@@ -10,13 +10,13 @@
 <div class="image-block">
 
     <div class="preview">
-        @if(Polaroid.PreviewData == null || Polaroid.PreviewData == string.Empty)
+        @if(Image.PreviewData == null || Image.PreviewData == string.Empty)
         {
         <div class="placeholder">
                 <Icon IconName="circle-notch" Color="AppColor.white" Size="2"></Icon>
         </div>
         }else{
-            <img src="@Polaroid.PreviewData" width="300" />
+            <img src="@Image.PreviewData" width="300" />
         }
         
         <div class="button-group">
@@ -32,23 +32,23 @@
     </div>
     <div class="meta">
 
-        @if(Polaroid.Date != null)
+        @if(Image.Date != null)
         {
             <div class="meta-item hour">
                 <Icon IconName="clock" Size="1" Color="AppColor.green" />
-                <input type="number" value="@Polaroid.Hour" max="24" min="1" @onchange="SetHour" />
+                <input type="number" value="@Image.Hour" max="24" min="1" @onchange="SetHour" />
             </div>
             <div class="meta-item date">
                 <Icon IconName="calendar-days" Color="AppColor.blue"  Size="1" />
-                <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Polaroid.Date.Value.ToString("yyyy-MM-dd")" />
+                <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Image.Date.Value.ToString("yyyy-MM-dd")" />
             </div>
         }
-        else if (DetectDateHasRun && Polaroid.Date is null)
+        else if (DetectDateHasRun && Image.Date is null)
         {
             <div class="meta-item date">
                 <Icon IconName="calendar-days" Color="AppColor.blue" Size="1" />
                 <div>
-                    <button class="btn green" @onclick="async() => Polaroid.Date = DateOnly.FromDateTime(DateTime.Today)">Add Date</button>
+                    <button class="btn green" @onclick="async() => Image.Date = DateOnly.FromDateTime(DateTime.Today)">Add Date</button>
                 </div>
             </div>
         }
@@ -65,11 +65,20 @@
         <div class="meta-item location">
             <Icon IconName="map-location-dot" Color="AppColor.red" Size="1" />
             <div>
-            @if (Polaroid.Location != null)
+            @if (Image.Location != null)
             {
-                <a href="@GetLocationLink()">@Polaroid.Location.Name</a>
+                <a href="@GetLocationLink()">@Image.Location.Name</a>
+                if (Image.LocationOptions != null)
+                {
+                    <ul class="location-options">
+                        @foreach (var l in Image.LocationOptions.OrderBy(x => x.DateTime.Ticks))
+                        {
+                            <button class="@GetLocationBtnClass(l)" @onclick="() => UpdateLocation(l)">@l.DateTime.ToString("HH:mm")</button>
+                        }
+                    </ul>
+                }
                 <div class="map_wrapper">
-                    <LocationSelector @ref="@locationSelector" LocationMeta="@Polaroid.Location" LocationUpdateCallback="UpdateLocation" />
+                    <LocationSelector @ref="@locationSelector" LocationMeta="@Image.Location" LocationUpdateCallback="UpdateLocation" />
                 </div>
             }
             else
@@ -90,7 +99,7 @@
 
 @code {
     [Parameter]
-    public PolaroidWithMeta Polaroid {get;set;}
+    public PolaroidWithMeta Image {get;set;}
     private bool DetectDateHasRun = false;
     private LocationSelector locationSelector { get; set; }
 
@@ -98,10 +107,10 @@
     {
         try
         {
-            Polaroid.Date = DateOnly.Parse(date);
+            Image.Date = DateOnly.Parse(date);
             UpdatePhotoMeta().ConfigureAwait(false);
-            if (Polaroid.Location != null)
-                locationSelector?.SetMarker(Polaroid.Location).ConfigureAwait(false);
+            if (Image.Location != null)
+                locationSelector?.SetMarker(Image.Location).ConfigureAwait(false);
         }
         catch
         {
@@ -111,37 +120,41 @@
 
     private void SetHour(ChangeEventArgs e)
     {
-        Polaroid.Hour = int.Parse((string)e.Value);
+        Image.Hour = int.Parse((string)e.Value);
         UpdatePhotoMeta().ConfigureAwait(false);
-        if(Polaroid.Location != null)
-            locationSelector?.SetMarker(Polaroid.Location).ConfigureAwait(false);
+        if(Image.Location != null)
+            locationSelector?.SetMarker(Image.Location).ConfigureAwait(false);
     }
 
     private void UpdateLocation(LocationMeta locationMeta)
     {
-        Polaroid.Location = locationMeta;
+        Image.Location = locationMeta;
         UpdatePhotoMeta(false).ConfigureAwait(false);
+        locationSelector?.SetMarker(Image.Location).ConfigureAwait(false);
     }
-
+    private string GetLocationBtnClass(LocationMeta l) => Image.Location == l ? "map-btn btn red selected" : "blue map-btn btn";
     private string GetLocationLink()
     {
-        if(Polaroid.Location?.Name != null)
-            return $"https://www.google.com/maps/place/{Polaroid.Location.Name.Replace(" ", "+")}";
+        if(Image.Location?.Name != null)
+            return $"https://www.google.com/maps/place/{Image.Location.Name.Replace(" ", "+")}";
 
         return string.Empty;
     }
 
     private async Task UpdatePhotoMeta(bool useTimeLineService = true)
     {
-        if (Polaroid.Date != null && Polaroid.Date.Value.Year != DateTimeOffset.MinValue.Year)
+        if (Image.Date != null && Image.Date.Value.Year != DateTimeOffset.MinValue.Year)
         {
-            if(useTimeLineService)
-                Polaroid.Location = timelineService.GetDateLocation(Polaroid.Date!.Value, Polaroid.Hour);
-
+            if (useTimeLineService)
+            {
+                Image.LocationOptions = timelineService.GetDateLocations(Image.Date!.Value, Image.Hour);
+                Image.Location = Image.LocationOptions.FirstOrDefault();
+            }
         } 
-        if(Polaroid.Location != null && string.IsNullOrEmpty(Polaroid.Location.Name))
+
+        if(Image.Location != null && string.IsNullOrEmpty(Image.Location.Name))
         {
-            Polaroid.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Polaroid.Location);
+            Image.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Image.Location);
         }
 
         StateHasChanged();
@@ -156,11 +169,16 @@
     }
     private async Task FirstRender()
     {
-        if (!Polaroid.HasBeenAnalyzed)
-            Polaroid = await imageHandler.GetPolaroidFromScan(Polaroid);
+        while (!imageHandler.IsReadyForProcessing())
+        {
+            await Task.Delay(50);
+        }
+
+        if (!Image.HasBeenAnalyzed)
+            Image = await imageHandler.GetPolaroidFromScan(Image);
         await Task.Delay(1);
-        if (string.IsNullOrEmpty(Polaroid.PreviewData))
-            Polaroid = await imageHandler.CutFromScan(Polaroid, true);
+        if (string.IsNullOrEmpty(Image.PreviewData))
+            Image = await imageHandler.CutFromScan(Image, true);
         await Task.Delay(1);
         DetectDateHasRun = true;
         await UpdatePhotoMeta();
@@ -168,21 +186,21 @@
 
     private async Task Move(int x, int y)
     {
-        Polaroid.Crop = new SixLabors.ImageSharp.Rectangle(Polaroid.Crop.X + x, Polaroid.Crop.Y + y, Polaroid.Crop.Width, Polaroid.Crop.Height);
-        Polaroid = await imageHandler.CutFromScan(Polaroid, true);
+        Image.Crop = new SixLabors.ImageSharp.Rectangle(Image.Crop.X + x, Image.Crop.Y + y, Image.Crop.Width, Image.Crop.Height);
+        Image = await imageHandler.CutFromScan(Image, true);
     }
 
     private async Task Rotate(double degrees)
     {
-        Polaroid.Rotation += (float)degrees;
+        Image.Rotation += (float)degrees;
         var x = degrees > 0 ? -1 : 1;
-        Polaroid.Crop = new SixLabors.ImageSharp.Rectangle(Polaroid.Crop.X + x, Polaroid.Crop.Y + x, Polaroid.Crop.Width, Polaroid.Crop.Height);
-        Polaroid = await imageHandler.CutFromScan(Polaroid, true);
+        Image.Crop = new SixLabors.ImageSharp.Rectangle(Image.Crop.X + x, Image.Crop.Y + x, Image.Crop.Width, Image.Crop.Height);
+        Image = await imageHandler.CutFromScan(Image, true);
     }
 
     private async Task Zoom(int x)
     {
-        Polaroid.Crop = new SixLabors.ImageSharp.Rectangle(Polaroid.Crop.X + x, Polaroid.Crop.Y + x, Polaroid.Crop.Width - x*2, Polaroid.Crop.Height - x*2 );
-        Polaroid = await imageHandler.CutFromScan(Polaroid, true);
+        Image.Crop = new SixLabors.ImageSharp.Rectangle(Image.Crop.X + x, Image.Crop.Y + x, Image.Crop.Width - x*2, Image.Crop.Height - x*2 );
+        Image = await imageHandler.CutFromScan(Image, true);
     }
 }

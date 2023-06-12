@@ -29,7 +29,6 @@ namespace PolaScan.App
             builder.Services.AddTransient<PolaScanApiService, PolaScanApiService>();
             builder.Services.AddSingleton<GoogleTimelineService, GoogleTimelineService>();
             builder.Services.AddSingleton<ImageHandler, ImageHandler>();
-            //builder.Services.AddSingleton(new ImageHandler(polaScanApiService, timeLineService));
 
             if (Preferences.Default.Get(Constants.Settings.DesitnationPath, string.Empty) == string.Empty)
             {

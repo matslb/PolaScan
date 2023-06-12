@@ -16,10 +16,11 @@ namespace PolaScan.App.Services;
 public class ImageHandler
 {
     public Dictionary<string, string> SavedTemporaryFiles { get; set; }
-    private static int tempImageModifier() => int.Parse(Preferences.Default.Get(Constants.Settings.TempImageModifier, Constants.ImageProcessing.TempImageModifier + ""));
+    private static int tempImageModifier() => Constants.ImageProcessing.TempImageModifier;
     private readonly static int padding = Constants.ImageProcessing.ScanFilePadding;
     private readonly PolaScanApiService polaScanService;
     private readonly GoogleTimelineService timelineService;
+    private int PhotosInProsses { get; set; } = 0;
 
     public ImageHandler(PolaScanApiService polaScanService, GoogleTimelineService timelineService)
     {
@@ -67,12 +68,14 @@ public class ImageHandler
         if (polaroid.Date != null)
         {
             var hour = new TimeOnly(polaroid.Hour, 0, 0);
-            var dateTime = polaroid.Date.Value.ToDateTime(hour, DateTimeKind.Unspecified);
+            var dateTime = polaroid.Location?.DateTime != null ? polaroid.Location.DateTime : polaroid.Date.Value.ToDateTime(hour, DateTimeKind.Unspecified);
             image.Metadata.ExifProfile.SetValue(ExifTag.DateTimeOriginal, dateTime.ToString("yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture));
         }
 
         await image.SaveAsync(uniqueName);
     }
+
+    public bool IsReadyForProcessing() => PhotosInProsses == 0;
 
     public async Task<PolaroidWithMeta> GetDateOnPolaroid(PolaroidWithMeta polaroid)
     {
@@ -80,7 +83,7 @@ public class ImageHandler
         polaroid.Date = await polaScanService.DetectDateInImage(lip, CultureInfo.CurrentCulture).ConfigureAwait(false);
         if (polaroid.Date != null && polaroid.Date != DateOnly.MinValue)
         {
-            polaroid.Location = timelineService.GetDateLocation(polaroid.Date!.Value, polaroid.Hour);
+            polaroid.Location = timelineService.GetDateLocations(polaroid.Date!.Value, polaroid.Hour).FirstOrDefault();
         }
 
         return polaroid;
@@ -134,7 +137,7 @@ public class ImageHandler
 
     public async Task<PolaroidWithMeta> GetPolaroidFromScan(PolaroidWithMeta polaroid)
     {
-
+        PhotosInProsses++;
         if (!SavedTemporaryFiles.TryGetValue(polaroid.ScanFile, out var compressedScanFileName))
         {
             compressedScanFileName = await SaveCompressedScanFile(polaroid.ScanFile);
@@ -148,7 +151,7 @@ public class ImageHandler
         polaroid.HasBeenAnalyzed = true;
         polaroid = await CutFromScan(polaroid, true).ConfigureAwait(false);
         polaroid = await GetDateOnPolaroid(polaroid).ConfigureAwait(false);
-                
+        PhotosInProsses--;
         return polaroid;
     }
 
@@ -438,10 +441,10 @@ public class ImageHandler
         top -= (int)Math.Max(top * 0.05, 0);
 
         var width = (int)(image.Width * position.Width);
-        width += (int) Math.Min((width * 0.1), image.Width - (width + left));
+        width += (int)Math.Min((width * 0.1), image.Width - (width + left));
 
         var height = (int)(image.Height * position.Height);
-        height += (int) Math.Min((height * 0.1), image.Height - (height + top));
+        height += (int)Math.Min((height * 0.1), image.Height - (height + top));
 
         return new Rectangle(left, top, width, height);
     }

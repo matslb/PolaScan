@@ -20,6 +20,7 @@ public class PolaroidWithMeta
     public string FileName(int i) => $"{(Date == null ? "img" : Date.Value.ToString("dd-MM-yyyy"))}-{i}.{Format}";
     public string TempFileName => $"{Id}.{Format}";
     public string Format => ScanFile.Split(".")[1];
+    public List<LocationMeta> LocationOptions { get; set; }
 }
 
 public class LocationMeta
@@ -27,4 +28,5 @@ public class LocationMeta
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public string Name { get; set; }
+    public DateTime DateTime { get; set; }
 }

@@ -28,8 +28,20 @@
 
 .status-message {
     color: white;
-    text-align: center;
-    margin: 1rem auto;
+    width: 15rem;
+    height: 10rem;
+    border-radius: 3px;
+    margin: auto;
+    text-shadow: 1px 1px 2px black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
 }
 
 .image-item {

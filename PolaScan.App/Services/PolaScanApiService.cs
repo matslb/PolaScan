@@ -24,11 +24,11 @@ public class PolaScanApiService
 
     public async Task<List<BoundingBox>> DetectPolaroidsInImage(string scanPath)
     {
-        var mod = Preferences.Default.Get(Constants.Settings.TempImageModifier, Constants.ImageProcessing.TempImageModifier + "");
+        var mod = Constants.ImageProcessing.TempImageModifier;
         using var image = Image.Load(scanPath);
         image.Mutate(x =>
         x.Pad(image.Width + Constants.ImageProcessing.ScanFilePadding, image.Height + Constants.ImageProcessing.ScanFilePadding)
-        .Resize(new Size { Width = image.Width / int.Parse(mod) })
+        .Resize(new Size { Width = image.Width / mod })
         );
 
         var tempFileName = await Helpers.SaveTempImage(image, $"{Guid.NewGuid()}.jpg");

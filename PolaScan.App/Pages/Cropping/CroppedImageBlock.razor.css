@@ -36,9 +36,11 @@
     width: 100%;
     height: auto;
 }
+
 .image-block:hover > :after {
     box-shadow: 0 0 0 2px #d43c84 !important;
 }
+
 .image-block .preview::after {
     content: "";
     box-shadow: 0 0 0 1px #00000083;
@@ -126,21 +128,33 @@
     word-break: break-word;
 }
 
-.meta-item.hour input {
-    width: 2.5rem;
-    border: none;
-    border-radius: 3px;
-}
+    .meta-item.hour input {
+        width: 2.5rem;
+        border: none;
+        border-radius: 3px;
+    }
 
-.meta-item.location a {
-    color: black;
-    display: block;
-    max-width: 15rem;
-}
+    .meta-item.location a {
+        color: black;
+        display: block;
+        max-width: 15rem;
+    }
 
 .map_wrapper {
     height: 150px;
     width: 100%;
     border-radius: 3px;
     overflow: hidden;
+}
+
+.location-options{
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-gap: 3px;
+    margin: 0 0 3px;
+    padding: 0;
+}
+.map-btn {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.25rem;
 }

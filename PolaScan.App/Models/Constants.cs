@@ -11,7 +11,6 @@ public static class Constants
         public static string CameraModel = nameof(CameraModel);
         public static string DateFormat = nameof(DateFormat);
         public static string CultureName = nameof(CultureName);
-        public static string TempImageModifier = nameof(TempImageModifier);
     }
 
     public static class ImageProcessing

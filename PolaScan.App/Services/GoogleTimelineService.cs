@@ -56,19 +56,21 @@ public class GoogleTimelineService
         }
     }
 
-    public LocationMeta GetDateLocation(DateOnly date, int timeOfDay)
+    public List<LocationMeta> GetDateLocations(DateOnly date, int timeOfDay)
     {
         InitializeDetailed();
         var closestHour = timeOfDay;
         var possibleLocations = Timeline.Locations.Where(x => x.Date.UtcDateTime.ToShortDateString() == date.ToShortDateString());
-        var location = possibleLocations.OrderBy(x => Math.Abs(x.Date.Hour - closestHour)).ThenBy(x => x.Accuracy).FirstOrDefault();
-
-        return location != null ? new LocationMeta
-        {
-            Latitude = location.Latitude / 1e7,
-            Longitude = location.Longitude / 1e7,
-            Name = location.Name
-        } : null;
+        return possibleLocations
+            .OrderBy(x => Math.Abs(x.Date.Hour - closestHour))
+            .DistinctBy(x => $"{x.Latitude.ToString().Substring(0, 6)}|{x.Latitude.ToString().Substring(0, 6)}")
+            .Take(10)
+            .Select(location => new LocationMeta
+            {
+                Latitude = location.Latitude / 1e7,
+                Longitude = location.Longitude / 1e7,
+                Name = location.Name,
+                DateTime = location.Date.DateTime
+            }).ToList();
     }
-
 }
