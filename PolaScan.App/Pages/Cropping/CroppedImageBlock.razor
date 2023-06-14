@@ -1,4 +1,4 @@
-﻿@using Microsoft.Maui.Controls.PlatformConfiguration;
+@using Microsoft.Maui.Controls.PlatformConfiguration;
 @using PolaScan.App.Models;
 @using static PolaScan.App.Models.Enums;
 @using PolaScan.App.Services;
@@ -165,7 +165,7 @@
             if (useTimeLineService)
             {
                 Image.LocationOptions = timelineService.GetDateLocations(Image.Date!.Value, Image.Hour);
-                Image.Location = Image.LocationOptions.First() ?? Image.Location;
+                Image.Location = Image.LocationOptions.FirstOrDefault() ?? Image.Location;
             }
         } 
 
