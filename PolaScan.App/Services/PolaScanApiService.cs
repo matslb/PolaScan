@@ -20,6 +20,7 @@ public class PolaScanApiService
         {
             BaseAddress = new Uri(baseUrl)
         };
+        client.Timeout = TimeSpan.FromSeconds(10);
     }
 
     public async Task<List<BoundingBox>> DetectPolaroidsInImage(string scanPath)
@@ -44,11 +45,17 @@ public class PolaScanApiService
     public async Task<DateOnly?> DetectDateInImage(string tempImagePath, CultureInfo cultureInfo)
     {
         var content = GetImageStreamContent(tempImagePath);
-
-        var result = await client.PostAsync("/DetectDateInImage", content).ConfigureAwait(false);
+        var res = string.Empty;
+        try
+        {
+            var result = await client.PostAsync("/DetectDateInImage", content);
+            res = JsonConvert.DeserializeObject<string>(await result.Content.ReadAsStringAsync());
+        }
+        catch
+        {
+        }
         content.Dispose();
 
-        var res = JsonConvert.DeserializeObject<string>(await result.Content.ReadAsStringAsync());
 
         if (DateTime.TryParse(res.Replace("\\n", string.Empty), cultureInfo, DateTimeStyles.AssumeUniversal, out var date))
         {
