@@ -1,4 +1,4 @@
-﻿@using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
+@using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 @using Newtonsoft.Json;
 @using PolaScan.App.Models;
 @using System.Globalization;
@@ -33,8 +33,6 @@
             <Icon IconName="circle-notch" Size="2" />
             <br />
             <span>@State.StatusMessage</span>
-            <br />
-            <button class="btn red" @onclick="Cancel">Cancel</button>
         </div>
     }
     if (State.IsStarted)
@@ -54,90 +52,91 @@
 }
 @code {
 
-    private ProcessingState State { get; set; }
+  private ProcessingState State { get; set; }
 
-    private string ImageWrapperClass() => $"image-preview {(State.IsWorking ? "disabled": string.Empty )}"; 
+  private string ImageWrapperClass() => $"image-preview {(State.IsWorking ? "disabled": string.Empty )}"; 
 
-    private async Task SelectScans()
+  private async Task SelectScans()
+  {
+    State.IsStarted = true;
+    State.IsWorking = true;
+    var defaultHour = int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12"));
+    var result = await FilePicker.Default.PickMultipleAsync();
+    if (result.Any())
     {
-        State.IsStarted = true;
-        State.IsWorking = true;
-        var defaultHour = int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12"));
-        var result = await FilePicker.Default.PickMultipleAsync();
-        if (result.Any())
-        {
-            State.ScanFileCount = result.Count();
-            State.LocationCount = 0;
-            State.StatusMessage = $"Analyzing {State.ScanFileCount} {(State.ScanFileCount > 1 ? "scans" : "scan")}";
-            StateHasChanged();
+      State.ScanFileCount = result.Count();
+      State.LocationCount = 0;
+      State.StatusMessage = $"Analyzing {State.ScanFileCount} {(State.ScanFileCount > 1 ? "scans" : "scan")}";
+      StateHasChanged();
 
-            foreach (var file in result)
-            {
-                var locations = await polaScanClient.DetectPolaroidsInImage(file.FullPath);
-                State.LocationCount += locations.Count();
-                State.StatusMessage = $"{State.LocationCount} photos detected";
-                StateHasChanged();
-                await Task.Delay(1);
-                foreach (var location in locations)
-                {
-                    State.PolaroidsWithMeta.Add(new PolaroidWithMeta
+      foreach (var file in result)
+      {
+        var locations = await polaScanClient.DetectPolaroidsInImage(file.FullPath);
+        State.LocationCount += locations.Count();
+        State.StatusMessage = $"{State.LocationCount} photos detected";
+        StateHasChanged();
+        await Task.Delay(1);
+        foreach (var location in locations)
+        {
+          State.PolaroidsWithMeta.Add(new PolaroidWithMeta
                         {
                             Id = Guid.NewGuid(),
                             Hour = defaultHour,
                             LocationInScan = location,
                             ScanFile = file.FullPath
                         }
-                    );
-                    await Task.Delay(1);
-                    StateHasChanged();
-                }      
-            }
-            if(State.LocationCount == 0)
-            {
-                State.StatusMessage = "No photos detected";
-            }
-        }
-        State.IsWorking = false;
-        StateHasChanged();
+          );
+          await Task.Delay(1);
+          StateHasChanged();
+        }      
+      }
+      if(State.LocationCount == 0)
+      {
+        State.StatusMessage = "No photos detected";
+      }
+    }
+    State.IsWorking = false;
+    StateHasChanged();
+  }
+
+  private void Cancel()
+  {
+    State = new();
+    Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(State));
+    imageHandler.ClearTempFiles();
+    StateHasChanged();
+  }
+
+  private async Task ExportImages()
+  {
+    State.IsWorking = true;
+    for (int i = 0; i < State.PolaroidsWithMeta.Count; i++)
+    {
+      State.StatusMessage = $"{i} of {State.PolaroidsWithMeta.Count} photos exported";
+      var p = State.PolaroidsWithMeta[i];
+      await imageHandler.PublishImage(p);
+      await Task.Delay(10);
+      StateHasChanged();
     }
 
-    private void Cancel()
+    await Task.Delay(100);
+    Cancel();
+    State.IsExported = true;
+  }
+
+  private void OpenDestinationFolder()
+  {
+    Process.Start("explorer.exe", $"{Preferences.Default.Get(Constants.Settings.DesitnationPath, "")}\\PolaScan");
+  }
+
+  private void SaveState()
+  {
+    State ??= new();
+    foreach( var p in State.PolaroidsWithMeta)
     {
-        State = new();
-        Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(State));
-        imageHandler.ClearTempFiles();
-        StateHasChanged();
+      p.PreviewData = string.Empty;
+      p.LocationOptions.Clear();
     }
-
-    private async Task ExportImages()
-    {
-        State.IsWorking = true;
-        for (int i = 0; i < State.PolaroidsWithMeta.Count; i++)
-        {
-            State.StatusMessage = $"{i} of {State.PolaroidsWithMeta.Count} photos exported";
-            var p = State.PolaroidsWithMeta[i];
-            await imageHandler.PublishImage(p);
-            await Task.Delay(10);
-            StateHasChanged();
-        }
-
-        await Task.Delay(100);
-        Cancel();
-        State.IsExported = true;
-    }
-
-    private void OpenDestinationFolder()
-    {
-        Process.Start("explorer.exe", $"{Preferences.Default.Get(Constants.Settings.DesitnationPath, "")}\\PolaScan");
-    }
-
-    private void SaveState()
-    {
-        State ??= new();
-        foreach( var p in State.PolaroidsWithMeta)
-        {
-            p.PreviewData = string.Empty;
-        }
         Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(State));
     }
 
