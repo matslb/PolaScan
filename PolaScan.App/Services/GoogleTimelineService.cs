@@ -1,4 +1,3 @@
-﻿using System.Globalization;
 using Newtonsoft.Json;
 using PolaScan.App.Models;
 
@@ -7,16 +6,18 @@ namespace PolaScan.App.Services;
 public class GoogleTimelineService
 {
     private GoogleTimeline Timeline { get; set; } = new GoogleTimeline();
-    private bool detailedLoaded = false;
+    private string loadedFilename = string.Empty;
 
     public void InitializeDetailed()
     {
-        if (detailedLoaded)
+        var fileName = Preferences.Default.Get(Constants.Settings.GoogleTimelineFile, "");
+
+        if (fileName == loadedFilename)
             return;
-        detailedLoaded = true;
+        loadedFilename = fileName;
         try
         {
-            using (var r = new StreamReader(Preferences.Default.Get(Constants.Settings.GoogleTimelineFile, "")))
+            using (var r = new StreamReader(fileName))
             {
                 using JsonReader reader = new JsonTextReader(r);
                 var serializer = new JsonSerializer();
