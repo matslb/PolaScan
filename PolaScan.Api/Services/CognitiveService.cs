@@ -23,7 +23,10 @@ public class CognitiveService
         var blobServiceClient = new BlobServiceClient(settings.AzureBlobStorageConnectionString);
         blobContainer = blobServiceClient.GetBlobContainerClient(settings.AzureBlobStorageContainer);
 
+        CustomVisionEndpoint = new Uri(settings.CustomVisionEndpoint ?? string.Empty);
+
         httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", settings.AzureCognitiveSubscriptionKey);
         httpClient.DefaultRequestHeaders.Add("Training-Key", settings.CustomVisionKey);
 
         customVisionPredictionClient = new CustomVisionPredictionClient(new ApiKeyServiceClientCredentials(settings.CustomVisionPredictionKey))
