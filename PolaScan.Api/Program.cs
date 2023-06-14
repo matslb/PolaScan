@@ -52,6 +52,16 @@ app.MapPost("/DetectDateInImage", async Task<IResult> (HttpRequest request) =>
 
 });
 
+
+app.MapGet("/DateTest", async Task<IResult> (HttpRequest request) =>
+{
+    var url = request.Query["url"];
+
+    var res = await cognitiveService.DetectDateInImageV2(url);
+    return Results.Ok(res);
+
+});
+
 app.MapGet("/location-lookup", async (HttpRequest request) =>
 {
     CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
@@ -63,7 +73,7 @@ app.MapGet("/location-lookup", async (HttpRequest request) =>
     {
         Coordinates = new Azure.Core.GeoJson.GeoPosition(lng, lat)
     });
-    if(locationRes?.Value?.Addresses?.FirstOrDefault()?.Address != null)
+    if (locationRes?.Value?.Addresses?.FirstOrDefault()?.Address != null)
         return Results.Ok(locationRes.Value.Addresses.First().Address.FreeformAddress);
 
     return Results.NotFound();

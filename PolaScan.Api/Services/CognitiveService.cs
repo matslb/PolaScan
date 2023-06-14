@@ -1,4 +1,8 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure.AI.Vision.Common.Options;
+using Azure;
+using Azure.AI.Vision.ImageAnalysis;
+using Azure.Storage.Blobs;
+using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 using Newtonsoft.Json;
@@ -6,6 +10,7 @@ using PolaScan.Api;
 using PolaScan.Api.Models;
 using System.Globalization;
 using System.Text;
+using Azure.AI.Vision.Common.Input;
 
 namespace PolaScan.Api.Services;
 
@@ -16,19 +21,15 @@ public class CognitiveService
     private readonly BlobContainerClient blobContainer;
     private readonly string customVisionIterationName;
     private readonly Guid customVisionProjectId;
-    private readonly Uri AzureCognitiveEndpoint;
     private readonly Uri CustomVisionEndpoint;
+    private readonly VisionServiceOptions computerVisionOptions;
 
     public CognitiveService(Settings settings)
     {
-        AzureCognitiveEndpoint = new Uri(settings.AzureCognitiveEndpoint ?? string.Empty);
-        CustomVisionEndpoint = new Uri(settings.CustomVisionEndpoint ?? string.Empty);
-
         var blobServiceClient = new BlobServiceClient(settings.AzureBlobStorageConnectionString);
         blobContainer = blobServiceClient.GetBlobContainerClient(settings.AzureBlobStorageContainer);
 
         httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", settings.AzureCognitiveSubscriptionKey);
         httpClient.DefaultRequestHeaders.Add("Training-Key", settings.CustomVisionKey);
 
         customVisionPredictionClient = new CustomVisionPredictionClient(new ApiKeyServiceClientCredentials(settings.CustomVisionPredictionKey))
@@ -37,6 +38,8 @@ public class CognitiveService
         };
         customVisionIterationName = settings.CustomVisionIterationName ?? string.Empty;
         customVisionProjectId = settings.CustomVisionProjectId ?? Guid.Empty;
+
+        computerVisionOptions = new VisionServiceOptions(settings.AzureCognitiveEndpoint, new AzureKeyCredential(settings.AzureCognitiveSubscriptionKey));
     }
 
     public async Task<List<BoundingBox>> DetectPolaroidsInImage(Stream imageStream)
@@ -55,24 +58,27 @@ public class CognitiveService
 
         var imageBlobName = $"{Guid.NewGuid()}.{fileName.Split(".")[1]}";
 
-        await blobContainer.UploadBlobAsync(imageBlobName, imageStream);
-
+        await blobContainer.UploadBlobAsync(imageBlobName, imageStream).ConfigureAwait(false);
+        imageStream.Close();
         var blobUrl = $"{blobContainer.Uri}/{imageBlobName}";
 
-        var res = await httpClient.PostAsync(AzureCognitiveEndpoint +
-            "computervision/imageanalysis:analyze?api-version=2022-10-12-preview&features=read&model-version=latest&language=en",
+        try
+        {
+            var analysisOptions = new ImageAnalysisOptions()
+            {
+                Features = ImageAnalysisFeature.Text
+            };
 
-            new StringContent(JsonConvert.SerializeObject(new ImageRequest { Url = blobUrl }), Encoding.UTF8, "application/json"));
-        var cognitiveResult = JsonConvert.DeserializeObject<CognitiveResult>(await res.Content.ReadAsStringAsync());
+            using var analyzer = new ImageAnalyzer(computerVisionOptions, VisionSource.FromUrl(blobUrl), analysisOptions);
 
-        await blobContainer.DeleteBlobAsync(imageBlobName);
-        imageStream.Close();
-
-        return cognitiveResult?.ReadResult?.Content ?? string.Empty;
-    }
-
-    class ImageRequest
-    {
-        public string Url { get; set; }
+            var result = analyzer.Analyze();
+            return result?.Text?.Lines[0]?.Content ?? string.Empty;
+        }
+        catch { }
+        finally
+        {
+            await blobContainer.DeleteBlobAsync(imageBlobName).ConfigureAwait(false);
+        }
+        return string.Empty;
     }
 }
