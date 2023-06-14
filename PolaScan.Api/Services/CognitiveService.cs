@@ -58,20 +58,17 @@ public class CognitiveService
         await blobContainer.UploadBlobAsync(imageBlobName, imageStream).ConfigureAwait(false);
         imageStream.Close();
         var blobUrl = $"{blobContainer.Uri}/{imageBlobName}";
-        var res = string.Empty;
-        try
+      
+        var analysisOptions = new ImageAnalysisOptions()
         {
-            var analysisOptions = new ImageAnalysisOptions()
-            {
-                Features = ImageAnalysisFeature.Text
-            };
+            Features = ImageAnalysisFeature.Text
+        };
 
-            using var analyzer = new ImageAnalyzer(computerVisionOptions, VisionSource.FromUrl(blobUrl), analysisOptions);
+        using var analyzer = new ImageAnalyzer(computerVisionOptions, VisionSource.FromUrl(blobUrl), analysisOptions);
 
-            var result = analyzer.Analyze();
-            res = result?.Text?.Lines[0]?.Content ?? string.Empty;
-        }
-        catch { }
+        var result = analyzer.Analyze();
+        var res = result?.Text?.Lines[0]?.Content ?? string.Empty;
+      
         
         await blobContainer.DeleteBlobAsync(imageBlobName).ConfigureAwait(false);
         
