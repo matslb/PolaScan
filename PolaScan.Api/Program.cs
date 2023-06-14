@@ -52,16 +52,6 @@ app.MapPost("/DetectDateInImage", async Task<IResult> (HttpRequest request) =>
 
 });
 
-
-app.MapGet("/DateTest", async Task<IResult> (HttpRequest request) =>
-{
-    var url = request.Query["url"];
-
-    var res = await cognitiveService.DetectDateInImageV2(url);
-    return Results.Ok(res);
-
-});
-
 app.MapGet("/location-lookup", async (HttpRequest request) =>
 {
     CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
