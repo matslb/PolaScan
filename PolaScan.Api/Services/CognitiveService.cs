@@ -1,12 +1,12 @@
-﻿using Azure.AI.Vision.Common.Options;
+using System.Text;
 using Azure;
+using Azure.AI.Vision.Common.Input;
+using Azure.AI.Vision.Common.Options;
 using Azure.AI.Vision.ImageAnalysis;
 using Azure.Storage.Blobs;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
-using Azure.AI.Vision.Common.Input;
 using Newtonsoft.Json;
-using System.Text;
 
 namespace PolaScan.Api.Services;
 
@@ -69,12 +69,12 @@ public class CognitiveService
                 new StringContent(JsonConvert.SerializeObject(new ImageRequest { Url = blobUrl }), Encoding.UTF8, "application/json"));
 
             var cognitiveResult = JsonConvert.DeserializeObject<CognitiveResult>(await res.Content.ReadAsStringAsync());
-            await blobContainer.DeleteBlobAsync(imageBlobName);
 
             return cognitiveResult?.ReadResult?.Content ?? string.Empty;
         }
         catch (Exception e)
-        {}
+        { }
+        await blobContainer.DeleteBlobAsync(imageBlobName);
 
         return string.Empty;
     }
