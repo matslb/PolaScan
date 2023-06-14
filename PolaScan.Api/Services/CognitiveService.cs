@@ -5,6 +5,8 @@ using Azure.Storage.Blobs;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 using Azure.AI.Vision.Common.Input;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace PolaScan.Api.Services;
 
@@ -17,6 +19,7 @@ public class CognitiveService
     private readonly Guid customVisionProjectId;
     private readonly Uri CustomVisionEndpoint;
     private readonly VisionServiceOptions computerVisionOptions;
+    private readonly Uri AzureCognitiveEndpoint;
 
     public CognitiveService(Settings settings)
     {
@@ -24,7 +27,7 @@ public class CognitiveService
         blobContainer = blobServiceClient.GetBlobContainerClient(settings.AzureBlobStorageContainer);
 
         CustomVisionEndpoint = new Uri(settings.CustomVisionEndpoint ?? string.Empty);
-
+        AzureCognitiveEndpoint = new Uri(settings.AzureCognitiveEndpoint ?? string.Empty);
         httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", settings.AzureCognitiveSubscriptionKey);
         httpClient.DefaultRequestHeaders.Add("Training-Key", settings.CustomVisionKey);
@@ -55,10 +58,52 @@ public class CognitiveService
 
         var imageBlobName = $"{Guid.NewGuid()}.{fileName.Split(".")[1]}";
 
+        await blobContainer.UploadBlobAsync(imageBlobName, imageStream);
+        imageStream.Close();
+
+        var blobUrl = $"{blobContainer.Uri}/{imageBlobName}";
+
+        try
+        {
+            var res = await httpClient.PostAsync($"{AzureCognitiveEndpoint}computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=read&model-version=latest&language=en",
+                new StringContent(JsonConvert.SerializeObject(new ImageRequest { Url = blobUrl }), Encoding.UTF8, "application/json"));
+
+            var cognitiveResult = JsonConvert.DeserializeObject<CognitiveResult>(await res.Content.ReadAsStringAsync());
+            await blobContainer.DeleteBlobAsync(imageBlobName);
+
+            return cognitiveResult?.ReadResult?.Content ?? string.Empty;
+        }
+        catch (Exception e)
+        {}
+
+        return string.Empty;
+    }
+
+    public class ImageRequest
+    {
+        public string Url { get; set; }
+    }
+
+    public class CognitiveResult
+    {
+        public ReadResult ReadResult { get; set; }
+    }
+
+    public class ReadResult
+    {
+        public string Content { get; set; }
+    }
+
+    public async Task<string> DetectDateInImageV2(Stream imageStream, string fileName)
+    {
+        blobContainer.CreateIfNotExists();
+
+        var imageBlobName = $"{Guid.NewGuid()}.{fileName.Split(".")[1]}";
+
         await blobContainer.UploadBlobAsync(imageBlobName, imageStream).ConfigureAwait(false);
         imageStream.Close();
         var blobUrl = $"{blobContainer.Uri}/{imageBlobName}";
-      
+
         var analysisOptions = new ImageAnalysisOptions()
         {
             Features = ImageAnalysisFeature.Text
@@ -68,10 +113,10 @@ public class CognitiveService
 
         var result = analyzer.Analyze();
         var res = result?.Text?.Lines[0]?.Content ?? string.Empty;
-      
-        
+
+
         await blobContainer.DeleteBlobAsync(imageBlobName).ConfigureAwait(false);
-        
+
         return res;
     }
 }

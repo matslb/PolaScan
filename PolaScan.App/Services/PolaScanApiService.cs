@@ -57,7 +57,7 @@ public class PolaScanApiService
         content.Dispose();
 
 
-        if (DateTime.TryParse(res.Replace("\\n", string.Empty), cultureInfo, DateTimeStyles.AssumeUniversal, out var date))
+        if (res != null && DateTime.TryParse(res.Replace("\\n", string.Empty), cultureInfo, DateTimeStyles.AssumeUniversal, out var date))
         {
             return DateOnly.FromDateTime(date);
         }
