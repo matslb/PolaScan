@@ -1,4 +1,5 @@
-﻿@using PolaScan.App.Models;
+﻿@using Microsoft.Maui.Controls.PlatformConfiguration;
+@using PolaScan.App.Models;
 @using static PolaScan.App.Models.Enums;
 @using PolaScan.App.Services;
 
@@ -67,6 +68,7 @@
             <div>
             @if (Image.Location != null)
             {
+                  
                 <a href="@GetLocationLink()">@Image.Location.Name</a>
                 if (Image.LocationOptions != null)
                 {
@@ -83,13 +85,21 @@
             }
             else
             {
+                if (LocationIsBlocked)
+                {
+                    <p>Could not fetch location, change your privacy settings to allow location services</p>
+                }
                 <button class="btn red" @onclick="async() =>
                     {
-                        var location = await Geolocation.Default.GetLastKnownLocationAsync();
-                        UpdateLocation(new LocationMeta{
-                            Latitude = location?.Latitude ?? 59.9170144331894,
-                            Longitude = location?.Longitude ?? 10.727637941021577
-                        });
+                        try{
+                            var location = await Geolocation.Default.GetLastKnownLocationAsync();
+                            UpdateLocation(new LocationMeta{
+                                Latitude = location.Latitude,
+                                Longitude = location.Longitude
+                            });
+                        }catch{
+                            LocationIsBlocked = true;
+                        }
                     }">Add location</button>
             }
             </div>
@@ -102,7 +112,7 @@
     public PolaroidWithMeta Image {get;set;}
     private bool DetectDateHasRun = false;
     private LocationSelector locationSelector { get; set; }
-
+    private bool LocationIsBlocked { get; set; }
     private string SetDate(string date)
     {
         try

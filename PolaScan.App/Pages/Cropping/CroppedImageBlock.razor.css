@@ -134,7 +134,7 @@
         border-radius: 3px;
     }
 
-    .meta-item.location a {
+    .meta-item.location a, .meta-item.location p {
         color: black;
         display: block;
         max-width: 15rem;
