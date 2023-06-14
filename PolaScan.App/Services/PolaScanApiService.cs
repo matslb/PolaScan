@@ -20,7 +20,7 @@ public class PolaScanApiService
         {
             BaseAddress = new Uri(baseUrl)
         };
-        client.Timeout = TimeSpan.FromSeconds(10);
+        client.Timeout = TimeSpan.FromSeconds(20);
     }
 
     public async Task<List<BoundingBox>> DetectPolaroidsInImage(string scanPath)

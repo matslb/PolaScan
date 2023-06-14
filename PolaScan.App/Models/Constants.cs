@@ -6,7 +6,7 @@ public static class Constants
     {
         public static string AssumedHour = nameof(AssumedHour);
         public static string DesitnationPath = nameof(DesitnationPath);
-        public static string GoogleTimelineFolder = nameof(GoogleTimelineFolder);
+        public static string GoogleTimelineFile = nameof(GoogleTimelineFile);
         public static string CopyRightText = nameof(CopyRightText);
         public static string CameraModel = nameof(CameraModel);
         public static string DateFormat = nameof(DateFormat);

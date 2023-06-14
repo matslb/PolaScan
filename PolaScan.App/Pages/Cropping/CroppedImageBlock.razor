@@ -68,7 +68,6 @@
             <div>
             @if (Image.Location != null)
             {
-                  
                 <a href="@GetLocationLink()">@Image.Location.Name</a>
                 if (Image.LocationOptions != null)
                 {
@@ -81,26 +80,15 @@
                 }
                 <div class="map_wrapper">
                     <LocationSelector @ref="@locationSelector" LocationMeta="@Image.Location" LocationUpdateCallback="UpdateLocation" />
-                </div>
-            }
-            else
-            {
-                if (LocationIsBlocked)
-                {
-                    <p>Could not fetch location, change your privacy settings to allow location services</p>
+                    </div>
                 }
-                <button class="btn red" @onclick="async() =>
+                else
+                {
+                    if (LocationIsBlocked)
                     {
-                        try{
-                            var location = await Geolocation.Default.GetLastKnownLocationAsync();
-                            UpdateLocation(new LocationMeta{
-                                Latitude = location.Latitude,
-                                Longitude = location.Longitude
-                            });
-                        }catch{
-                            LocationIsBlocked = true;
-                        }
-                    }">Add location</button>
+                        <p>Could not fetch location, change your privacy settings to allow location services</p>
+                    }
+                    <button class="btn red" @onclick="SetInitialLocation">Add location</button>
             }
             </div>
         </div>
@@ -112,7 +100,8 @@
     public PolaroidWithMeta Image {get;set;}
     private bool DetectDateHasRun = false;
     private LocationSelector locationSelector { get; set; }
-    private bool LocationIsBlocked { get; set; }
+    private bool LocationIsBlocked { get; set; } = false;
+
     private string SetDate(string date)
     {
         try
@@ -136,12 +125,30 @@
             locationSelector?.SetMarker(Image.Location).ConfigureAwait(false);
     }
 
+    private async void SetInitialLocation()
+    {
+        try
+        {
+            var location = await Geolocation.Default.GetLastKnownLocationAsync();
+            UpdateLocation(new LocationMeta
+                {
+                    Latitude = location?.Latitude ?? 0,
+                    Longitude = location?.Longitude ?? 0
+                });
+        }
+        catch
+        {
+            LocationIsBlocked = true;
+        }
+    }
+
     private void UpdateLocation(LocationMeta locationMeta)
     {
         Image.Location = locationMeta;
         UpdatePhotoMeta(false).ConfigureAwait(false);
         locationSelector?.SetMarker(Image.Location).ConfigureAwait(false);
     }
+
     private string GetLocationBtnClass(LocationMeta l) => Image.Location == l ? "map-btn btn red selected" : "blue map-btn btn";
     private string GetLocationLink()
     {
@@ -158,7 +165,7 @@
             if (useTimeLineService)
             {
                 Image.LocationOptions = timelineService.GetDateLocations(Image.Date!.Value, Image.Hour);
-                Image.Location = Image.LocationOptions.FirstOrDefault();
+                Image.Location = Image.LocationOptions.First() ?? Image.Location;
             }
         } 
 

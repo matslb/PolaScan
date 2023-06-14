@@ -32,7 +32,9 @@
         <div class="status-message">
             <Icon IconName="circle-notch" Size="2" />
             <br />
-            @State.StatusMessage
+            <span>@State.StatusMessage</span>
+            <br />
+            <button class="btn red" @onclick="Cancel">Cancel</button>
         </div>
     }
     if (State.IsStarted)
@@ -89,6 +91,10 @@
                     await Task.Delay(1);
                     StateHasChanged();
                 }      
+            }
+            if(State.LocationCount == 0)
+            {
+                State.StatusMessage = "No photos detected";
             }
         }
         State.IsWorking = false;
