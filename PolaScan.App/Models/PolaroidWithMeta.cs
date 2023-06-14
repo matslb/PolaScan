@@ -1,4 +1,3 @@
-﻿using System.Globalization;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 using SixLabors.ImageSharp;
 
@@ -20,7 +19,7 @@ public class PolaroidWithMeta
     public string FileName(int i) => $"{(Date == null ? "img" : Date.Value.ToString("dd-MM-yyyy"))}-{i}.{Format}";
     public string TempFileName => $"{Id}.{Format}";
     public string Format => ScanFile.Split(".")[1];
-    public List<LocationMeta> LocationOptions { get; set; }
+    public List<LocationMeta> LocationOptions { get; set; } = new();
 }
 
 public class LocationMeta
