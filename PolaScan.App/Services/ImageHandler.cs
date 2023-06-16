@@ -21,7 +21,7 @@ public class ImageHandler
     private readonly PolaScanApiService polaScanService;
     private readonly GoogleTimelineService timelineService;
     private int PhotosInProsses { get; set; } = 0;
-
+    private double Ratio => Constants.ImageProcessing.PhotoFormatRatios[Preferences.Get(Constants.Settings.ImageFormat, Constants.PhotoFormat.Polaroid)];
     public ImageHandler(PolaScanApiService polaScanService, GoogleTimelineService timelineService)
     {
         SavedTemporaryFiles = new();
@@ -235,11 +235,11 @@ public class ImageHandler
                 x: (int)(originalImageWidth * (position.Left - 0.05)),
                 y: (int)(originalImageHeight * (position.Top - 0.05)),
                 width: width,
-                height: (int)(width * Constants.ImageProcessing.HeightToWidthRatio)
+                height: (int)(width * Ratio)
             );
         }
 
-        var height = (int)(width * Constants.ImageProcessing.HeightToWidthRatio);
+        var height = (int)(width * Ratio);
 
         var x = leftCrop * tempImageModifier();
         var y = leftTop * tempImageModifier();

@@ -11,12 +11,39 @@ public static class Constants
         public static string CameraModel = nameof(CameraModel);
         public static string DateFormat = nameof(DateFormat);
         public static string CultureName = nameof(CultureName);
+        public static string ImageFormat = nameof(ImageFormat);
     }
 
     public static class ImageProcessing
     {
-        public static int ScanFilePadding = 250;
+        public static int ScanFilePadding = 2000;
         public static int TempImageModifier = 3;
-        public static double HeightToWidthRatio = 1.222;
+
+        public static Dictionary<string, double> PhotoFormatRatios = new()
+        {
+            { PhotoFormat.Polaroid, 1.222},
+            { PhotoFormat.PolaroidGo, 1},
+            { PhotoFormat.InstaxMini, 1.56},
+            { PhotoFormat.InstaxSquare, 1.96},
+            { PhotoFormat.InstaxWide, 0.796 }
+        };
+
+        public static Dictionary<string, string> PhotoFormatLabels = new()
+        {
+            { PhotoFormat.Polaroid, "Polaroid 600/SX-70/I-Type"},
+            { PhotoFormat.PolaroidGo, "Polaroid Go"},
+            { PhotoFormat.InstaxMini, "Instax Mini"},
+            { PhotoFormat.InstaxSquare, "Instax Square"},
+            { PhotoFormat.InstaxWide, "Instax Wide" }
+        };
+    }
+
+    public class PhotoFormat
+    {
+        public static string Polaroid = nameof(Polaroid);
+        public static string PolaroidGo = nameof(PolaroidGo);
+        public static string InstaxMini = nameof(InstaxMini);
+        public static string InstaxSquare = nameof(InstaxSquare);
+        public static string InstaxWide = nameof(InstaxWide);
     }
 }

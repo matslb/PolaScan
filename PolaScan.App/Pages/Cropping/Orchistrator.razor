@@ -4,7 +4,9 @@
 @using System.Globalization;
 @using System.Collections.ObjectModel;
 @using System.Diagnostics;
+@using PolaScan.App.Pages.Settings
 @using PolaScan.App.Services;
+@using static PolaScan.App.Models.Enums;
 
 @inject PolaScanApiService polaScanClient;
 @inject GoogleTimelineService timelineService;
@@ -17,6 +19,7 @@
         @if (!State.IsWorking)
         {
             <Button class="green btn" @onclick="SelectScans">Select scans</Button>
+            <SettingsItem Label="Date format" Slug="@Constants.Settings.ImageFormat" Options="@GetFormatOptions()" fieldType=InputType.select></SettingsItem>
         }
         @if (State.PolaroidsWithMeta.Count > 0 && !State.IsWorking)
         {
@@ -52,9 +55,11 @@
 }
 @code {
 
-  private ProcessingState State { get; set; }
+    private ProcessingState State { get; set; }
 
-  private string ImageWrapperClass() => $"image-preview {(State.IsWorking ? "disabled": string.Empty )}"; 
+    private string ImageWrapperClass() => $"image-preview {(State.IsWorking ? "disabled": string.Empty )}";
+
+    private List<string> GetFormatOptions() => Constants.ImageProcessing.PhotoFormatLabels.Select(x => x.Key).ToList();
 
   private async Task SelectScans()
   {
