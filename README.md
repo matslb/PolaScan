@@ -2,6 +2,9 @@
 <img src="./PolaScan.App/Resources/AppIcon/logo.png" alt="Logo" style="width:100px;margin: auto"/>
 Automatically scan, crop and organize your Polaroid pictures by date and geolocation data with PolaScan. 
 
+## Installation 
+[Download and install from the Microsoft Store](https://www.microsoft.com/store/productId/9N8NKVW0DWM4)
+
 ## Features
 
 ### AI Image cropping
