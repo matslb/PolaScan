@@ -1,4 +1,4 @@
-using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
+﻿using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 using SixLabors.ImageSharp;
 
 namespace PolaScan.App.Models;
@@ -20,6 +20,7 @@ public class PolaroidWithMeta
     public string TempFileName => $"{Id}.{Format}";
     public string Format => ScanFile.Split(".")[1];
     public List<LocationMeta> LocationOptions { get; set; } = new();
+    public string PhotoFormat { get; set; } = Constants.PhotoFormat.Polaroid;
 }
 
 public class LocationMeta

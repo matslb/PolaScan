@@ -22,13 +22,67 @@
 
 .preview .placeholder {
     background: black;
-    min-height: 260px;
     opacity: 1;
-    margin: 22px 20px 74px 20px;
     display: flex;
+    position: absolute;
     justify-content: center;
     align-items: center;
     border-radius: 2px;
+}
+
+.image-block .preview::after {
+    content: "";
+    box-shadow: 0 0 0 1px #00000083;
+    position: absolute;
+    border-radius: 2px;
+}
+
+.Polaroid .placeholder,
+.Polaroid .preview::after {
+    top: 22px;
+    bottom: 74px;
+    left: 20px;
+    right: 20px;
+}
+
+.Polaroid .preview {
+    height: 366px;
+}
+
+.InstaxMini .placeholder,
+.InstaxMini .preview::after {
+    top: 40px;
+    bottom: 85px;
+    left: 22px;
+    right: 22px;
+}
+
+.InstaxMini .preview {
+    height: 470px;
+}
+
+.InstaxWide .preview {
+    height: 237px;
+}
+
+.InstaxWide .placeholder,
+.InstaxWide .preview::after {
+    top: 22px;
+    bottom: 44px;
+    left: 13px;
+    right: 13px;
+}
+
+.InstaxSquare .placeholder,
+.InstaxSquare .preview::after {
+    top: 28px;
+    bottom: 64px;
+    left: 19px;
+    right: 19px;
+}
+
+.InstaxSquare .preview {
+    height: 360px;
 }
 
 .preview img {
@@ -41,16 +95,6 @@
     box-shadow: 0 0 0 2px #d43c84 !important;
 }
 
-.image-block .preview::after {
-    content: "";
-    box-shadow: 0 0 0 1px #00000083;
-    position: absolute;
-    top: 22px;
-    bottom: 74px;
-    left: 20px;
-    right: 20px;
-    border-radius: 2px;
-}
 
 .button-group button {
     position: absolute;
@@ -148,13 +192,14 @@
     overflow: hidden;
 }
 
-.location-options{
+.location-options {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     grid-gap: 3px;
     margin: 0 0 3px;
     padding: 0;
 }
+
 .map-btn {
     font-size: 0.7rem;
     padding: 0.2rem 0.25rem;

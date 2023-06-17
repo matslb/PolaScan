@@ -16,21 +16,21 @@ public static class Constants
 
     public static class ImageProcessing
     {
-        public static int ScanFilePadding = 2000;
+        public static int ScanFilePadding = 500;
         public static int TempImageModifier = 3;
 
         public static Dictionary<string, double> PhotoFormatRatios = new()
         {
             { PhotoFormat.Polaroid, 1.222},
             { PhotoFormat.PolaroidGo, 1},
-            { PhotoFormat.InstaxMini, 1.56},
-            { PhotoFormat.InstaxSquare, 1.96},
-            { PhotoFormat.InstaxWide, 0.796 }
+            { PhotoFormat.InstaxMini, 1.58},
+            { PhotoFormat.InstaxSquare, 1.2},
+            { PhotoFormat.InstaxWide, 0.79 }
         };
 
         public static Dictionary<string, string> PhotoFormatLabels = new()
         {
-            { PhotoFormat.Polaroid, "Polaroid 600/SX-70/I-Type"},
+            { PhotoFormat.Polaroid, "Polaroid 600 / SX-70 / I-Type"},
             { PhotoFormat.PolaroidGo, "Polaroid Go"},
             { PhotoFormat.InstaxMini, "Instax Mini"},
             { PhotoFormat.InstaxSquare, "Instax Square"},

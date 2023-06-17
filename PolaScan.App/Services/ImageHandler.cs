@@ -21,7 +21,6 @@ public class ImageHandler
     private readonly PolaScanApiService polaScanService;
     private readonly GoogleTimelineService timelineService;
     private int PhotosInProsses { get; set; } = 0;
-    private double Ratio => Constants.ImageProcessing.PhotoFormatRatios[Preferences.Get(Constants.Settings.ImageFormat, Constants.PhotoFormat.Polaroid)];
     public ImageHandler(PolaScanApiService polaScanService, GoogleTimelineService timelineService)
     {
         SavedTemporaryFiles = new();
@@ -144,7 +143,7 @@ public class ImageHandler
         }
 
         var degrees = await GetImageRotationDegrees(compressedScanFileName, polaroid.LocationInScan).ConfigureAwait(false);
-        var crop = await GetImageCropRectangle(compressedScanFileName, polaroid.LocationInScan, degrees);
+        var crop = await GetImageCropRectangle(compressedScanFileName, polaroid.LocationInScan, degrees, Constants.ImageProcessing.PhotoFormatRatios[polaroid.PhotoFormat]);
 
         polaroid.Crop = crop;
         polaroid.Rotation = degrees;
@@ -212,7 +211,7 @@ public class ImageHandler
         return tempFileName;
     }
 
-    private async Task<Rectangle> GetImageCropRectangle(string fileName, BoundingBox position, float degrees)
+    private async Task<Rectangle> GetImageCropRectangle(string fileName, BoundingBox position, float degrees, double ratio)
     {
         using var image = Image.Load<Rgba32>(fileName);
 
@@ -235,11 +234,11 @@ public class ImageHandler
                 x: (int)(originalImageWidth * (position.Left - 0.05)),
                 y: (int)(originalImageHeight * (position.Top - 0.05)),
                 width: width,
-                height: (int)(width * Ratio)
+                height: (int)(width * ratio)
             );
         }
 
-        var height = (int)(width * Ratio);
+        var height = (int)(width * ratio);
 
         var x = leftCrop * tempImageModifier();
         var y = leftTop * tempImageModifier();

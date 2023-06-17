@@ -2,9 +2,12 @@
 @using static PolaScan.App.Shared.InputField
 
 <div class="settings-item">
-    <span class="settings-item-label"><b>@Label</b></span>
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <span class="settings-item-label"><b>@Label</b></span>        
+    }
     <div class="settings-item-value">
-        <InputField Type="@fieldType" Options="@Options" Value="@GetValue()" Callback="@UpdateSetting" />
+        <InputField Type="@fieldType" Options="@Options" OptionsDic="@OptionsDic" Value="@GetValue()" Callback="@UpdateSetting" />
     @{
         if (displayValue)
         {
@@ -26,6 +29,9 @@
 
     [Parameter]
     public List<string> Options { get; set; }
+
+    [Parameter]
+    public Dictionary<string, string> OptionsDic { get; set; }
 
     [Parameter]
     public InputType fieldType { get; set; }

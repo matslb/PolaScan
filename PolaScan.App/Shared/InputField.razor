@@ -23,14 +23,31 @@
             break;
         case InputType.select:
             <select @oninput="GetValueFromChangeEvent">
-            @{foreach (var option in Options)
-            {
-                if(@option == @Value){
-                    <option selected>@option</option>
-                }else{
-                    <option >@option</option>
+                @if (Options != null)
+                {
+                    foreach (var option in Options)
+                    {
+                        if(@option == @Value){
+                            <option selected>@option</option>
+                        }else{
+                            <option >@option</option>
+                        }
+                    }
                 }
-            }}
+            @if (OptionsDic != null)
+            {
+                foreach (var option in OptionsDic)
+                {
+                    if (@option.Key == @Value)
+                    {
+                        <option value="@option.Key" selected>@option.Value</option>
+                    }
+                    else
+                    {
+                        <option value="@option.Key">@option.Value</option>
+                    }
+                }
+            }
             </select>
             break;
 
@@ -49,6 +66,9 @@
 
     [Parameter]
     public List<string> Options { get; set; } = new();
+
+    [Parameter]
+    public Dictionary<string, string> OptionsDic { get; set; } = new();
 
     [Parameter]
     public Func<string, string> Callback {get; set;}

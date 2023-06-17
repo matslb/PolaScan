@@ -18,8 +18,10 @@
     <div class="button-menu">
         @if (!State.IsWorking)
         {
+            <div>
             <Button class="green btn" @onclick="SelectScans">Select scans</Button>
-            <SettingsItem Label="Date format" Slug="@Constants.Settings.ImageFormat" Options="@GetFormatOptions()" fieldType=InputType.select></SettingsItem>
+            <SettingsItem Slug="@Constants.Settings.ImageFormat" OptionsDic="@Constants.ImageProcessing.PhotoFormatLabels" fieldType=InputType.select></SettingsItem>
+            </div>
         }
         @if (State.PolaroidsWithMeta.Count > 0 && !State.IsWorking)
         {
@@ -59,7 +61,14 @@
 
     private string ImageWrapperClass() => $"image-preview {(State.IsWorking ? "disabled": string.Empty )}";
 
-    private List<string> GetFormatOptions() => Constants.ImageProcessing.PhotoFormatLabels.Select(x => x.Key).ToList();
+    private List<string> GetFormatOptions() => new()
+    {
+        Constants.PhotoFormat.Polaroid,
+        Constants.PhotoFormat.PolaroidGo,
+        Constants.PhotoFormat.InstaxMini,
+        Constants.PhotoFormat.InstaxWide,
+        Constants.PhotoFormat.InstaxSquare,
+    };
 
   private async Task SelectScans()
   {
@@ -81,6 +90,7 @@
         State.StatusMessage = $"{State.LocationCount} photos detected";
         StateHasChanged();
         await Task.Delay(1);
+        var format = Preferences.Default.Get(Constants.Settings.ImageFormat, Constants.PhotoFormat.Polaroid);
         foreach (var location in locations)
         {
           State.PolaroidsWithMeta.Add(new PolaroidWithMeta
@@ -88,7 +98,8 @@
                             Id = Guid.NewGuid(),
                             Hour = defaultHour,
                             LocationInScan = location,
-                            ScanFile = file.FullPath
+                            ScanFile = file.FullPath,
+                            PhotoFormat = format
                         }
           );
           await Task.Delay(1);
