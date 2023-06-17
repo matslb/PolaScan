@@ -20,6 +20,8 @@ public class PolaScanApiService
         {
             BaseAddress = new Uri(baseUrl)
         };
+        client.DefaultRequestHeaders.Add("TE", "Accept-encoding");
+
         client.Timeout = TimeSpan.FromSeconds(20);
     }
 
