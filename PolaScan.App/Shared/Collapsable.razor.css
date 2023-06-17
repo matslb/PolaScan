@@ -1,0 +1,13 @@
+﻿h3{
+    display: flex; 
+    justify-content: space-between;
+    margin: 0;
+}
+.child-wrapper{
+    margin-top: 1rem;
+    background: #80808043; 
+    padding: 1rem;
+    border-radius: 3px;
+
+}
+    

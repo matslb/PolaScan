@@ -35,7 +35,7 @@ public class ImageHandler
         Helpers.DeleteTemporaryFiles();
     }
 
-    public async Task PublishImage(PolaroidWithMeta polaroid)
+    public async Task PublishImage(ImageWithMedia polaroid)
     {
         polaroid = await CutFromScan(polaroid, false).ConfigureAwait(false);
         var destSetting = $"{Preferences.Default.Get(Constants.Settings.DesitnationPath, "")}\\PolaScan";
@@ -60,8 +60,7 @@ public class ImageHandler
             image.Metadata.ExifProfile.SetValue(ExifTag.ImageDescription, $"{polaroid.Location.Name}");
         }
         image.Metadata.ExifProfile.SetValue(ExifTag.Software, nameof(PolaScan));
-        image.Metadata.ExifProfile.SetValue(ExifTag.Make, "Polaroid");
-        image.Metadata.ExifProfile.SetValue(ExifTag.Model, Preferences.Default.Get(Constants.Settings.CameraModel, ""));
+        image.Metadata.ExifProfile.SetValue(ExifTag.Model, Constants.ImageProcessing.PhotoFormatLabels[polaroid.PhotoFormat]);
         image.Metadata.ExifProfile.SetValue(ExifTag.Copyright, Preferences.Default.Get(Constants.Settings.CopyRightText, ""));
 
         if (polaroid.Date != null)
@@ -76,7 +75,7 @@ public class ImageHandler
 
     public bool IsReadyForProcessing() => PhotosInProsses == 0;
 
-    public async Task<PolaroidWithMeta> GetDateOnPolaroid(PolaroidWithMeta polaroid)
+    public async Task<ImageWithMedia> GetDateOnPolaroid(ImageWithMedia polaroid)
     {
         var lip = await GetPolaroidLipSection(polaroid).ConfigureAwait(false);
         polaroid.Date = await polaScanService.DetectDateInImage(lip, CultureInfo.CurrentCulture).ConfigureAwait(false);
@@ -88,7 +87,7 @@ public class ImageHandler
         return polaroid;
     }
 
-    private async Task<string> GetPolaroidLipSection(PolaroidWithMeta polaroid)
+    private async Task<string> GetPolaroidLipSection(ImageWithMedia polaroid)
     {
         using var image = Image.Load(polaroid.AbsolutePath);
         image.Mutate(x => x
@@ -134,7 +133,7 @@ public class ImageHandler
         return compressedScanFileName;
     }
 
-    public async Task<PolaroidWithMeta> GetPolaroidFromScan(PolaroidWithMeta polaroid)
+    public async Task<ImageWithMedia> GetPolaroidFromScan(ImageWithMedia polaroid)
     {
         PhotosInProsses++;
         if (!SavedTemporaryFiles.TryGetValue(polaroid.ScanFile, out var compressedScanFileName))
@@ -154,7 +153,7 @@ public class ImageHandler
         return polaroid;
     }
 
-    public async Task<PolaroidWithMeta> CutFromScan(PolaroidWithMeta polaroid, bool preview)
+    public async Task<ImageWithMedia> CutFromScan(ImageWithMedia polaroid, bool preview)
     {
         var modifier = preview ? tempImageModifier() : 1;
 
@@ -443,7 +442,7 @@ public class ImageHandler
         width += (int)Math.Min((width * 0.1), image.Width - (width + left));
 
         var height = (int)(image.Height * position.Height);
-        height += (int)Math.Min((height * 0.1), image.Height - (height + top));
+        height += (int)Math.Min((height * 0.15), image.Height - (height + top));
 
         return new Rectangle(left, top, width, height);
     }

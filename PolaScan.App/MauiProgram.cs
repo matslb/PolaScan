@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui;
+﻿using System.Security.Principal;
+using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -35,6 +36,7 @@ namespace PolaScan.App
             {
                 Preferences.Default.Set(Constants.Settings.DesitnationPath, Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
             }
+            Preferences.Default.Set(Constants.Settings.HideAlert, false);
 
             Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(new ProcessingState()));
             Helpers.DeleteTemporaryFiles();

@@ -5,20 +5,23 @@
 @using System.Text.RegularExpressions
 @using static PolaScan.App.Models.Enums;
 
-<h3>Settings</h3>
-<div>
+<div class="wrapper">
 
-    <SettingsItem Label="Destination folder" Slug="@Constants.Settings.DesitnationPath" displayValue=true fieldType=InputType.folder></SettingsItem>
-    <SettingsItem Label="Google Timeline - Records.json" Slug="@Constants.Settings.GoogleTimelineFile" displayValue=true fieldType=InputType.file></SettingsItem>
+    <h3>Settings</h3>
+    <div>
 
-    <h4>Date settings</h4>
-    <SettingsItem Label="Date format" Slug="@Constants.Settings.DateFormat" Options="@dateFormats" fieldType=InputType.select></SettingsItem>
-    <SettingsItem Label="Assumed hour" Slug="@Constants.Settings.AssumedHour" fieldType=InputType.number></SettingsItem>
-   
-    <SettingsItem Label="Copyright text" Slug="@Constants.Settings.CopyRightText"  fieldType=InputType.text></SettingsItem>
-    <SettingsItem Label="Camera model" Slug="@Constants.Settings.CameraModel" fieldType=InputType.text></SettingsItem>
+        <SettingsItem Label="Destination folder" Slug="@Constants.Settings.DesitnationPath" displayValue=true fieldType=InputType.folder></SettingsItem>
+        <SettingsItem Label="Google Timeline - Records.json" Slug="@Constants.Settings.GoogleTimelineFile" displayValue=true fieldType=InputType.file></SettingsItem>
+
+        <h4>Date</h4>
+        <SettingsItem Label="Date format" Slug="@Constants.Settings.DateFormat" Options="@dateFormats" fieldType=InputType.select></SettingsItem>
+        <SettingsItem Max=24 Min=1 Label="Assumed hour" Slug="@Constants.Settings.AssumedHour" fieldType=InputType.number></SettingsItem>
+
+        <h4>Metadata</h4>
+        <SettingsItem Label="Copyright text" Slug="@Constants.Settings.CopyRightText"  fieldType=InputType.text></SettingsItem>
+    </div>
+
 </div>
-
 @code {
     private List<string> dateFormats { get; set; } = new();
 

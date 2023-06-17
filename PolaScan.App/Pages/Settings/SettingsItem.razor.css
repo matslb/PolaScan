@@ -1,21 +1,29 @@
 ﻿.settings-item {
     width: 100%;
-    display: flex;
     margin-bottom: 0.5rem;
-    justify-content: space-between;
     color: white;
 }
-.settings-item-label{
-    width: 30%;
+
+.settings-item.grid{
+    justify-content: space-between;
+    gap: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+.settings-item-label {
     min-width: 10rem;
 }
+
 .settings-item-value {
-    width: 70%;
-    min-width: 20rem;
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
 }
+
 .settings-item-existing {
-    margin-left: 1rem;
+    word-break: break-all;
 }
-div{
+
+div {
     color: white;
 }

@@ -14,7 +14,7 @@
  
             break;
        case InputType.number:
-            <input type="number" value="@Value" @onchange="GetValueFromChangeEvent">
+            <input type="number" min="@Min" max="@Max" value="@Value" @onchange="GetValueFromChangeEvent">
 
             break;
         case InputType.file:
@@ -72,6 +72,13 @@
 
     [Parameter]
     public Func<string, string> Callback {get; set;}
+
+    [Parameter]
+    public int Min { get; set; }
+
+    [Parameter]
+    public int Max { get; set; }
+
 
     public void GetValueFromChangeEvent(ChangeEventArgs e){
         Callback(e.Value.ToString());

@@ -1,13 +1,15 @@
 ﻿@using static PolaScan.App.Models.Enums
 @using static PolaScan.App.Shared.InputField
 
-<div class="settings-item">
+<div class="@GetClass()">
     @if (!string.IsNullOrWhiteSpace(Label))
     {
+    <div>
         <span class="settings-item-label"><b>@Label</b></span>        
+    </div>
     }
     <div class="settings-item-value">
-        <InputField Type="@fieldType" Options="@Options" OptionsDic="@OptionsDic" Value="@GetValue()" Callback="@UpdateSetting" />
+        <InputField Type="@fieldType" Min="@Min"  Max="@Max" Options="@Options" OptionsDic="@OptionsDic" Value="@GetValue()" Callback="@UpdateSetting" />
     @{
         if (displayValue)
         {
@@ -23,6 +25,12 @@
 
     [Parameter]
     public string Slug { get; set; }
+
+    [Parameter]
+    public int Min{ get; set; }
+
+    [Parameter]
+    public int Max { get; set; }
 
     [Parameter]
     public bool displayValue { get; set; } = false;
@@ -46,4 +54,6 @@
         StateHasChanged();
         return value;
     }
+
+    private string GetClass() => string.IsNullOrWhiteSpace(Label) ? "settings-item" : "settings-item grid";
 }

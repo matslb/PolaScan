@@ -49,16 +49,29 @@
     height: 366px;
 }
 
+.PolaroidGo .placeholder,
+.PolaroidGo .preview::after {
+    top: 28px;
+    bottom: 82px;
+    left: 22px;
+    right: 22px;
+}
+
+.PolaroidGo .preview {
+    height: 375px;
+}
+
+
 .InstaxMini .placeholder,
 .InstaxMini .preview::after {
     top: 40px;
-    bottom: 85px;
+    bottom: 82px;
     left: 22px;
     right: 22px;
 }
 
 .InstaxMini .preview {
-    height: 470px;
+    height: 468px;
 }
 
 .InstaxWide .preview {
@@ -204,3 +217,11 @@
     font-size: 0.7rem;
     padding: 0.2rem 0.25rem;
 }
+
+.film-type {
+    opacity: 0.4;
+    position: absolute;
+    bottom: 0.5rem;
+    right: 1rem;
+}
+

@@ -1,9 +1,39 @@
 ﻿@page "/"
+@using PolaScan.App.Models;
 @using PolaScan.App.Pages.Cropping;
+@using PolaScan.App.Services;
+
+@inject PolaScanApiService apiService;
 
 
 <Orchistrator/>
-
+@if (!string.IsNullOrWhiteSpace(StatusMessage))
+{
+    <div class="status-message"><Icon IconName="circle-exclamation" Color="Models.Enums.AppColor.red" Size="2" /> <span>@StatusMessage</span>
+     <button class="btn" @onclick="HideNotification" ><Icon IconName="circle-xmark" Color="Enums.AppColor.red" /></button>
+    </div>
+}
 @code {
+    private string StatusMessage { get; set; }
 
+    protected override void OnInitialized()
+    {
+        FetchStatus();
+    }
+    private async void FetchStatus()
+    {
+        var shouldHide  = Preferences.Default.Get(Constants.Settings.HideAlert, false);
+        if (shouldHide)
+            return;
+
+        StatusMessage = await apiService.GetStatusMessage();
+        StateHasChanged();
+    }
+
+    private void HideNotification()
+    {
+        Preferences.Default.Set(Constants.Settings.HideAlert, true);
+        StatusMessage = string.Empty;
+        StateHasChanged();
+    }
 }

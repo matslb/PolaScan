@@ -85,4 +85,18 @@ public class PolaScanApiService
         var result = await client.GetAsync($"/location-lookup?lat={location.Latitude.ToString(CultureInfo.InvariantCulture)}&lng={location.Longitude.ToString(CultureInfo.InvariantCulture)}");
         return JsonConvert.DeserializeObject<string>(await result.Content.ReadAsStringAsync());
     }
+
+    public async Task<string> GetStatusMessage()
+    {
+        try
+        {
+            var result = await client.GetAsync("/status");
+
+            return await result.Content.ReadAsStringAsync() ?? null;
+        }
+        catch
+        {
+            return "Can't connect to server";
+        }
+    }
 }

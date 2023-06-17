@@ -2,6 +2,9 @@ nav{
     position: absolute;
     top: 1rem;
     right: 1rem;
+    left: 1rem;
+    display: flex;
+    justify-content: space-between;
 }
 
 nav .nav-item a span{

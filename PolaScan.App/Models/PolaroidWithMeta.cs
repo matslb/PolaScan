@@ -3,7 +3,7 @@ using SixLabors.ImageSharp;
 
 namespace PolaScan.App.Models;
 
-public class PolaroidWithMeta
+public class ImageWithMedia
 {
     public Guid Id { get; set; }
     public string AbsolutePath { get; set; }

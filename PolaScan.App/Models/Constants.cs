@@ -12,6 +12,7 @@ public static class Constants
         public static string DateFormat = nameof(DateFormat);
         public static string CultureName = nameof(CultureName);
         public static string ImageFormat = nameof(ImageFormat);
+        public static string HideAlert = nameof(HideAlert);
     }
 
     public static class ImageProcessing
@@ -22,15 +23,15 @@ public static class Constants
         public static Dictionary<string, double> PhotoFormatRatios = new()
         {
             { PhotoFormat.Polaroid, 1.222},
-            { PhotoFormat.PolaroidGo, 1},
-            { PhotoFormat.InstaxMini, 1.58},
+            { PhotoFormat.PolaroidGo, 1.251},
+            { PhotoFormat.InstaxMini, 1.59},
             { PhotoFormat.InstaxSquare, 1.2},
             { PhotoFormat.InstaxWide, 0.79 }
         };
 
         public static Dictionary<string, string> PhotoFormatLabels = new()
         {
-            { PhotoFormat.Polaroid, "Polaroid 600 / SX-70 / I-Type"},
+            { PhotoFormat.Polaroid, "Polaroid I-Type"},
             { PhotoFormat.PolaroidGo, "Polaroid Go"},
             { PhotoFormat.InstaxMini, "Instax Mini"},
             { PhotoFormat.InstaxSquare, "Instax Square"},

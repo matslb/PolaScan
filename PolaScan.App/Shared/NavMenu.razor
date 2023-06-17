@@ -3,23 +3,32 @@
 
 <div>
 	<nav class="flex-row">
-		<div class="nav-item">
+        @if(CurrentPage == "")
+        {
+            <div class="nav-item">
 
-		@if(CurrentPage != "settings")
-			{
-				<button class="btn blue" @onclick="NavigateToSettings">
-					Settings
-				</button>
-			}
-			else
-			{
-				<button class="btn blue" @onclick="NavigateToHome">
-					Back
-				</button>
-			}
-		
-		</div>
-	</nav>
+                <button aria-label="Help" class="btn blue" @onclick="NavigateToHelp">
+                    <Icon IconName="question" />
+                    </button>
+       
+
+            </div>
+		    <div class="nav-item">
+
+			    {
+				    <button aria-label="Settings" class="btn blue" @onclick="NavigateToSettings">
+                    <Icon IconName="gear" />
+                </button>
+			    }
+		    </div>
+        }
+		else
+        {
+            <div class="nav-item">
+                <button class="btn blue" @onclick="NavigateToHome">Back</button>
+            </div>
+		}
+    </nav>
 </div>
 
 @code {
@@ -40,10 +49,10 @@
     {
         NavigationManager.LocationChanged -= HandleLocationChanged;
     }
+    private void NavigateToHelp() => NavigationManager.NavigateTo("help");
 
-    private void NavigateToSettings(){
-        NavigationManager.NavigateTo("settings");
-    }
+    private void NavigateToSettings() => NavigationManager.NavigateTo("settings");
+    
 	private void NavigateToHome() => NavigationManager.NavigateTo("");
 
 }

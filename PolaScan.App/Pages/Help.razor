@@ -1,0 +1,74 @@
+﻿@page "/help"
+@using PolaScan.App.Models;
+
+<h1>How to use PolaScan</h1>
+<ul class="steps">
+    <li>
+        <Collapsable Title="Preparation">
+        <ul>
+            <li>Make sure to use a photo scanner with a resolution of at least 300 dpi for the best possible results.</li>
+            <li>Choose a dark and uniform background to minimize distractions and ensure good contrast.</li>
+            <li>Place the photos with at least 0.5 cm distance between each other to avoid overlap.</li>
+             <li><a download href="https://polascanstorage.blob.core.windows.net/public/PolaScanExample.jpg">Download this reference image</a> to compare if you're experiencing issues.</li>
+        </ul>
+        </Collapsable>
+    </li>
+    <li>
+        <Collapsable Title="Google Timeline data">
+            PolaScan can also utilize your Google Timeline data, automatically adding location meta-data to your photos, based on the date.
+            <ul>
+                <li>Visit <a href="https://takeout.google.com" target="_blank">timeline.google.com</a> to download your Google Timeline data.</li>
+                <li>Uncheck everything but Location history.</li>
+                <li>Click 'Next', and 'Create export'.</li>
+                <li>When the export is ready, download and extract its contents.</li>
+                <li>In the PolaScan settings, select the 'Records.json' file to integrate your Google Timeline data.</li>
+            </ul>
+        </Collapsable>
+    </li>
+    <li>
+         <Collapsable Title="Film type">
+        <ul>
+            <li>Before selecting your scans, choose the appropriate film type that matches your photos.
+                <br />
+                Supported films types are: @string.Join(",",Constants.ImageProcessing.PhotoFormatLabels.Select(x => x.Value))
+                <br />
+                <i>Polaroid 600 and SX-70 film are the same dimensions as I-Type, and will work fine.</i>
+            </li>
+        </ul>
+        </Collapsable>
+    </li>
+    <li>
+         <Collapsable Title="Adjust trimming">
+        <ul>
+            <li>After the photos have been anayzed, you can adjust the trimming for each photo individually.</li>
+        </ul>
+        </Collapsable>
+    </li>
+
+    <li>
+         <Collapsable Title="Location and time metadata">
+        <ul>
+            <li>You can tag the photos with location and time data.</li>
+            <li>If you've written a date on the photos "lip" PolaScan will attempt to read the date and add it as meta-data.</li>
+            <li>You can also manually input the date and time.</li>
+            <li>Changing the perferred date format in the settings to match the written date can fix issues with the date analysis.</li>
+            <li>This information will be stored as metadata on each photo, making it easy to organize and find them later.</li>
+        </ul>
+        </Collapsable>
+    </li>
+    <li>
+         <Collapsable Title="Exporting photos">
+        <ul>
+            <li>Once you've completed the trimming and any tagging operations, click 'Export' to save your photos.</li>
+            <li>The photos will be saved to folders organized by year and month.</li>
+            <li>This makes it easier for you to locate and manage the photos based on when they were taken.</li>
+        </ul>
+        </Collapsable>
+    </li>
+</ul>
+
+
+
+@code {
+
+}

@@ -18,8 +18,9 @@
     <div class="button-menu">
         @if (!State.IsWorking)
         {
-            <div>
+            <div class="scan-btn-wrapper">
             <Button class="green btn" @onclick="SelectScans">Select scans</Button>
+            <br />
             <SettingsItem Slug="@Constants.Settings.ImageFormat" OptionsDic="@Constants.ImageProcessing.PhotoFormatLabels" fieldType=InputType.select></SettingsItem>
             </div>
         }
@@ -51,7 +52,6 @@
                     <CroppedImageBlock Image="@photo" />
                 </li> 
             }
-            
         </ul>
     }
 }
@@ -93,7 +93,7 @@
         var format = Preferences.Default.Get(Constants.Settings.ImageFormat, Constants.PhotoFormat.Polaroid);
         foreach (var location in locations)
         {
-          State.PolaroidsWithMeta.Add(new PolaroidWithMeta
+          State.PolaroidsWithMeta.Add(new ImageWithMedia
                         {
                             Id = Guid.NewGuid(),
                             Hour = defaultHour,
@@ -156,7 +156,7 @@
         Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(State));
     }
 
-    public void RemovePhoto(PolaroidWithMeta polaroid)
+    public void RemovePhoto(ImageWithMedia polaroid)
     {
         State.PolaroidsWithMeta.Remove(polaroid);
         if(State.PolaroidsWithMeta.Count() == 0)

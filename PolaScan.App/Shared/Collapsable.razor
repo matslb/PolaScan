@@ -1,0 +1,32 @@
+﻿<div @onclick="setDisplay">
+    <h3>
+        @Title
+        @if (!displayContent)
+        {
+            <Icon IconName="chevron-down" Size="1" />
+        }
+        else
+        {
+            <Icon IconName="chevron-up" Size="1" />
+        }
+        </h3>
+    @if (displayContent)
+    {
+        <div class="child-wrapper">
+        @ChildContent
+        </div>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    private bool displayContent { get; set; } = false;
+
+    private void setDisplay() => displayContent = !displayContent;
+}

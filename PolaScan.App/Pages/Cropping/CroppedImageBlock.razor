@@ -93,11 +93,12 @@
             </div>
         </div>
     </div>
+    <span class="film-type">@Constants.ImageProcessing.PhotoFormatLabels[Image.PhotoFormat]</span>
 </div>
 
 @code {
     [Parameter]
-    public PolaroidWithMeta Image {get;set;}
+    public ImageWithMedia Image {get;set;}
     private bool DetectDateHasRun = false;
     private LocationSelector locationSelector { get; set; }
     private bool LocationIsBlocked { get; set; } = false;
