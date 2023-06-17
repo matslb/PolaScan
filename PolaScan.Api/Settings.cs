@@ -13,4 +13,6 @@ public class Settings
     public string? CustomVisionIterationName { get; set; }
     public string? AzureBlobStorageContainer { get; set; }
     public string? AzureMapsSubscriptionKey { get; set; }
+    public string? StatusMessageBlob { get; set; }
+    public string? StatusMessageContainer { get; set; }
 }

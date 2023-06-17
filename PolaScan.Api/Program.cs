@@ -11,6 +11,7 @@ var app = builder.Build();
 
 var settings = builder.Configuration.GetSection("Settings").Get<Settings>();
 var cognitiveService = new CognitiveService(settings);
+var statusService = new StatusService(settings);
 
 var credential = new AzureKeyCredential(settings.AzureMapsSubscriptionKey ?? "");
 var mapsClient = new MapsSearchClient(credential);
@@ -68,5 +69,7 @@ app.MapGet("/location-lookup", async (HttpRequest request) =>
 
     return Results.NotFound();
 });
+
+app.MapGet("/status", async (HttpRequest request) => await statusService.GetStatusMessage());
 
 app.Run();
