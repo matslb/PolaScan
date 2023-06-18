@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using PolaScan.App.Models;
 using SixLabors.ImageSharp.Processing;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Image = SixLabors.ImageSharp.Image;
 using Size = SixLabors.ImageSharp.Size;
 
@@ -44,7 +45,7 @@ public class PolaScanApiService
         return JsonConvert.DeserializeObject<List<BoundingBox>>(await result.Content.ReadAsStringAsync());
     }
 
-    public async Task<DateOnly?> DetectDateInImage(string tempImagePath, CultureInfo cultureInfo)
+    public async Task<DateOnly?> DetectDateInImage(string tempImagePath)
     {
         var content = GetImageStreamContent(tempImagePath);
         var res = string.Empty;
@@ -58,8 +59,10 @@ public class PolaScanApiService
         }
         content.Dispose();
 
+        var culturename = Preferences.Default.Get(Constants.Settings.DateFormat, CultureInfo.CurrentCulture.Name);
+        var culture = CultureInfo.GetCultureInfo(culturename);
 
-        if (res != null && DateTime.TryParse(res.Replace("\\n", string.Empty), cultureInfo, DateTimeStyles.AssumeUniversal, out var date))
+        if (res != null && DateTime.TryParse(res.Replace("\\n", string.Empty), culture, DateTimeStyles.AssumeUniversal, out var date))
         {
             return DateOnly.FromDateTime(date);
         }

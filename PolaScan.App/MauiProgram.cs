@@ -1,4 +1,5 @@
-﻿using System.Security.Principal;
+﻿using System.Globalization;
+using System.Security.Principal;
 using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,8 +37,18 @@ namespace PolaScan.App
             {
                 Preferences.Default.Set(Constants.Settings.DesitnationPath, Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
             }
-            Preferences.Default.Set(Constants.Settings.HideAlert, false);
 
+            if (Preferences.Default.Get(Constants.Settings.DateFormat, string.Empty) == string.Empty)
+            {
+                Preferences.Default.Set(Constants.Settings.DateFormat, CultureInfo.CurrentCulture.Name);
+            }
+
+            if (Preferences.Default.Get(Constants.Settings.AssumedHour, string.Empty) == string.Empty)
+            {
+                Preferences.Default.Set(Constants.Settings.AssumedHour, "12");
+            }
+
+            Preferences.Default.Set(Constants.Settings.HideAlert, false);
             Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(new ProcessingState()));
             Helpers.DeleteTemporaryFiles();
 

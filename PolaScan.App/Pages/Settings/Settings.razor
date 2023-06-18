@@ -14,7 +14,7 @@
         <SettingsItem Label="Google Timeline - Records.json" Slug="@Constants.Settings.GoogleTimelineFile" displayValue=true fieldType=InputType.file></SettingsItem>
 
         <h4>Date</h4>
-        <SettingsItem Label="Date format" Slug="@Constants.Settings.DateFormat" Options="@dateFormats" fieldType=InputType.select></SettingsItem>
+        <SettingsItem Label="Date format" Slug="@Constants.Settings.DateFormat" OptionsDic="@dateFormats" fieldType=InputType.select></SettingsItem>
         <SettingsItem Max=24 Min=1 Label="Assumed hour" Slug="@Constants.Settings.AssumedHour" fieldType=InputType.number></SettingsItem>
 
         <h4>Metadata</h4>
@@ -23,20 +23,10 @@
 
 </div>
 @code {
-    private List<string> dateFormats { get; set; } = new();
-
-    protected override void OnAfterRender(bool firstRender)
+    private Dictionary<string, string> dateFormats { get; set; } = new()
     {
-        if (firstRender)
-        {
-            LoadDateFormats();
-            StateHasChanged();
-        }
-    }
-
-    private void LoadDateFormats()
-    {
-        CultureInfo[] cinfos = CultureInfo.GetCultures(CultureTypes.SpecificCultures);
-        dateFormats = cinfos.Select(c => Regex.Replace(c.DateTimeFormat.ShortDatePattern.ToUpper(), @"[^dDmMyY]", " ").Trim().Replace(" ", "/")).Distinct().ToList();
-    }
+        {"en-GB", "dd/MM/yyyy"},
+        {"en-US", "MM/dd/yyyy"},
+        {"ja-JP", "yyyy/MM/dd"}
+    };
 }

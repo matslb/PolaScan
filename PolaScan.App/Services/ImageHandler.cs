@@ -78,7 +78,7 @@ public class ImageHandler
     public async Task<ImageWithMedia> GetDateOnPolaroid(ImageWithMedia polaroid)
     {
         var lip = await GetPolaroidLipSection(polaroid).ConfigureAwait(false);
-        polaroid.Date = await polaScanService.DetectDateInImage(lip, CultureInfo.CurrentCulture).ConfigureAwait(false);
+        polaroid.Date = await polaScanService.DetectDateInImage(lip).ConfigureAwait(false);
         if (polaroid.Date != null && polaroid.Date != DateOnly.MinValue)
         {
             polaroid.Location = timelineService.GetDateLocations(polaroid.Date!.Value, polaroid.Hour).FirstOrDefault();
