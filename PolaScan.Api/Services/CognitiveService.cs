@@ -20,6 +20,7 @@ public class CognitiveService
     private readonly Uri CustomVisionEndpoint;
     private readonly VisionServiceOptions computerVisionOptions;
     private readonly Uri AzureCognitiveEndpoint;
+    private readonly string storageAccountToken;
 
     public CognitiveService(Settings settings)
     {
@@ -38,7 +39,7 @@ public class CognitiveService
         };
         customVisionIterationName = settings.CustomVisionIterationName ?? string.Empty;
         customVisionProjectId = settings.CustomVisionProjectId ?? Guid.Empty;
-
+        storageAccountToken = settings.StorageAccountToken;
         computerVisionOptions = new VisionServiceOptions(settings.AzureCognitiveEndpoint, new AzureKeyCredential(settings.AzureCognitiveSubscriptionKey));
     }
 
@@ -54,7 +55,7 @@ public class CognitiveService
 
     public async Task<string> DetectDateInImage(Stream imageStream, string fileName)
     {
-        blobContainer.CreateIfNotExists();
+        blobContainer.CreateIfNotExists(Azure.Storage.Blobs.Models.PublicAccessType.Blob);
 
         var imageBlobName = $"{Guid.NewGuid()}.{fileName.Split(".")[1]}";
 
@@ -62,11 +63,10 @@ public class CognitiveService
         imageStream.Close();
 
         var blobUrl = $"{blobContainer.Uri}/{imageBlobName}";
-
         try
         {
-            var res = await httpClient.PostAsync($"{AzureCognitiveEndpoint}computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=read&model-version=latest&language=en",
-                new StringContent(JsonConvert.SerializeObject(new ImageRequest { Url = blobUrl }), Encoding.UTF8, "application/json"));
+            var res = await httpClient.PostAsync($"{AzureCognitiveEndpoint}computervision/imageanalysis:analyze?features=read&model-version=latest&language=en&api-version=2023-02-01-preview",
+                new StringContent(JsonConvert.SerializeObject(new ImageRequest { Url = $"{blobUrl}{storageAccountToken}" }), Encoding.UTF8, "application/json"));
 
             var cognitiveResult = JsonConvert.DeserializeObject<CognitiveResult>(await res.Content.ReadAsStringAsync());
 
@@ -75,7 +75,7 @@ public class CognitiveService
             return cognitiveResult?.ReadResult?.Content ?? string.Empty;
         }
         catch (Exception e)
-        { 
+        {
             await blobContainer.DeleteBlobAsync(imageBlobName);
         }
 

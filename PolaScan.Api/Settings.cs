@@ -15,4 +15,6 @@ public class Settings
     public string? AzureMapsSubscriptionKey { get; set; }
     public string? StatusMessageBlob { get; set; }
     public string? StatusMessageContainer { get; set; }
+    public string? AuthHeaderName { get; set; }
+    public string? StorageAccountToken { get; set; }
 }
