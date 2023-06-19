@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Azure;
 using Azure.AI.Vision.Common.Input;
 using Azure.AI.Vision.Common.Options;
@@ -70,11 +70,14 @@ public class CognitiveService
 
             var cognitiveResult = JsonConvert.DeserializeObject<CognitiveResult>(await res.Content.ReadAsStringAsync());
 
+            await blobContainer.DeleteBlobAsync(imageBlobName);
+
             return cognitiveResult?.ReadResult?.Content ?? string.Empty;
         }
         catch (Exception e)
-        { }
-        await blobContainer.DeleteBlobAsync(imageBlobName);
+        { 
+            await blobContainer.DeleteBlobAsync(imageBlobName);
+        }
 
         return string.Empty;
     }
