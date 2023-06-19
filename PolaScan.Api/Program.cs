@@ -25,7 +25,7 @@ app.MapGet("/", async (HttpContext ctx) =>
     await ctx.Response.SendFileAsync("index.html");
 }
 );
-
+ /*
 app.Use(async (context, next) =>
 {
     if (!context.Request.Headers.TryGetValue(settings.AuthHeaderName, out var token))
@@ -36,7 +36,7 @@ app.Use(async (context, next) =>
 
     await next(context);
 });
-
+ */
 app.MapPost("/DetectPolaroidsInImage", async Task<IResult> (HttpRequest request) =>
 {
     var form = await request.ReadFormAsync();
