@@ -21,7 +21,7 @@
             <div class="scan-btn-wrapper">
             <Button class="green btn" @onclick="SelectScans">Select scans</Button>
             <br />
-            <SettingsItem Slug="@Constants.Settings.ImageFormat" OptionsDic="@Constants.ImageProcessing.PhotoFormatLabels" fieldType=InputType.select></SettingsItem>
+            <SettingsItem Slug="@Constants.Settings.ImageFormat" OptionsDic="@Constants.FilmFormats.Labels" fieldType=InputType.select></SettingsItem>
             </div>
         }
         @if (State.PolaroidsWithMeta.Count > 0 && !State.IsWorking)
@@ -63,11 +63,11 @@
 
     private List<string> GetFormatOptions() => new()
     {
-        Constants.PhotoFormat.Polaroid,
-        Constants.PhotoFormat.PolaroidGo,
-        Constants.PhotoFormat.InstaxMini,
-        Constants.PhotoFormat.InstaxWide,
-        Constants.PhotoFormat.InstaxSquare,
+        Constants.FilmFormats.Polaroid,
+        Constants.FilmFormats.PolaroidGo,
+        Constants.FilmFormats.InstaxMini,
+        Constants.FilmFormats.InstaxWide,
+        Constants.FilmFormats.InstaxSquare,
     };
 
   private async Task SelectScans()
@@ -90,10 +90,10 @@
         State.StatusMessage = $"{State.LocationCount} photos detected";
         StateHasChanged();
         await Task.Delay(1);
-        var format = Preferences.Default.Get(Constants.Settings.ImageFormat, Constants.PhotoFormat.Polaroid);
+                var format = Preferences.Default.Get(Constants.Settings.ImageFormat, Constants.FilmFormats.Polaroid);
         foreach (var location in locations)
         {
-          State.PolaroidsWithMeta.Add(new ImageWithMedia
+          State.PolaroidsWithMeta.Add(new ImageWithMeta
                         {
                             Id = Guid.NewGuid(),
                             Hour = defaultHour,
@@ -156,7 +156,7 @@
         Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(State));
     }
 
-    public void RemovePhoto(ImageWithMedia polaroid)
+    public void RemovePhoto(ImageWithMeta polaroid)
     {
         State.PolaroidsWithMeta.Remove(polaroid);
         if(State.PolaroidsWithMeta.Count() == 0)

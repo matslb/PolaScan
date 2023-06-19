@@ -3,7 +3,7 @@ using SixLabors.ImageSharp;
 
 namespace PolaScan.App.Models;
 
-public class ImageWithMedia
+public class ImageWithMeta
 {
     public Guid Id { get; set; }
     public string AbsolutePath { get; set; }
@@ -20,7 +20,7 @@ public class ImageWithMedia
     public string TempFileName => $"{Id}.{Format}";
     public string Format => ScanFile.Split(".")[1];
     public List<LocationMeta> LocationOptions { get; set; } = new();
-    public string PhotoFormat { get; set; } = Constants.PhotoFormat.Polaroid;
+    public string PhotoFormat { get; set; } = Constants.FilmFormats.Polaroid;
 }
 
 public class LocationMeta

@@ -4,7 +4,7 @@ namespace PolaScan.App.Models;
 
 public class ProcessingState
 {
-    public ObservableCollection<ImageWithMedia> PolaroidsWithMeta { get; set; } = new();
+    public ObservableCollection<ImageWithMeta> PolaroidsWithMeta { get; set; } = new();
     public int ScanFileCount { get; set; } = 0;
     public int LocationCount { get; set; } = 0;
 

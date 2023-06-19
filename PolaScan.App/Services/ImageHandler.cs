@@ -35,7 +35,7 @@ public class ImageHandler
         Helpers.DeleteTemporaryFiles();
     }
 
-    public async Task PublishImage(ImageWithMedia polaroid)
+    public async Task PublishImage(ImageWithMeta polaroid)
     {
         polaroid = await CutFromScan(polaroid, false).ConfigureAwait(false);
         var destSetting = $"{Preferences.Default.Get(Constants.Settings.DesitnationPath, "")}\\PolaScan";
@@ -60,7 +60,7 @@ public class ImageHandler
             image.Metadata.ExifProfile.SetValue(ExifTag.ImageDescription, $"{polaroid.Location.Name}");
         }
         image.Metadata.ExifProfile.SetValue(ExifTag.Software, nameof(PolaScan));
-        image.Metadata.ExifProfile.SetValue(ExifTag.Model, Constants.ImageProcessing.PhotoFormatLabels[polaroid.PhotoFormat]);
+        image.Metadata.ExifProfile.SetValue(ExifTag.Model, Constants.FilmFormats.Labels[polaroid.PhotoFormat]);
         image.Metadata.ExifProfile.SetValue(ExifTag.Copyright, Preferences.Default.Get(Constants.Settings.CopyRightText, ""));
 
         if (polaroid.Date != null)
@@ -75,7 +75,7 @@ public class ImageHandler
 
     public bool IsReadyForProcessing() => PhotosInProsses == 0;
 
-    public async Task<ImageWithMedia> GetDateOnPolaroid(ImageWithMedia polaroid)
+    public async Task<ImageWithMeta> GetDateOnPolaroid(ImageWithMeta polaroid)
     {
         var lip = await GetPolaroidLipSection(polaroid).ConfigureAwait(false);
         polaroid.Date = await polaScanService.DetectDateInImage(lip).ConfigureAwait(false);
@@ -87,7 +87,7 @@ public class ImageHandler
         return polaroid;
     }
 
-    private async Task<string> GetPolaroidLipSection(ImageWithMedia polaroid)
+    private async Task<string> GetPolaroidLipSection(ImageWithMeta polaroid)
     {
         using var image = Image.Load(polaroid.AbsolutePath);
         image.Mutate(x => x
@@ -133,7 +133,7 @@ public class ImageHandler
         return compressedScanFileName;
     }
 
-    public async Task<ImageWithMedia> GetPolaroidFromScan(ImageWithMedia polaroid)
+    public async Task<ImageWithMeta> GetPolaroidFromScan(ImageWithMeta polaroid)
     {
         PhotosInProsses++;
         if (!SavedTemporaryFiles.TryGetValue(polaroid.ScanFile, out var compressedScanFileName))
@@ -142,7 +142,7 @@ public class ImageHandler
         }
 
         var degrees = await GetImageRotationDegrees(compressedScanFileName, polaroid.LocationInScan).ConfigureAwait(false);
-        var crop = await GetImageCropRectangle(compressedScanFileName, polaroid.LocationInScan, degrees, Constants.ImageProcessing.PhotoFormatRatios[polaroid.PhotoFormat]);
+        var crop = await GetImageCropRectangle(compressedScanFileName, polaroid.LocationInScan, degrees, Constants.FilmFormats.Ratios[polaroid.PhotoFormat]);
 
         polaroid.Crop = crop;
         polaroid.Rotation = degrees;
@@ -153,7 +153,7 @@ public class ImageHandler
         return polaroid;
     }
 
-    public async Task<ImageWithMedia> CutFromScan(ImageWithMedia polaroid, bool preview)
+    public async Task<ImageWithMeta> CutFromScan(ImageWithMeta polaroid, bool preview)
     {
         var modifier = preview ? tempImageModifier() : 1;
 

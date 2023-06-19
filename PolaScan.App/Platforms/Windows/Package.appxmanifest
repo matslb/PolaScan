@@ -6,7 +6,7 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap rescap">
 
-  <Identity Name="26335MatsBerntsen.59953B4ED5B08" Publisher="CN=A1FFC0A4-BA97-466C-86DE-11A47BF8C165" Version="1.1.5.0" />
+  <Identity Name="26335MatsBerntsen.59953B4ED5B08" Publisher="CN=A1FFC0A4-BA97-466C-86DE-11A47BF8C165" Version="1.1.6.0" />
 
   <mp:PhoneIdentity PhoneProductId="00d4b33e-cae2-4277-9ef2-4265ed7f3a76" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 

@@ -93,12 +93,12 @@
             </div>
         </div>
     </div>
-    <span class="film-type">@Constants.ImageProcessing.PhotoFormatLabels[Image.PhotoFormat]</span>
+    <span class="film-type">@Constants.FilmFormats.Labels[Image.PhotoFormat]</span>
 </div>
 
 @code {
     [Parameter]
-    public ImageWithMedia Image {get;set;}
+    public ImageWithMeta Image {get;set;}
     private bool DetectDateHasRun = false;
     private LocationSelector locationSelector { get; set; }
     private bool LocationIsBlocked { get; set; } = false;
@@ -140,6 +140,7 @@
         catch
         {
             LocationIsBlocked = true;
+            StateHasChanged();
         }
     }
 

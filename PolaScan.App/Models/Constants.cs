@@ -14,37 +14,36 @@ public static class Constants
         public static string ImageFormat = nameof(ImageFormat);
         public static string HideAlert = nameof(HideAlert);
     }
-
     public static class ImageProcessing
     {
         public static int ScanFilePadding = 500;
         public static int TempImageModifier = 3;
 
-        public static Dictionary<string, double> PhotoFormatRatios = new()
-        {
-            { PhotoFormat.Polaroid, 1.222},
-            { PhotoFormat.PolaroidGo, 1.251},
-            { PhotoFormat.InstaxMini, 1.59},
-            { PhotoFormat.InstaxSquare, 1.2},
-            { PhotoFormat.InstaxWide, 0.79 }
-        };
-
-        public static Dictionary<string, string> PhotoFormatLabels = new()
-        {
-            { PhotoFormat.Polaroid, "Polaroid I-Type"},
-            { PhotoFormat.PolaroidGo, "Polaroid Go"},
-            { PhotoFormat.InstaxMini, "Instax Mini"},
-            { PhotoFormat.InstaxSquare, "Instax Square"},
-            { PhotoFormat.InstaxWide, "Instax Wide" }
-        };
     }
-
-    public class PhotoFormat
+    public static class FilmFormats
     {
         public static string Polaroid = nameof(Polaroid);
         public static string PolaroidGo = nameof(PolaroidGo);
         public static string InstaxMini = nameof(InstaxMini);
         public static string InstaxSquare = nameof(InstaxSquare);
         public static string InstaxWide = nameof(InstaxWide);
+
+        public static Dictionary<string, double> Ratios = new()
+        {
+            { Polaroid, 1.222},
+            { PolaroidGo, 1.251},
+            { InstaxMini, 1.59},
+            { InstaxSquare, 1.2},
+            { InstaxWide, 0.79 }
+        };
+
+        public static Dictionary<string, string> Labels = new()
+        {
+            { Polaroid, "Polaroid I-Type"},
+            { PolaroidGo, "Polaroid Go"},
+            { InstaxMini, "Instax Mini"},
+            { InstaxSquare, "Instax Square"},
+            { InstaxWide, "Instax Wide" }
+        };
     }
 }
