@@ -15,4 +15,13 @@ PolaScan will detect a handwritten date on the front of a Polaroid, and add it t
 
 ### Google Timeline data
  Download your google timeline data from [takeout.google.com](https://takeout.google.com) and add it to PolaScan to match the dates on your polaroids to get the coordinates from when time photo was taken.
+
+ ## Donate
+ Help support the hosting av development of PolaScan.
+ <form action="https://www.paypal.com/donate" method="post" target="_top">
+<input type="hidden" name="hosted_button_id" value="G3E8JXZ2YFFD6" />
+<input type="image" src="https://www.paypalobjects.com/en_US/NO/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+<img alt="" border="0" src="https://www.paypal.com/en_NO/i/scr/pixel.gif" width="1" height="1" />
+</form>
+
  
