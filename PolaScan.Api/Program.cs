@@ -3,6 +3,7 @@
 using System.Net;
 using System.Runtime.CompilerServices;
 using Azure;
+using Azure.Core;
 using Azure.Maps.Search;
 using PolaScan.Api;
 using PolaScan.Api.Services;
@@ -25,20 +26,17 @@ app.MapGet("/", async (HttpContext ctx) =>
     await ctx.Response.SendFileAsync("index.html");
 }
 );
- /*
-app.Use(async (context, next) =>
-{
-    if (!context.Request.Headers.TryGetValue(settings.AuthHeaderName, out var token))
-    {
-        context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-        return;
-    }
 
-    await next(context);
-});
- */
+
 app.MapPost("/DetectPolaroidsInImage", async Task<IResult> (HttpRequest request) =>
 {
+    /*
+    if (!request.Headers.TryGetValue(settings.AuthHeaderName, out var token))
+    {
+        return Results.Forbid();
+    }
+    */
+
     var form = await request.ReadFormAsync();
     var formFile = form.Files.First();
 
@@ -54,6 +52,13 @@ app.MapPost("/DetectPolaroidsInImage", async Task<IResult> (HttpRequest request)
 
 app.MapPost("/DetectDateInImage", async Task<IResult> (HttpRequest request) =>
 {
+    /*
+    if (!request.Headers.TryGetValue(settings.AuthHeaderName, out var token))
+    {
+        return Results.Forbid();
+    }
+    */
+
     var form = await request.ReadFormAsync();
     var formFile = form.Files.FirstOrDefault();
 
@@ -69,6 +74,13 @@ app.MapPost("/DetectDateInImage", async Task<IResult> (HttpRequest request) =>
 
 app.MapGet("/location-lookup", async (HttpRequest request) =>
 {
+    /*
+    if (!request.Headers.TryGetValue(settings.AuthHeaderName, out var token))
+    {
+        return Results.Forbid();
+    }
+    */
+
     CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
     var lat = double.Parse(request.Query["lat"]);
@@ -84,8 +96,17 @@ app.MapGet("/location-lookup", async (HttpRequest request) =>
     return Results.NotFound();
 });
 
-app.MapGet("/status", async (HttpRequest request) => await statusService.GetStatusMessage());
 
+app.MapGet("/status", async (HttpRequest request) =>
+{
+    /*
+    if (!request.Headers.TryGetValue(settings.AuthHeaderName, out var token))
+    {
+        return Results.Forbid();
+    }
+    */
+    return Results.Ok(await statusService.GetStatusMessage());
+});
 
 
 app.Run();
