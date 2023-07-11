@@ -142,10 +142,11 @@ public class ImageHandler
         }
 
         var degrees = await GetImageRotationDegrees(compressedScanFileName, polaroid.LocationInScan).ConfigureAwait(false);
-        var crop = await GetImageCropRectangle(compressedScanFileName, polaroid.LocationInScan, degrees, Constants.FilmFormats.Ratios[polaroid.PhotoFormat]);
+        var (ratio, crop) = await GetImageCropRectangle(compressedScanFileName, polaroid.LocationInScan, degrees);
 
         polaroid.Crop = crop;
         polaroid.Rotation = degrees;
+        polaroid.PhotoFormat = ratio;
         polaroid.HasBeenAnalyzed = true;
         polaroid = await CutFromScan(polaroid, true).ConfigureAwait(false);
         polaroid = await GetDateOnPolaroid(polaroid).ConfigureAwait(false);
@@ -162,7 +163,7 @@ public class ImageHandler
         using var scanFile = Image.Load<Rgba32>(tempFileName, out var format);
         scanFile.Mutate(x => x
                .Pad(scanFile.Width + padding / modifier, scanFile.Height + padding / modifier)
-               .Crop(PolaroidSizeWithMargin(scanFile, polaroid.LocationInScan, modifier))
+               .Crop(PolaroidSizeWithMargin(scanFile, polaroid.LocationInScan))
                .Rotate(polaroid.Rotation)
                .BackgroundColor(Color.White));
         try
@@ -210,13 +211,13 @@ public class ImageHandler
         return tempFileName;
     }
 
-    private async Task<Rectangle> GetImageCropRectangle(string fileName, BoundingBox position, float degrees, double ratio)
+    private async Task<(string ratio, Rectangle crop)> GetImageCropRectangle(string fileName, BoundingBox position, float degrees)
     {
         using var image = Image.Load<Rgba32>(fileName);
 
         var originalImageWidth = image.Width * tempImageModifier();
         var originalImageHeight = image.Height * tempImageModifier();
-        var detectedLocation = PolaroidSizeWithMargin(image, position, tempImageModifier());
+        var detectedLocation = PolaroidSizeWithMargin(image, position);
         image.Mutate(x => x
               .Crop(detectedLocation)
               .Rotate(degrees)
@@ -224,17 +225,19 @@ public class ImageHandler
         var (leftCrop, leftTop) = await GetImageCorner(image, true).ConfigureAwait(false);
         var (rightCrop, rightTop) = await GetImageCorner(image, false).ConfigureAwait(false);
 
-
         var width = (int)(rightCrop - leftCrop) * tempImageModifier();
+        var ratioString = FindCorrectRatio(image, leftTop, leftCrop, rightCrop);
+        var ratio = Constants.FilmFormats.Ratios[ratioString];
+
         if (width <= 0)
         {
             width = ((int)(originalImageWidth * (position.Width - 0.1)));
-            return new Rectangle(
+            return (ratioString, new Rectangle(
                 x: (int)(originalImageWidth * (position.Left - 0.05)),
                 y: (int)(originalImageHeight * (position.Top - 0.05)),
                 width: width,
                 height: (int)(width * ratio)
-            );
+            ));
         }
 
         var height = (int)(width * ratio);
@@ -251,7 +254,35 @@ public class ImageHandler
        );
 
         image.Dispose();
-        return crop;
+        return (ratioString, crop);
+    }
+
+    private static string FindCorrectRatio(Image<Rgba32> image, int top, int left, int right)
+    {
+        var ratioMatch = Constants.FilmFormats.InstaxWide;
+        var width = right - left;
+        var x = left + (width / 2);
+        foreach (var ratio in Constants.FilmFormats.Ratios)
+        {
+            var height = (int)(width * ratio.Value);
+
+            for (var i = 0; i < 10; i++)
+            {
+                var bottomLeft = image[x, height + top + i];
+
+                if (IsWhitePixel(bottomLeft))
+                {
+                    if (ratio.Value > Constants.FilmFormats.Ratios[ratioMatch])
+                        ratioMatch = ratio.Key;
+                }
+            }
+
+            image[left + (width / 2), height + top] = Color.Red;
+            Helpers.SaveTempImage(image, Guid.NewGuid() + ".jpg");
+
+        }
+
+        return ratioMatch;
     }
 
     private static async Task<(int side, int top)> GetImageCorner(Image<Rgba32> image, bool left = true)
@@ -337,7 +368,7 @@ public class ImageHandler
 
         // Cropping image with margin to adjust rotation
         image.Mutate(x => x
-              .Crop(PolaroidSizeWithMargin(image, position, tempImageModifier()))
+              .Crop(PolaroidSizeWithMargin(image, position))
               );
         float degrees = 0;
 
@@ -430,7 +461,7 @@ public class ImageHandler
             new Rational(secondsInt*1000000, 1000000),
         };
     }
-    private static Rectangle PolaroidSizeWithMargin(Image image, BoundingBox position, int mod)
+    private static Rectangle PolaroidSizeWithMargin(Image image, BoundingBox position)
     {
         var left = (int)(image.Width * position.Left);
         left -= (int)Math.Max(left * 0.05, 0);
