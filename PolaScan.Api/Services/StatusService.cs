@@ -26,7 +26,7 @@ public class StatusService
         {
             var result = await blobClient.DownloadStreamingAsync();
             var reader = new StreamReader(result.Value.Content);
-            return reader.ReadToEnd();
+            return reader.ReadToEnd().Trim('"');
         }
         catch
         {
