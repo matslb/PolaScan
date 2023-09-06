@@ -97,7 +97,7 @@ public class PolaScanApiService
         {
             var result = await client.GetAsync("/status");
 
-            return await result.Content.ReadAsStringAsync() ?? null;
+            return (await result.Content.ReadAsStringAsync()).Trim('"') ?? null;
         }
         catch
         {

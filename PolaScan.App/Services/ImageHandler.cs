@@ -66,8 +66,8 @@ public class ImageHandler
         if (polaroid.Date != null)
         {
             var hour = new TimeOnly(polaroid.Hour, 0, 0);
-            var dateTime = polaroid.Location?.DateTime != null ? polaroid.Location.DateTime : polaroid.Date.Value.ToDateTime(hour, DateTimeKind.Unspecified);
-            image.Metadata.ExifProfile.SetValue(ExifTag.DateTimeOriginal, dateTime.ToString("yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture));
+            var dateTime = polaroid.Location?.DateTime != null ? polaroid.Location.DateTime.Value : polaroid.Date.Value.ToDateTime(hour, DateTimeKind.Local);
+            image.Metadata.ExifProfile.SetValue(ExifTag.DateTimeOriginal, dateTime.ToString("yyyy:MM:dd HH:mm:ss", CultureInfo.CurrentCulture));
         }
 
         await image.SaveAsync(uniqueName);

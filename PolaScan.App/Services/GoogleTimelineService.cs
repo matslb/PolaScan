@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using PolaScan.App.Models;
 
 namespace PolaScan.App.Services;
@@ -22,7 +22,7 @@ public class GoogleTimelineService
                 using JsonReader reader = new JsonTextReader(r);
                 var serializer = new JsonSerializer();
                 var detailedTimeLine = serializer.Deserialize<GoogleTimeline>(reader);
-                Timeline.Locations.AddRange(detailedTimeLine.Locations);
+                Timeline.Locations.AddRange(detailedTimeLine.Locations.Where(l => l.Accuracy < 40));
             }
         }
         catch (Exception e)
@@ -44,7 +44,7 @@ public class GoogleTimelineService
                 Latitude = location.Latitude / 1e7,
                 Longitude = location.Longitude / 1e7,
                 Name = location.Name,
-                DateTime = location.Date.DateTime
+                DateTime = location.Date.LocalDateTime
             }).ToList();
     }
 }

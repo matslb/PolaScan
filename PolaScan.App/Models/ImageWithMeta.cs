@@ -20,7 +20,7 @@ public class ImageWithMeta
     public string TempFileName => $"{Id}.{Format}";
     public string Format => ScanFile.Split(".")[1];
     public List<LocationMeta> LocationOptions { get; set; } = new();
-    public string PhotoFormat { get; set; } = Constants.FilmFormats.Polaroid;
+    public string? PhotoFormat { get; set; } = Constants.FilmFormats.Polaroid;
 }
 
 public class LocationMeta
@@ -28,5 +28,5 @@ public class LocationMeta
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public string Name { get; set; }
-    public DateTime DateTime { get; set; }
+    public DateTime? DateTime { get; set; }
 }

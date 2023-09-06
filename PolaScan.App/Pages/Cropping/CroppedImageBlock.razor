@@ -72,10 +72,10 @@
                 if (Image.LocationOptions != null)
                 {
                     <ul class="location-options">
-                        @foreach (var l in Image.LocationOptions.OrderBy(x => x.DateTime.Ticks))
-                        {
-                            <button class="@GetLocationBtnClass(l)" @onclick="() => UpdateLocation(l)">@l.DateTime.ToString("HH:mm")</button>
-                        }
+                            @foreach (var l in Image.LocationOptions.OrderBy(x => x.DateTime.Value.Ticks))
+                            {
+                                <button class="@GetLocationBtnClass(l)" @onclick="() => UpdateLocation(l)">@l.DateTime.Value.ToString("HH:mm")</button>
+                            }
                     </ul>
                 }
                 <div class="map_wrapper">
