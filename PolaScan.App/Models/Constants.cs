@@ -13,6 +13,7 @@ public static class Constants
         public static string CultureName = nameof(CultureName);
         public static string ImageFormat = nameof(ImageFormat);
         public static string HideAlert = nameof(HideAlert);
+        public static string DeviceId = nameof(DeviceId);
     }
     public static class ImageProcessing
     {

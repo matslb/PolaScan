@@ -1,9 +1,10 @@
-﻿using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
+﻿using System.Globalization;
+using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PolaScan.App.Models;
 using SixLabors.ImageSharp.Processing;
-using System.Globalization;
-using System.Text.RegularExpressions;
 using Image = SixLabors.ImageSharp.Image;
 using Size = SixLabors.ImageSharp.Size;
 
@@ -11,23 +12,27 @@ namespace PolaScan.App.Services;
 
 public class PolaScanApiService
 {
-    private readonly string baseUrl;
     private readonly HttpClient client;
-    public PolaScanApiService()
+    private readonly ILogger<PolaScanApiService> logger;
+    public PolaScanApiService(IConfiguration configuration, ILogger<PolaScanApiService> logger)
     {
-        baseUrl = "https://polascanapi.azurewebsites.net/";
-        //baseUrl = "https://localhost:7231";
+        var baseUrl = configuration.GetValue<string>("PolaScanApi:release");
+#if DEBUG
+        baseUrl = configuration.GetValue<string>("PolaScanApi:debug");
+#endif
         client = new HttpClient
         {
             BaseAddress = new Uri(baseUrl)
         };
         client.DefaultRequestHeaders.Add("TE", "Accept-encoding");
-
         client.Timeout = TimeSpan.FromSeconds(20);
+        this.logger = logger;
+        logger.LogInformation("Application startup");
     }
 
     public async Task<List<BoundingBox>> DetectPolaroidsInImage(string scanPath)
     {
+        logger.LogInformation("Detect in image test");
         var mod = Constants.ImageProcessing.TempImageModifier;
         using var image = Image.Load(scanPath);
         image.Mutate(x =>

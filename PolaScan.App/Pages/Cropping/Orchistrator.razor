@@ -1,4 +1,5 @@
 @using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
+@using Microsoft.Extensions.Logging;
 @using Newtonsoft.Json;
 @using PolaScan.App.Models;
 @using System.Globalization;
@@ -11,6 +12,7 @@
 @inject PolaScanApiService polaScanClient;
 @inject GoogleTimelineService timelineService;
 @inject ImageHandler imageHandler;
+@inject ILogger<Orchistrator> logger;
 
 @implements IDisposable
 
@@ -72,6 +74,7 @@
 
   private async Task SelectScans()
   {
+    logger.LogInformation("Button_Select_Scan");
     State.IsStarted = true;
     State.IsWorking = true;
     var defaultHour = int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12"));
@@ -121,18 +124,20 @@
     Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(State));
     imageHandler.ClearTempFiles();
     StateHasChanged();
+    logger.LogInformation("Button_Cancel");
   }
 
   private async Task ExportImages()
   {
+    logger.LogInformation($"Button_Export_{State.PolaroidsWithMeta.Count}");
     State.IsWorking = true;
     for (int i = 0; i < State.PolaroidsWithMeta.Count; i++)
     {
-      State.StatusMessage = $"{i} of {State.PolaroidsWithMeta.Count} photos exported";
-      var p = State.PolaroidsWithMeta[i];
-      await imageHandler.PublishImage(p);
-      await Task.Delay(10);
-      StateHasChanged();
+    State.StatusMessage = $"{i} of {State.PolaroidsWithMeta.Count} photos exported";
+    var p = State.PolaroidsWithMeta[i];
+    await imageHandler.PublishImage(p);
+    await Task.Delay(10);
+    StateHasChanged();
     }
 
     await Task.Delay(100);
@@ -143,6 +148,7 @@
   private void OpenDestinationFolder()
   {
     Process.Start("explorer.exe", $"{Preferences.Default.Get(Constants.Settings.DesitnationPath, "")}\\PolaScan");
+    logger.LogInformation("Button_View_Photos");
   }
 
   private void SaveState()
@@ -163,6 +169,7 @@
         {
             Cancel();
         }
+        logger.LogInformation("Button_Remove_Photo");
     }
 
     protected override void OnInitialized()

@@ -1,4 +1,7 @@
-﻿@inject NavigationManager NavigationManager
+﻿@using Microsoft.Extensions.Logging;
+@inject NavigationManager NavigationManager
+@inject ILogger<NavMenu> logger;
+
 @implements IDisposable
 
 <div>
@@ -47,10 +50,17 @@
     {
         NavigationManager.LocationChanged -= HandleLocationChanged;
     }
-    private void NavigateToHelp() => NavigationManager.NavigateTo("help");
+    private void NavigateToHelp() {
+        NavigationManager.NavigateTo("help");
+        logger.LogInformation("Button_Nav_Help");
+    }
+    private void NavigateToSettings(){
+        NavigationManager.NavigateTo("settings");
+        logger.LogInformation("Button_Nav_Settings");
+    }
 
-    private void NavigateToSettings() => NavigationManager.NavigateTo("settings");
-    
-	private void NavigateToHome() => NavigationManager.NavigateTo("");
-
+    private void NavigateToHome(){
+        NavigationManager.NavigateTo("");
+        logger.LogInformation("Button_Nav_Home");
+    }
 }

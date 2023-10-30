@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /PolaScan.Api/appsettings.Development.json
+/PolaScan.App/appsettings.json
