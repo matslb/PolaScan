@@ -3,8 +3,8 @@ using System.Reflection;
 using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Storage;
 using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PolaScan.App.Models;
 using PolaScan.App.Services;
@@ -38,15 +38,11 @@ public static class MauiProgram
 
     private static void AddApplicationInsights(this MauiAppBuilder builder)
     {
-        builder.Logging.AddApplicationInsights(configuration =>
-        {
-            configuration.TelemetryInitializers.Add(new ApplicationInitializer());
-            configuration.ConnectionString = builder.Configuration["ApplicationInsights"];
-        }, options =>
-        {
-            options.IncludeScopes = false;
-        });
-        builder.Services.AddSingleton<TelemetryClient>();
+        var tconfig = TelemetryConfiguration.CreateDefault();
+        tconfig.ConnectionString = builder.Configuration["ApplicationInsights"];
+        tconfig.TelemetryInitializers.Add(new ApplicationInitializer());
+        var telemetryClient = new TelemetryClient(tconfig);
+        builder.Services.AddSingleton(telemetryClient);
     }
 
     private static void AddServices(this MauiAppBuilder builder)

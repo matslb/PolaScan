@@ -1,4 +1,4 @@
-@using Microsoft.Extensions.Logging;
+@using Microsoft.ApplicationInsights;
 @using Microsoft.Maui.Controls.PlatformConfiguration;
 @using PolaScan.App.Models;
 @using static PolaScan.App.Models.Enums;
@@ -7,7 +7,7 @@
 @inject PolaScanApiService polaScanClient;
 @inject GoogleTimelineService timelineService;
 @inject ImageHandler imageHandler;
-@inject ILogger<CroppedImageBlock> logger;
+@inject TelemetryClient telemetryClient;
 
 <div class="@GetClass()">
 
@@ -150,7 +150,7 @@
         Image.Location = locationMeta;
         UpdatePhotoMeta(false).ConfigureAwait(false);
         locationSelector?.SetMarker(Image.Location).ConfigureAwait(false);
-        logger.LogInformation("Button_Location");
+        telemetryClient.TrackEvent("Button_Location");
     }
     private string GetClass() => $"image-block {Image.PhotoFormat}";
 
@@ -210,7 +210,7 @@
     {
         Image.Crop = new SixLabors.ImageSharp.Rectangle(Image.Crop.X + x, Image.Crop.Y + y, Image.Crop.Width, Image.Crop.Height);
         Image = await imageHandler.CutFromScan(Image, true);
-        logger.LogInformation("Button_Move");
+        telemetryClient.TrackEvent("Button_Move");
     }
 
     private async Task Rotate(double degrees)
@@ -219,13 +219,13 @@
         var x = degrees > 0 ? -1 : 1;
         Image.Crop = new SixLabors.ImageSharp.Rectangle(Image.Crop.X + x, Image.Crop.Y + x, Image.Crop.Width, Image.Crop.Height);
         Image = await imageHandler.CutFromScan(Image, true);
-        logger.LogInformation("Button_Rotate");
+        telemetryClient.TrackEvent("Button_Rotate");
     }
 
     private async Task Zoom(int x)
     {
         Image.Crop = new SixLabors.ImageSharp.Rectangle(Image.Crop.X + x, Image.Crop.Y + x, Image.Crop.Width - x*2, Image.Crop.Height - x*2 );
         Image = await imageHandler.CutFromScan(Image, true);
-        logger.LogInformation("Button_Zoom");
+        telemetryClient.TrackEvent("Button_Zoom");
     }
 }

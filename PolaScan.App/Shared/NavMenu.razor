@@ -1,6 +1,7 @@
-﻿@using Microsoft.Extensions.Logging;
+﻿@using Microsoft.ApplicationInsights;
+@using Microsoft.Extensions.Logging;
 @inject NavigationManager NavigationManager
-@inject ILogger<NavMenu> logger;
+@inject TelemetryClient telemetryClient;
 
 @implements IDisposable
 
@@ -52,15 +53,15 @@
     }
     private void NavigateToHelp() {
         NavigationManager.NavigateTo("help");
-        logger.LogInformation("Button_Nav_Help");
+        telemetryClient.TrackEvent("Button_Nav_Help");
     }
     private void NavigateToSettings(){
         NavigationManager.NavigateTo("settings");
-        logger.LogInformation("Button_Nav_Settings");
+        telemetryClient.TrackEvent("Button_Nav_Settings");
     }
 
     private void NavigateToHome(){
         NavigationManager.NavigateTo("");
-        logger.LogInformation("Button_Nav_Home");
+        telemetryClient.TrackEvent("Button_Nav_Home");
     }
 }

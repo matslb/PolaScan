@@ -1,3 +1,4 @@
+@using Microsoft.ApplicationInsights;
 @using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 @using Microsoft.Extensions.Logging;
 @using Newtonsoft.Json;
@@ -12,7 +13,7 @@
 @inject PolaScanApiService polaScanClient;
 @inject GoogleTimelineService timelineService;
 @inject ImageHandler imageHandler;
-@inject ILogger<Orchistrator> logger;
+@inject TelemetryClient telemetryClient;
 
 @implements IDisposable
 
@@ -74,7 +75,7 @@
 
   private async Task SelectScans()
   {
-    logger.LogInformation("Button_Select_Scan");
+    telemetryClient.TrackEvent("Button_Select_Scan");
     State.IsStarted = true;
     State.IsWorking = true;
     var defaultHour = int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12"));
@@ -124,12 +125,12 @@
     Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(State));
     imageHandler.ClearTempFiles();
     StateHasChanged();
-    logger.LogInformation("Button_Cancel");
+    telemetryClient.TrackEvent("Button_Cancel");
   }
 
   private async Task ExportImages()
   {
-    logger.LogInformation($"Button_Export_{State.PolaroidsWithMeta.Count}");
+    telemetryClient.TrackEvent($"Button_Export_{State.PolaroidsWithMeta.Count}");
     State.IsWorking = true;
     for (int i = 0; i < State.PolaroidsWithMeta.Count; i++)
     {
@@ -148,7 +149,7 @@
   private void OpenDestinationFolder()
   {
     Process.Start("explorer.exe", $"{Preferences.Default.Get(Constants.Settings.DesitnationPath, "")}\\PolaScan");
-    logger.LogInformation("Button_View_Photos");
+    telemetryClient.TrackEvent("Button_View_Photos");
   }
 
   private void SaveState()
@@ -169,7 +170,7 @@
         {
             Cancel();
         }
-        logger.LogInformation("Button_Remove_Photo");
+        telemetryClient.TrackEvent("Button_Remove_Photo");
     }
 
     protected override void OnInitialized()

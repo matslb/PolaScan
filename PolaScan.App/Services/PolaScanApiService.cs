@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Microsoft.ApplicationInsights;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -13,8 +14,8 @@ namespace PolaScan.App.Services;
 public class PolaScanApiService
 {
     private readonly HttpClient client;
-    private readonly ILogger<PolaScanApiService> logger;
-    public PolaScanApiService(IConfiguration configuration, ILogger<PolaScanApiService> logger)
+    private readonly TelemetryClient telemetryClient;
+    public PolaScanApiService(IConfiguration configuration, ILogger<PolaScanApiService> logger, TelemetryClient telemetryClient)
     {
         var baseUrl = configuration.GetValue<string>("PolaScanApi:release");
 #if DEBUG
@@ -26,13 +27,13 @@ public class PolaScanApiService
         };
         client.DefaultRequestHeaders.Add("TE", "Accept-encoding");
         client.Timeout = TimeSpan.FromSeconds(20);
-        this.logger = logger;
-        logger.LogInformation("Application startup");
+        this.telemetryClient = telemetryClient;
+        telemetryClient.TrackEvent("Application startup");
     }
 
     public async Task<List<BoundingBox>> DetectPolaroidsInImage(string scanPath)
     {
-        logger.LogInformation("Detect in image test");
+        telemetryClient.TrackEvent("Detect in image test");
         var mod = Constants.ImageProcessing.TempImageModifier;
         using var image = Image.Load(scanPath);
         image.Mutate(x =>
