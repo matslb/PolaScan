@@ -12,15 +12,17 @@
 <div class="@GetClass()">
 
     <div class="preview">
-        @if(Image.PreviewData == null || Image.PreviewData == string.Empty)
+        @if (Image.PreviewData == null || Image.PreviewData == string.Empty)
         {
-        <div class="placeholder">
+            <div class="placeholder">
                 <Icon IconName="circle-notch" Color="AppColor.white" Size="2"></Icon>
-        </div>
-        }else{
+            </div>
+        }
+        else
+        {
             <img src="@Image.PreviewData" width="300" />
         }
-        
+
         <div class="button-group">
             <button class="rotate-left" @onclick="() => Rotate(-.1)"><Icon IconName="rotate-left" /></button>
             <button class="left" @onclick="() => Move(3, 0)"><Icon IconName="arrow-left" /></button>
@@ -34,15 +36,15 @@
     </div>
     <div class="meta">
 
-        @if(Image.Date != null)
+        @if (Image.Date != null)
         {
             <div class="meta-item hour">
                 <Icon IconName="clock" Size="1" Color="AppColor.green" />
                 <input type="number" value="@Image.Hour" max="24" min="1" @onchange="SetHour" />
             </div>
             <div class="meta-item date">
-                <Icon IconName="calendar-days" Color="AppColor.blue"  Size="1" />
-                <InputField Callback="@SetDate" Type="@InputType.date"  Value="@Image.Date.Value.ToString("yyyy-MM-dd")" />
+                <Icon IconName="calendar-days" Color="AppColor.blue" Size="1" />
+                <InputField Callback="@SetDate" Type="@InputType.date" Value="@Image.Date.Value.ToString("yyyy-MM-dd")" />
             </div>
         }
         else if (DetectDateHasRun && Image.Date is null)
@@ -67,20 +69,20 @@
         <div class="meta-item location">
             <Icon IconName="map-location-dot" Color="AppColor.red" Size="1" />
             <div>
-            @if (Image.Location != null)
-            {
-                <a href="@GetLocationLink()">@Image.Location.Name</a>
-                if (Image.LocationOptions != null)
+                @if (Image.Location != null)
                 {
-                    <ul class="location-options">
+                    <a href="@GetLocationLink()">@Image.Location.Name</a>
+                    if (Image.LocationOptions != null)
+                    {
+                        <ul class="location-options">
                             @foreach (var l in Image.LocationOptions.OrderBy(x => x.DateTime.Value.Ticks))
                             {
                                 <button class="@GetLocationBtnClass(l)" @onclick="() => UpdateLocation(l)">@l.DateTime.Value.ToString("HH:mm")</button>
                             }
-                    </ul>
-                }
-                <div class="map_wrapper">
-                    <LocationSelector @ref="@locationSelector" LocationMeta="@Image.Location" LocationUpdateCallback="UpdateLocation" />
+                        </ul>
+                    }
+                    <div class="map_wrapper">
+                        <LocationSelector @ref="@locationSelector" LocationMeta="@Image.Location" LocationUpdateCallback="UpdateLocation" />
                     </div>
                 }
                 else
@@ -90,7 +92,7 @@
                         <p>Could not fetch location, change your privacy settings to allow location services</p>
                     }
                     <button class="btn red" @onclick="SetInitialLocation">Add location</button>
-            }
+                }
             </div>
         </div>
     </div>
@@ -99,7 +101,7 @@
 
 @code {
     [Parameter]
-    public ImageWithMeta Image {get;set;}
+    public ImageWithMeta Image { get; set; }
     private bool DetectDateHasRun = false;
     private LocationSelector locationSelector { get; set; }
     private bool LocationIsBlocked { get; set; } = false;
@@ -123,8 +125,10 @@
     {
         Image.Hour = int.Parse((string)e.Value);
         UpdatePhotoMeta().ConfigureAwait(false);
-        if(Image.Location != null)
+        if (Image.Location != null)
             locationSelector?.SetMarker(Image.Location).ConfigureAwait(false);
+
+        telemetryClient.TrackEvent("Set_Hour");
     }
 
     private async void SetInitialLocation()
@@ -150,14 +154,14 @@
         Image.Location = locationMeta;
         UpdatePhotoMeta(false).ConfigureAwait(false);
         locationSelector?.SetMarker(Image.Location).ConfigureAwait(false);
-        telemetryClient.TrackEvent("Button_Location");
+        telemetryClient.TrackEvent("Update_Location");
     }
     private string GetClass() => $"image-block {Image.PhotoFormat}";
 
     private string GetLocationBtnClass(LocationMeta l) => Image.Location == l ? "map-btn btn red selected" : "blue map-btn btn";
     private string GetLocationLink()
     {
-        if(Image.Location?.Name != null)
+        if (Image.Location?.Name != null)
             return $"https://www.google.com/maps/place/{Image.Location.Name.Replace(" ", "+")}";
 
         return string.Empty;
@@ -172,9 +176,9 @@
                 Image.LocationOptions = timelineService.GetDateLocations(Image.Date!.Value, Image.Hour);
                 Image.Location = Image.LocationOptions.FirstOrDefault() ?? Image.Location;
             }
-        } 
+        }
 
-        if(Image.Location != null && string.IsNullOrEmpty(Image.Location.Name))
+        if (Image.Location != null && string.IsNullOrEmpty(Image.Location.Name))
         {
             Image.Location.Name = await polaScanClient.GetAddressFromCoordinatesAsync(Image.Location);
         }
@@ -224,7 +228,7 @@
 
     private async Task Zoom(int x)
     {
-        Image.Crop = new SixLabors.ImageSharp.Rectangle(Image.Crop.X + x, Image.Crop.Y + x, Image.Crop.Width - x*2, Image.Crop.Height - x*2 );
+        Image.Crop = new SixLabors.ImageSharp.Rectangle(Image.Crop.X + x, Image.Crop.Y + x, Image.Crop.Width - x * 2, Image.Crop.Height - x * 2);
         Image = await imageHandler.CutFromScan(Image, true);
         telemetryClient.TrackEvent("Button_Zoom");
     }

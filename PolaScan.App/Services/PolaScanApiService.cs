@@ -1,11 +1,11 @@
-﻿using System.Globalization;
-using Microsoft.ApplicationInsights;
+﻿using Microsoft.ApplicationInsights;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PolaScan.App.Models;
 using SixLabors.ImageSharp.Processing;
+using System.Globalization;
 using Image = SixLabors.ImageSharp.Image;
 using Size = SixLabors.ImageSharp.Size;
 
@@ -25,7 +25,7 @@ public class PolaScanApiService
         {
             BaseAddress = new Uri(baseUrl)
         };
-        client.DefaultRequestHeaders.Add("TE", "Accept-encoding");
+        client.DefaultRequestHeaders.Add("PolaScanToken", configuration.GetValue<string>("PolaScanApi:token"));
         client.Timeout = TimeSpan.FromSeconds(20);
         this.telemetryClient = telemetryClient;
         telemetryClient.TrackEvent("Application startup");
@@ -33,7 +33,6 @@ public class PolaScanApiService
 
     public async Task<List<BoundingBox>> DetectPolaroidsInImage(string scanPath)
     {
-        telemetryClient.TrackEvent("Detect in image test");
         var mod = Constants.ImageProcessing.TempImageModifier;
         using var image = Image.Load(scanPath);
         image.Mutate(x =>
@@ -70,6 +69,7 @@ public class PolaScanApiService
 
         if (res != null && DateTime.TryParse(res.Replace("\\n", string.Empty), culture, DateTimeStyles.AssumeUniversal, out var date))
         {
+            telemetryClient.TrackEvent("Date_detected");
             return DateOnly.FromDateTime(date);
         }
         return null;
