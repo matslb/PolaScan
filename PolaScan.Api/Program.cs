@@ -1,12 +1,8 @@
-﻿using System.Globalization;
-
-using System.Net;
-using System.Runtime.CompilerServices;
-using Azure;
-using Azure.Core;
+﻿using Azure;
 using Azure.Maps.Search;
 using PolaScan.Api;
 using PolaScan.Api.Services;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationInsightsTelemetry();
@@ -30,12 +26,11 @@ app.MapGet("/", async (HttpContext ctx) =>
 
 app.MapPost("/DetectPolaroidsInImage", async Task<IResult> (HttpRequest request) =>
 {
-    /*
-    if (!request.Headers.TryGetValue(settings.AuthHeaderName, out var token))
+
+    if (!request.Headers.TryGetValue(settings.AuthHeaderName, out var token) || token != settings.PolaScanApiToken)
     {
         return Results.Forbid();
     }
-    */
 
     var form = await request.ReadFormAsync();
     var formFile = form.Files.First();
@@ -52,12 +47,10 @@ app.MapPost("/DetectPolaroidsInImage", async Task<IResult> (HttpRequest request)
 
 app.MapPost("/DetectDateInImage", async Task<IResult> (HttpRequest request) =>
 {
-    /*
-    if (!request.Headers.TryGetValue(settings.AuthHeaderName, out var token))
+    if (!request.Headers.TryGetValue(settings.AuthHeaderName, out var token) || token != settings.PolaScanApiToken)
     {
         return Results.Forbid();
     }
-    */
 
     var form = await request.ReadFormAsync();
     var formFile = form.Files.FirstOrDefault();
@@ -74,12 +67,11 @@ app.MapPost("/DetectDateInImage", async Task<IResult> (HttpRequest request) =>
 
 app.MapGet("/location-lookup", async (HttpRequest request) =>
 {
-    /*
-    if (!request.Headers.TryGetValue(settings.AuthHeaderName, out var token))
+
+    if (!request.Headers.TryGetValue(settings.AuthHeaderName, out var token) || token != settings.PolaScanApiToken)
     {
         return Results.Forbid();
     }
-    */
 
     CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
@@ -99,12 +91,10 @@ app.MapGet("/location-lookup", async (HttpRequest request) =>
 
 app.MapGet("/status", async (HttpRequest request) =>
 {
-    /*
-    if (!request.Headers.TryGetValue(settings.AuthHeaderName, out var token))
+    if (!request.Headers.TryGetValue(settings.AuthHeaderName, out var token) || token != settings.PolaScanApiToken)
     {
         return Results.Forbid();
     }
-    */
     return Results.Ok(await statusService.GetStatusMessage());
 });
 

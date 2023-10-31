@@ -17,4 +17,5 @@ public class Settings
     public string? StatusMessageContainer { get; set; }
     public string? AuthHeaderName { get; set; }
     public string? StorageAccountToken { get; set; }
+    public string? PolaScanApiToken { get; set; }
 }
