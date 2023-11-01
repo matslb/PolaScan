@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-using System.Reflection;
-using CommunityToolkit.Maui;
+﻿using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Storage;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -8,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using PolaScan.App.Models;
 using PolaScan.App.Services;
+using System.Globalization;
+using System.Reflection;
 
 namespace PolaScan.App;
 
@@ -28,10 +28,11 @@ public static class MauiProgram
         var config = new ConfigurationBuilder().AddJsonStream(stream).Build();
         builder.Configuration.AddConfiguration(config);
 
+        SettingsSetup();
+
         builder.AddServices();
         builder.AddApplicationInsights();
 
-        SettingsSetup();
 
         return builder.Build();
     }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
-using Microsoft.Maui.Storage;
 using PolaScan.App.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
@@ -16,8 +15,12 @@ namespace PolaScan.App.Services;
 public class ImageHandler
 {
     public Dictionary<string, string> SavedTemporaryFiles { get; set; }
-    private static int tempImageModifier() => Constants.ImageProcessing.TempImageModifier;
-    private readonly static int padding = Constants.ImageProcessing.ScanFilePadding;
+    private static int tempImageModifier()
+    {
+        return Constants.ImageProcessing.TempImageModifier;
+    }
+
+    private static readonly int padding = Constants.ImageProcessing.ScanFilePadding;
     private readonly PolaScanApiService polaScanService;
     private readonly GoogleTimelineService timelineService;
     private int PhotosInProsses { get; set; } = 0;
@@ -73,7 +76,10 @@ public class ImageHandler
         await image.SaveAsync(uniqueName);
     }
 
-    public bool IsReadyForProcessing() => PhotosInProsses == 0;
+    public bool IsReadyForProcessing()
+    {
+        return PhotosInProsses == 0;
+    }
 
     public async Task<ImageWithMeta> GetDateOnPolaroid(ImageWithMeta polaroid)
     {
@@ -118,12 +124,9 @@ public class ImageHandler
         if (!SavedTemporaryFiles.TryGetValue(key, out var compressedScanFileName))
         {
             using var image = Image.Load<Rgba32>(scanFile);
-            image.Mutate(x =>
-            x
-            .Resize(new Size { Width = image.Width / tempImageModifier() })
-            );
+            image.Mutate(x => x.Resize(new Size { Width = image.Width / tempImageModifier() }));
 
-            var tempFileName = $"{Guid.NewGuid()}.{scanFile.Split(".")[1]}";
+            var tempFileName = $"{Guid.NewGuid()}.{scanFile.Split(".").Last()}";
             tempFileName = await Helpers.SaveTempImage(image, tempFileName);
             image.Dispose();
 
@@ -204,7 +207,7 @@ public class ImageHandler
         .BlackWhite()
         );
 
-        var tempFileName = $"{Guid.NewGuid()}.{fileName.Split(".")[1]}";
+        var tempFileName = $"{Guid.NewGuid()}.{fileName.Split(".").Last()}";
         tempFileName = await Helpers.SaveTempImage(image, tempFileName);
         image.Dispose();
         return tempFileName;
@@ -328,8 +331,11 @@ public class ImageHandler
         return (side, top);
     }
 
-    private static bool IsWhitePixel(Rgba32 pixel) => pixel.B >= 100 && pixel.G >= 100 && pixel.R >= 100 && pixel.A != 0
+    private static bool IsWhitePixel(Rgba32 pixel)
+    {
+        return pixel.B >= 100 && pixel.G >= 100 && pixel.R >= 100 && pixel.A != 0
         || pixel.B == 0 && pixel.G == 128 && pixel.R == 0 && pixel.A != 0;
+    }
 
     private static async Task<float> GetImageRotationDegrees(string fileName, BoundingBox position)
     {
