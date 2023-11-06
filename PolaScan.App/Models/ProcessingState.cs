@@ -11,6 +11,7 @@ public class ProcessingState
     public bool IsStarted { get; set; }
     public bool IsExported { get; set; }
     public bool IsWorking { get; set; }
+    public bool IsError { get; set; }
 
     public string StatusMessage { get; set; }
 }

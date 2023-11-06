@@ -31,10 +31,16 @@ public class PolaScanApiService
         telemetryClient.TrackEvent("Application startup");
     }
 
-    public async Task<List<BoundingBox>> DetectPolaroidsInImage(string scanPath)
+    public async Task<List<BoundingBox>> DetectPolaroidsInImage(FileResult file)
     {
         var mod = Constants.ImageProcessing.TempImageModifier;
-        using var image = Image.Load(scanPath);
+        using var image = Image.Load(file.FullPath);
+
+        if (image.Width < 300 || image.Height < 300)
+        {
+            throw new Exception($"'{file.FileName}' is too low res for processing. Image needs to be at least 300x300 pixels.");
+        }
+
         image.Mutate(x =>
         x.Pad(image.Width + Constants.ImageProcessing.ScanFilePadding, image.Height + Constants.ImageProcessing.ScanFilePadding)
         .Resize(new Size { Width = image.Width / mod })

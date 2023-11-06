@@ -10,7 +10,10 @@ public static class Helpers
         string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         return Path.Combine(appData, "PolaScan", relativePath);
     }
-    public static string GetTempFilePath(string relativePath) => GetAppDataFilePath($"temp\\{relativePath}");
+    public static string GetTempFilePath(string relativePath)
+    {
+        return GetAppDataFilePath($"temp\\{relativePath}");
+    }
 
     public static async Task<string> SaveTempImage(Image image, string tempFileName)
     {

@@ -37,10 +37,17 @@
             <button class="red btn" @onclick="OpenDestinationFolder">See photos</button>
         }
     </div>
-    if (State.IsWorking)
+   
+    @if (State.StatusMessage != null)
     {
         <div class="status-message">
-            <Icon IconName="circle-notch" Size="2" />
+            @if(State.IsWorking){
+                <Icon IconName="circle-notch" Size="2" />
+            }
+            @if (State.IsError)
+            {
+                <Icon IconName="circle-exclamation" Color="AppColor.red" Size="2" />
+            }
             <br />
             <span>@State.StatusMessage</span>
         </div>
@@ -76,8 +83,9 @@
 
     private async Task SelectScans()
     {
-        State.IsStarted = true;
+        Cancel();
         State.IsWorking = true;
+        State.IsStarted = true;
         var defaultHour = int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12"));
         var result = await FilePicker.Default.PickMultipleAsync();
         if (result.Any())
@@ -87,23 +95,24 @@
             State.StatusMessage = $"Analyzing {State.ScanFileCount} {(State.ScanFileCount > 1 ? "scans" : "scan")}";
             StateHasChanged();
 
-            foreach (var file in result)
-            {
-                var locations = await polaScanClient.DetectPolaroidsInImage(file.FullPath);
-                State.LocationCount += locations.Count();
-                State.StatusMessage = $"{State.LocationCount} photos detected";
-                StateHasChanged();
-                await Task.Delay(1);
-                var format = Preferences.Default.Get(Constants.Settings.ImageFormat, Constants.FilmFormats.Polaroid);
+            try {
+                foreach (var file in result)
+                {
+                    var locations = await polaScanClient.DetectPolaroidsInImage(file);
+                    State.LocationCount += locations.Count();
+                    State.StatusMessage = $"{State.LocationCount} photos detected";
+                    StateHasChanged();
+                    await Task.Delay(1);
+                    var format = Preferences.Default.Get(Constants.Settings.ImageFormat, Constants.FilmFormats.Polaroid);
 
-                telemetryClient.TrackEvent("File_analyzed", new Dictionary<string, string>
-                {
-                    {"Photos_Detected", locations.Count.ToString()},
-                    {"Format", format },
-                });
-                foreach (var location in locations)
-                {
-                    State.PolaroidsWithMeta.Add(new ImageWithMeta
+                    telemetryClient.TrackEvent("File_analyzed", new Dictionary<string, string>
+                    {
+                        {"Photos_Detected", locations.Count.ToString()},
+                        {"Format", format },
+                    });
+                    foreach (var location in locations)
+                    {
+                        State.PolaroidsWithMeta.Add(new ImageWithMeta
                         {
                             Id = Guid.NewGuid(),
                             Hour = defaultHour,
@@ -111,14 +120,21 @@
                             ScanFile = file.FullPath,
                             PhotoFormat = format
                         }
-                    );
-                    await Task.Delay(1);
-                    StateHasChanged();
+                        );
+                        await Task.Delay(1);
+                        StateHasChanged();
+                    }
                 }
+                if (State.LocationCount == 0)
+                {
+                    State.StatusMessage = "No photos detected";
+                }
+                State.StatusMessage = null;
             }
-            if (State.LocationCount == 0)
+            catch (Exception e)
             {
-                State.StatusMessage = "No photos detected";
+                State.IsError = true;
+                State.StatusMessage = e.Message;
             }
         }
         State.IsWorking = false;
@@ -150,10 +166,10 @@
         watch.Stop();
 
         telemetryClient.TrackEvent("Export_photos", new Dictionary<string, string>
-                {
-                    {"Photos_exported", State.PolaroidsWithMeta.Count.ToString()},
-                    {"export_milliseconds", $"{(watch.ElapsedMilliseconds).ToString()}" }
-                });
+            {
+                {"Photos_exported", State.PolaroidsWithMeta.Count.ToString()},
+                {"export_milliseconds", $"{(watch.ElapsedMilliseconds).ToString()}" }
+            });
         await Task.Delay(100);
         Cancel();
         State.IsExported = true;

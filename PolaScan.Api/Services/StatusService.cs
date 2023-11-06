@@ -1,13 +1,4 @@
-﻿using System.IO;
-using System.Text;
-using Azure;
-using Azure.AI.Vision.Common.Input;
-using Azure.AI.Vision.Common.Options;
-using Azure.AI.Vision.ImageAnalysis;
-using Azure.Storage.Blobs;
-using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction;
-using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
-using Newtonsoft.Json;
+﻿using Azure.Storage.Blobs;
 
 namespace PolaScan.Api.Services;
 
