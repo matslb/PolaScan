@@ -38,17 +38,20 @@
         }
     </div>
    
-    @if (State.StatusMessage != null)
+    @if (State.StatusMessage != null && State.IsWorking)
     {
         <div class="status-message">
             @if(State.IsWorking){
                 <Icon IconName="circle-notch" Size="2" />
             }
-            @if (State.IsError)
-            {
-                <Icon IconName="circle-exclamation" Color="AppColor.red" Size="2" />
-            }
             <br />
+            <span>@State.StatusMessage</span>
+        </div>
+    }
+    @if (State.StatusMessage != null && State.IsError)
+    {
+        <div class="error-message">
+            <Icon IconName="circle-exclamation" Color="AppColor.red" Size="2" />
             <span>@State.StatusMessage</span>
         </div>
     }
