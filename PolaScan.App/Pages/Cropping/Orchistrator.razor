@@ -108,11 +108,6 @@
                     await Task.Delay(1);
                     var format = Preferences.Default.Get(Constants.Settings.ImageFormat, Constants.FilmFormats.Polaroid);
 
-                    telemetryClient.TrackEvent("File_analyzed", new Dictionary<string, string>
-                    {
-                        {"Photos_Detected", locations.Count.ToString()},
-                        {"Format", format },
-                    });
                     foreach (var location in locations)
                     {
                         State.PolaroidsWithMeta.Add(new ImageWithMeta

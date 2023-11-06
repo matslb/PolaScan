@@ -47,13 +47,21 @@ public class PolaScanApiService
         );
 
         var tempFileName = await Helpers.SaveTempImage(image, $"{Guid.NewGuid()}.jpg");
-        image.Dispose();
 
         var content = GetImageStreamContent(tempFileName);
         var result = await client.PostAsync("/DetectPolaroidsInImage", content);
         content.Dispose();
+        var locations = JsonConvert.DeserializeObject<List<BoundingBox>>(await result.Content.ReadAsStringAsync());
+        telemetryClient.TrackEvent("File_analyzed", new Dictionary<string, string>
+            {
+                {"Detections", locations.Count.ToString()},
+                {"Height", image.Height.ToString()},
+                {"Width", image.Width.ToString()},
+            });
 
-        return JsonConvert.DeserializeObject<List<BoundingBox>>(await result.Content.ReadAsStringAsync());
+        image.Dispose();
+
+        return locations;
     }
 
     public async Task<DateOnly?> DetectDateInImage(string tempImagePath)
