@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Storage;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PolaScan.App.Models;
 using PolaScan.App.Services;
@@ -39,6 +40,15 @@ public static class MauiProgram
 
     private static void AddApplicationInsights(this MauiAppBuilder builder)
     {
+        builder.Logging.AddApplicationInsights(configuration =>
+        {
+            configuration.TelemetryInitializers.Add(new ApplicationInitializer());
+            configuration.ConnectionString = builder.Configuration["ApplicationInsights"];
+        }, options =>
+        {
+            options.IncludeScopes = false;
+        });
+
         var tconfig = TelemetryConfiguration.CreateDefault();
         tconfig.ConnectionString = builder.Configuration["ApplicationInsights"];
         tconfig.TelemetryInitializers.Add(new ApplicationInitializer());
@@ -84,5 +94,6 @@ public static class MauiProgram
         Preferences.Default.Set(Constants.Settings.HideAlert, false);
         Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(new ProcessingState()));
         Helpers.DeleteTemporaryFiles();
+        Helpers.StoreAsJson(new ProcessingState(), nameof(ProcessingState));
     }
 }

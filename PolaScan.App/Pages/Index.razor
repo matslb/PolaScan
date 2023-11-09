@@ -9,7 +9,7 @@
 <Orchistrator/>
 @if (!string.IsNullOrWhiteSpace(StatusMessage))
 {
-    <div class="status-message"><Icon IconName="circle-exclamation" Color="Models.Enums.AppColor.red" Size="2" /> <span>@StatusMessage</span>
+    <div class="status-message"><span>@StatusMessage</span>
      <button class="btn" @onclick="HideNotification" ><Icon IconName="circle-xmark" Color="Enums.AppColor.red" /></button>
     </div>
 }

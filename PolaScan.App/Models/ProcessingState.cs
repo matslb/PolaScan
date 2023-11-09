@@ -1,10 +1,8 @@
-﻿using System.Collections.ObjectModel;
-
-namespace PolaScan.App.Models;
+﻿namespace PolaScan.App.Models;
 
 public class ProcessingState
 {
-    public ObservableCollection<ImageWithMeta> PolaroidsWithMeta { get; set; } = new();
+    public List<ImageWithMeta> PolaroidsWithMeta { get; set; } = new();
     public int ScanFileCount { get; set; } = 0;
     public int LocationCount { get; set; } = 0;
 

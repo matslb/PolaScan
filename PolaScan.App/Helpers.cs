@@ -1,4 +1,5 @@
-﻿using SixLabors.ImageSharp;
+﻿using Newtonsoft.Json;
+using SixLabors.ImageSharp;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace PolaScan;
@@ -13,6 +14,26 @@ public static class Helpers
     public static string GetTempFilePath(string relativePath)
     {
         return GetAppDataFilePath($"temp\\{relativePath}");
+    }
+
+    public static void StoreAsJson<T>(T item, string itemName)
+    {
+        var serializedContent = JsonConvert.SerializeObject(item);
+        File.WriteAllText(GetAppDataFilePath($"{itemName}.json"), serializedContent);
+    }
+
+    public static T GetStoredValue<T>(string itemName)
+        where T : new()
+    {
+        try
+        {
+            return JsonConvert.DeserializeObject<T>(File.ReadAllText(GetAppDataFilePath($"{itemName}.json")));
+
+        }
+        catch (Exception)
+        {
+            return new T();
+        }
     }
 
     public static async Task<string> SaveTempImage(Image image, string tempFileName)

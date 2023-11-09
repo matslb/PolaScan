@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using PolaScan.App.Models;
 using SixLabors.ImageSharp.Processing;
 using System.Globalization;
+using Threading;
 using Image = SixLabors.ImageSharp.Image;
 using Size = SixLabors.ImageSharp.Size;
 
@@ -15,6 +16,8 @@ public class PolaScanApiService
 {
     private readonly HttpClient client;
     private readonly TelemetryClient telemetryClient;
+    private readonly SerialQueue serialQueue;
+
     public PolaScanApiService(IConfiguration configuration, ILogger<PolaScanApiService> logger, TelemetryClient telemetryClient)
     {
         var baseUrl = configuration.GetValue<string>("PolaScanApi:release");
@@ -28,13 +31,18 @@ public class PolaScanApiService
         client.DefaultRequestHeaders.Add("PolaScanToken", configuration.GetValue<string>("PolaScanApi:token"));
         client.Timeout = TimeSpan.FromSeconds(20);
         this.telemetryClient = telemetryClient;
+        serialQueue = new SerialQueue();
         telemetryClient.TrackEvent("Application startup");
     }
+    public async Task<List<BoundingBox>> AnalyzeScanFile(FileResult file)
+    {
+        return await serialQueue.Enqueue(async () => await DetectPolaroidsInImage(file));
 
-    public async Task<List<BoundingBox>> DetectPolaroidsInImage(FileResult file)
+    }
+    private async Task<List<BoundingBox>> DetectPolaroidsInImage(FileResult file)
     {
         var mod = Constants.ImageProcessing.TempImageModifier;
-        using var image = Image.Load(file.FullPath);
+        using var image = await Image.LoadAsync(file.FullPath);
 
         if (image.Width < 300 || image.Height < 300)
         {
@@ -60,33 +68,35 @@ public class PolaScanApiService
             });
 
         image.Dispose();
-
         return locations;
     }
 
     public async Task<DateOnly?> DetectDateInImage(string tempImagePath)
     {
-        var content = GetImageStreamContent(tempImagePath);
-        var res = string.Empty;
-        try
+        return await serialQueue.Enqueue<DateOnly?>(async () =>
         {
-            var result = await client.PostAsync("/DetectDateInImage", content);
-            res = JsonConvert.DeserializeObject<string>(await result.Content.ReadAsStringAsync());
-        }
-        catch
-        {
-        }
-        content.Dispose();
+            var content = GetImageStreamContent(tempImagePath);
+            var res = string.Empty;
+            try
+            {
+                var result = await client.PostAsync("/DetectDateInImage", content);
+                res = JsonConvert.DeserializeObject<string>(await result.Content.ReadAsStringAsync());
+            }
+            catch
+            {
+            }
+            content.Dispose();
 
-        var culturename = Preferences.Default.Get(Constants.Settings.DateFormat, CultureInfo.CurrentCulture.Name);
-        var culture = CultureInfo.GetCultureInfo(culturename);
+            var culturename = Preferences.Default.Get(Constants.Settings.DateFormat, CultureInfo.CurrentCulture.Name);
+            var culture = CultureInfo.GetCultureInfo(culturename);
 
-        if (res != null && DateTime.TryParse(res.Replace("\\n", string.Empty), culture, DateTimeStyles.AssumeUniversal, out var date))
-        {
-            telemetryClient.TrackEvent("Date_detected");
-            return DateOnly.FromDateTime(date);
-        }
-        return null;
+            if (res != null && DateTime.TryParse(res.Replace("\\n", string.Empty), culture, DateTimeStyles.AssumeUniversal, out var date))
+            {
+                telemetryClient.TrackEvent("Date_detected");
+                return DateOnly.FromDateTime(date);
+            }
+            return null;
+        });
     }
 
     private MultipartFormDataContent GetImageStreamContent(string fileName)
@@ -94,7 +104,7 @@ public class PolaScanApiService
         var multipartFormContent = new MultipartFormDataContent
         {
             { new StringContent(fileName), "FileName" },
-            { new StringContent(fileName.Split(".")[1]), "Type" }
+            { new StringContent(fileName.Split(".").Last()), "Type" }
         };
 
         var imageContent = new StreamContent(File.OpenRead(fileName));
@@ -106,7 +116,6 @@ public class PolaScanApiService
 
     public async Task<string> GetAddressFromCoordinatesAsync(LocationMeta location)
     {
-
         var result = await client.GetAsync($"/location-lookup?lat={location.Latitude.ToString(CultureInfo.InvariantCulture)}&lng={location.Longitude.ToString(CultureInfo.InvariantCulture)}");
         return JsonConvert.DeserializeObject<string>(await result.Content.ReadAsStringAsync());
     }

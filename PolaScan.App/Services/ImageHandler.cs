@@ -5,6 +5,7 @@ using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System.Globalization;
+using Threading;
 using Color = SixLabors.ImageSharp.Color;
 using Image = SixLabors.ImageSharp.Image;
 using Size = SixLabors.ImageSharp.Size;
@@ -23,13 +24,15 @@ public class ImageHandler
     private static readonly int padding = Constants.ImageProcessing.ScanFilePadding;
     private readonly PolaScanApiService polaScanService;
     private readonly GoogleTimelineService timelineService;
-    private int PhotosInProsses { get; set; } = 0;
+    private readonly SerialQueue serialQueue;
+
     public ImageHandler(PolaScanApiService polaScanService, GoogleTimelineService timelineService)
     {
         SavedTemporaryFiles = new();
         Directory.CreateDirectory(Helpers.GetTempFilePath(string.Empty));
         this.polaScanService = polaScanService;
         this.timelineService = timelineService;
+        serialQueue = new SerialQueue();
     }
 
     public void ClearTempFiles()
@@ -40,45 +43,43 @@ public class ImageHandler
 
     public async Task PublishImage(ImageWithMeta polaroid)
     {
-        polaroid = await CutFromScan(polaroid, false).ConfigureAwait(false);
-        var destSetting = $"{Preferences.Default.Get(Constants.Settings.DesitnationPath, "")}\\PolaScan";
-        var destinationPath = polaroid.Date != null ? $"{destSetting}\\{polaroid.Date.Value.Year}\\{polaroid.Date.Value.Month}" : destSetting;
-        Directory.CreateDirectory(destinationPath);
-        var i = 0;
-        var uniqueName = destinationPath + $"\\{polaroid.FileName(i)}";
-        while (File.Exists(uniqueName))
+        await serialQueue.Enqueue(async () =>
         {
-            uniqueName = destinationPath + $"\\{polaroid.FileName(i)}";
-            i++;
-        }
-        using var image = Image.Load(polaroid.AbsolutePath);
-        image.Metadata.ExifProfile ??= new();
-        if (polaroid.Location != null)
-        {
-            image.Metadata.ExifProfile.SetValue(ExifTag.GPSLatitude, GPSRational(polaroid.Location.Latitude));
-            image.Metadata.ExifProfile.SetValue(ExifTag.GPSLongitude, GPSRational(polaroid.Location.Longitude));
-            image.Metadata.ExifProfile.SetValue(ExifTag.GPSLatitudeRef, polaroid.Location.Latitude > 0 ? "N" : "S");
-            image.Metadata.ExifProfile.SetValue(ExifTag.GPSLongitudeRef, polaroid.Location.Longitude > 0 ? "E" : "W");
-            image.Metadata.ExifProfile.SetValue(ExifTag.GPSAltitude, Rational.FromDouble(100));
-            image.Metadata.ExifProfile.SetValue(ExifTag.ImageDescription, $"{polaroid.Location.Name}");
-        }
-        image.Metadata.ExifProfile.SetValue(ExifTag.Software, nameof(PolaScan));
-        image.Metadata.ExifProfile.SetValue(ExifTag.Model, Constants.FilmFormats.Labels[polaroid.PhotoFormat]);
-        image.Metadata.ExifProfile.SetValue(ExifTag.Copyright, Preferences.Default.Get(Constants.Settings.CopyRightText, ""));
+            polaroid = await CutFromScan(polaroid, false).ConfigureAwait(false);
+            var destSetting = $"{Preferences.Default.Get(Constants.Settings.DesitnationPath, "")}\\PolaScan";
+            var destinationPath = polaroid.Date != null ? $"{destSetting}\\{polaroid.Date.Value.Year}\\{polaroid.Date.Value.Month}" : destSetting;
+            Directory.CreateDirectory(destinationPath);
+            var i = 0;
+            var uniqueName = destinationPath + $"\\{polaroid.FileName(i)}";
+            while (File.Exists(uniqueName))
+            {
+                uniqueName = destinationPath + $"\\{polaroid.FileName(i)}";
+                i++;
+            }
+            using var image = Image.Load(polaroid.AbsolutePath);
+            image.Metadata.ExifProfile ??= new();
+            if (polaroid.Location != null)
+            {
+                image.Metadata.ExifProfile.SetValue(ExifTag.GPSLatitude, GPSRational(polaroid.Location.Latitude));
+                image.Metadata.ExifProfile.SetValue(ExifTag.GPSLongitude, GPSRational(polaroid.Location.Longitude));
+                image.Metadata.ExifProfile.SetValue(ExifTag.GPSLatitudeRef, polaroid.Location.Latitude > 0 ? "N" : "S");
+                image.Metadata.ExifProfile.SetValue(ExifTag.GPSLongitudeRef, polaroid.Location.Longitude > 0 ? "E" : "W");
+                image.Metadata.ExifProfile.SetValue(ExifTag.GPSAltitude, Rational.FromDouble(100));
+                image.Metadata.ExifProfile.SetValue(ExifTag.ImageDescription, $"{polaroid.Location.Name}");
+            }
+            image.Metadata.ExifProfile.SetValue(ExifTag.Software, nameof(PolaScan));
+            image.Metadata.ExifProfile.SetValue(ExifTag.Model, Constants.FilmFormats.Labels[polaroid.PhotoFormat]);
+            image.Metadata.ExifProfile.SetValue(ExifTag.Copyright, Preferences.Default.Get(Constants.Settings.CopyRightText, ""));
 
-        if (polaroid.Date != null)
-        {
-            var hour = new TimeOnly(polaroid.Hour, 0, 0);
-            var dateTime = polaroid.Location?.DateTime != null ? polaroid.Location.DateTime.Value : polaroid.Date.Value.ToDateTime(hour, DateTimeKind.Local);
-            image.Metadata.ExifProfile.SetValue(ExifTag.DateTimeOriginal, dateTime.ToString("yyyy:MM:dd HH:mm:ss", CultureInfo.CurrentCulture));
-        }
+            if (polaroid.Date != null)
+            {
+                var hour = new TimeOnly(polaroid.Hour, 0, 0);
+                var dateTime = polaroid.Location?.DateTime != null ? polaroid.Location.DateTime.Value : polaroid.Date.Value.ToDateTime(hour, DateTimeKind.Local);
+                image.Metadata.ExifProfile.SetValue(ExifTag.DateTimeOriginal, dateTime.ToString("yyyy:MM:dd HH:mm:ss", CultureInfo.CurrentCulture));
+            }
 
-        await image.SaveAsync(uniqueName);
-    }
-
-    public bool IsReadyForProcessing()
-    {
-        return PhotosInProsses == 0;
+            await image.SaveAsync(uniqueName);
+        });
     }
 
     public async Task<ImageWithMeta> GetDateOnPolaroid(ImageWithMeta polaroid)
@@ -136,9 +137,13 @@ public class ImageHandler
         return compressedScanFileName;
     }
 
-    public async Task<ImageWithMeta> GetPolaroidFromScan(ImageWithMeta polaroid)
+    public async Task<ImageWithMeta> QueueImageCrop(ImageWithMeta polaroid)
     {
-        PhotosInProsses++;
+        return await serialQueue.Enqueue(() => GetPolaroidFromScan(polaroid));
+    }
+
+    private async Task<ImageWithMeta> GetPolaroidFromScan(ImageWithMeta polaroid)
+    {
         if (!SavedTemporaryFiles.TryGetValue(polaroid.ScanFile, out var compressedScanFileName))
         {
             compressedScanFileName = await SaveCompressedScanFile(polaroid.ScanFile);
@@ -152,7 +157,6 @@ public class ImageHandler
         polaroid.HasBeenAnalyzed = true;
         polaroid = await CutFromScan(polaroid, true).ConfigureAwait(false);
         polaroid = await GetDateOnPolaroid(polaroid).ConfigureAwait(false);
-        PhotosInProsses--;
         return polaroid;
     }
 

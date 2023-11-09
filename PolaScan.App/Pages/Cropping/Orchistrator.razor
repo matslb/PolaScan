@@ -91,36 +91,32 @@
         State.IsStarted = true;
         var defaultHour = int.Parse(Preferences.Default.Get(Constants.Settings.AssumedHour, "12"));
         var result = await FilePicker.Default.PickMultipleAsync();
+        var detectedImages = new List<ImageWithMeta>();
         if (result.Any())
         {
             State.ScanFileCount = result.Count();
             State.LocationCount = 0;
             State.StatusMessage = $"Analyzing {State.ScanFileCount} {(State.ScanFileCount > 1 ? "scans" : "scan")}";
             StateHasChanged();
-
             try {
                 foreach (var file in result)
                 {
-                    var locations = await polaScanClient.DetectPolaroidsInImage(file);
+                    var locations = await polaScanClient.AnalyzeScanFile(file);
                     State.LocationCount += locations.Count();
                     State.StatusMessage = $"{State.LocationCount} photos detected";
                     StateHasChanged();
-                    await Task.Delay(1);
                     var format = Preferences.Default.Get(Constants.Settings.ImageFormat, Constants.FilmFormats.Polaroid);
 
                     foreach (var location in locations)
                     {
-                        State.PolaroidsWithMeta.Add(new ImageWithMeta
-                        {
-                            Id = Guid.NewGuid(),
-                            Hour = defaultHour,
-                            LocationInScan = location,
-                            ScanFile = file.FullPath,
-                            PhotoFormat = format
-                        }
-                        );
-                        await Task.Delay(1);
-                        StateHasChanged();
+                        detectedImages.Add(new ImageWithMeta
+                            {
+                                Id = Guid.NewGuid(),
+                                Hour = defaultHour,
+                                LocationInScan = location,
+                                ScanFile = file.FullPath,
+                                PhotoFormat = format
+                            });
                     }
                 }
                 if (State.LocationCount == 0)
@@ -136,6 +132,7 @@
             }
         }
         State.IsWorking = false;
+        State.PolaroidsWithMeta.AddRange(detectedImages);
         StateHasChanged();
     }
 
@@ -185,9 +182,8 @@
         foreach (var p in State.PolaroidsWithMeta)
         {
             p.PreviewData = string.Empty;
-            p.LocationOptions.Clear();
         }
-        Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(State));
+        Helpers.StoreAsJson(State, nameof(ProcessingState));
     }
 
     public void RemovePhoto(ImageWithMeta polaroid)
@@ -212,6 +208,6 @@
 
     public void RetrieveStoredState()
     {
-        State = JsonConvert.DeserializeObject<ProcessingState>(Preferences.Default.Get(nameof(ProcessingState), "")) ?? new ProcessingState();
+        State = Helpers.GetStoredValue<ProcessingState>(nameof(ProcessingState));
     }
 }
