@@ -142,7 +142,6 @@
         Preferences.Default.Set(nameof(ProcessingState), JsonConvert.SerializeObject(State));
         imageHandler.ClearTempFiles();
         StateHasChanged();
-        telemetryClient.TrackEvent("Button_Cancel");
     }
 
     private async Task ExportImages()
@@ -208,6 +207,10 @@
 
     public void RetrieveStoredState()
     {
-        State = Helpers.GetStoredValue<ProcessingState>(nameof(ProcessingState));
+        var storedState = Helpers.GetStoredValue<ProcessingState>(nameof(ProcessingState));
+        if (storedState.IsWorking)
+            State = new ProcessingState();
+        else
+            State = storedState;
     }
 }

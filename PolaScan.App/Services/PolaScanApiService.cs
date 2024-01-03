@@ -44,9 +44,9 @@ public class PolaScanApiService
         var mod = Constants.ImageProcessing.TempImageModifier;
         using var image = await Image.LoadAsync(file.FullPath);
 
-        if (image.Width < 300 || image.Height < 300)
+        if (image.Width < 600 || image.Height < 600)
         {
-            throw new Exception($"'{file.FileName}' is too low res for processing. Image needs to be at least 300x300 pixels.");
+            throw new Exception($"'{file.FileName}' is too low res for processing. Image needs to be at least 600x600 pixels.");
         }
 
         image.Mutate(x =>
@@ -55,10 +55,19 @@ public class PolaScanApiService
         );
 
         var tempFileName = await Helpers.SaveTempImage(image, $"{Guid.NewGuid()}.jpg");
+        HttpResponseMessage result;
+        try
+        {
+            var content = GetImageStreamContent(tempFileName);
+            result = await client.PostAsync("/DetectPolaroidsInImage", content);
+            content.Dispose();
+        }
+        catch (Exception e)
+        {
+            throw new Exception("Request failed. Check internet connection.");
 
-        var content = GetImageStreamContent(tempFileName);
-        var result = await client.PostAsync("/DetectPolaroidsInImage", content);
-        content.Dispose();
+        }
+
         var locations = JsonConvert.DeserializeObject<List<BoundingBox>>(await result.Content.ReadAsStringAsync());
         telemetryClient.TrackEvent("File_analyzed", new Dictionary<string, string>
             {

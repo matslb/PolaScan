@@ -23,8 +23,10 @@
             <img src="@Image.PreviewData" width="300" />
         }
 
-        <div class="button-group">
-            <button class="rotate-left" @onclick="() => Rotate(-.1)"><Icon IconName="rotate-left" /></button>
+        @if (Image.PreviewData != null)
+        {
+            <div class="button-group">
+                <button class="rotate-left" @onclick="() => Rotate(-.1)"><Icon IconName="rotate-left" /></button>
             <button class="left" @onclick="() => Move(3, 0)"><Icon IconName="arrow-left" /></button>
             <button class="top" @onclick="() => Move(0, 3)"><Icon IconName="arrow-up" /></button>
             <button class="bottom" @onclick="() => Move(0, -3)"><Icon IconName="arrow-down" /></button>
@@ -33,6 +35,7 @@
             <button class="zoom-in" @onclick="() => Zoom(5)"><Icon IconName="magnifying-glass-plus" /></button>
             <button class="zoom-out" @onclick="() => Zoom(-5)"><Icon IconName="magnifying-glass-minus" /></button>
         </div>
+        }
     </div>
     <div class="meta">
 
@@ -65,7 +68,8 @@
                 </div>
             </div>
         }
-
+        @if (Image.PreviewData != null)
+        {
         <div class="meta-item location">
             <Icon IconName="map-location-dot" Color="AppColor.red" Size="1" />
             <div>
@@ -95,6 +99,7 @@
                 }
             </div>
         </div>
+        }
     </div>
     <span class="film-type">@Constants.FilmFormats.Labels[Image.PhotoFormat]</span>
 </div>
