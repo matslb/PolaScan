@@ -14,16 +14,55 @@
         </Collapsable>
     </li>
     <li>
-        <Collapsable Title="Google Timeline data">
-            PolaScan can also utilize your Google Timeline data, automatically adding location meta-data to your photos, based on the date.
+        <Collapsable Title="Location and time metadata">
             <ul>
-                <li>Visit <a href="https://takeout.google.com" target="_blank">timeline.google.com</a> to download your Google Timeline data.</li>
-                <li>Uncheck everything but Location history.</li>
-                <li>Click 'Next', and 'Create export'.</li>
-                <li>When the export is ready, download and extract its contents.</li>
-                <li>In the PolaScan settings, select the 'Records.json' file to integrate your Google Timeline data.</li>
+                <li>You can tag the photos with location and time data.</li>
+                <li>If you've written a date on the photos "lip" PolaScan will attempt to read the date and add it as meta-data.</li>
+                <li>You can also manually input the date and time.</li>
+                <li>Changing the perferred date format in the settings to match the written date can fix issues with the date analysis.</li>
+                <li>This information will be stored as metadata on each photo, making them easy to organize.</li>
             </ul>
         </Collapsable>
+    </li>
+    <li>
+        <Collapsable Title="Google Timeline Data">
+            PolaScan can utilize your Google Timeline data to automatically add location metadata to your photos based on the date.
+            <ul>
+                <li>
+                    Export Your Location History:
+                    <ul>
+                        <li>
+                            <b>On Android Devices:</b>
+                            <ol>
+                                <li>Open the <i>Settings</i> app.</li>
+                                <li>Navigate to <i>Location</i> > <i>Location Services</i> > <i>Timeline</i>.</li>
+                                <li>Select <i>Export Timeline Data</i>.</li>
+                                <li>Choose a destination folder and filename for the export.</li>
+                                <li>Wait for the export to complete; a JSON file containing your location history will be saved in the chosen location.</li>
+                                <li>Send the exported JSON file to your PC.</li>
+                            </ol>
+                        </li>
+                        <li>
+                            <b>On iOS Devices:</b>
+                            <ol>
+                                <li>Open the <i>Google Maps</i> app.</li>
+                                <li>Tap on your profile picture and go to <i>Your Timeline</i>.</li>
+                                <li>Access <i>Settings</i> within the Timeline.</li>
+                                <li>Look for an option to <i>Export Timeline Data</i> (note: availability may vary; if unavailable, consider using a desktop browser as described below).</li>
+                                <li>Send the exported JSON file to your PC.</li>
+                            </ol>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    Integrate with PolaScan:
+                    <ul>
+                        <li>In the PolaScan settings, select the exported JSON file to integrate your Google Timeline data.</li>
+                    </ul>
+                </li>
+            </ul>
+        </Collapsable>
+
     </li>
     <li>
          <Collapsable Title="Film type">
@@ -40,19 +79,7 @@
     <li>
          <Collapsable Title="Adjust trimming">
         <ul>
-            <li>After the photos have been anayzed, you can adjust the trimming for each photo individually.</li>
-        </ul>
-        </Collapsable>
-    </li>
-
-    <li>
-         <Collapsable Title="Location and time metadata">
-        <ul>
-            <li>You can tag the photos with location and time data.</li>
-            <li>If you've written a date on the photos "lip" PolaScan will attempt to read the date and add it as meta-data.</li>
-            <li>You can also manually input the date and time.</li>
-            <li>Changing the perferred date format in the settings to match the written date can fix issues with the date analysis.</li>
-            <li>This information will be stored as metadata on each photo, making it easy to organize and find them later.</li>
+            <li>After the photos have been analyzed, you can adjust the trimming for each photo individually.</li>
         </ul>
         </Collapsable>
     </li>

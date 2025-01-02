@@ -7,7 +7,7 @@ namespace PolaScan.App.Services;
 public class GoogleTimelineService
 {
     private readonly TelemetryClient telemetryClient;
-    private GoogleTimeline Timeline { get; set; } = new GoogleTimeline();
+    private List<LocationRecord> LocationRecords { get; set; } = new List<LocationRecord>();
     private string loadedFilename = string.Empty;
     public GoogleTimelineService(TelemetryClient telemetryClient)
     {
@@ -27,8 +27,8 @@ public class GoogleTimelineService
             {
                 using JsonReader reader = new JsonTextReader(r);
                 var serializer = new JsonSerializer();
-                var detailedTimeLine = serializer.Deserialize<GoogleTimeline>(reader);
-                Timeline.Locations.AddRange(detailedTimeLine.Locations.Where(l => l.Accuracy < 40));
+                var unfilteredTimeLine = serializer.Deserialize<GoogleTimelineV2>(reader);
+                LocationRecords.AddRange(unfilteredTimeLine.RawRecords.Where(r => r.Record != null).Select(r => r.Record));
             }
         }
         catch (Exception e)
@@ -40,22 +40,21 @@ public class GoogleTimelineService
     {
         InitializeDetailed();
         var closestHour = timeOfDay;
-        var possibleLocations = Timeline.Locations
-            .Where(x => x.Date.UtcDateTime.ToShortDateString() == date.ToShortDateString())
-            .OrderBy(x => Math.Abs(x.Date.Hour - closestHour))
+        var possibleLocations = LocationRecords
+            .Where(x => x.TimeStamp.UtcDateTime.ToShortDateString() == date.ToShortDateString())
+            .OrderBy(x => Math.Abs(x.TimeStamp.Hour - closestHour))
             .DistinctBy(x => $"{x.Latitude.ToString().Substring(0, 6)}|{x.Latitude.ToString().Substring(0, 6)}")
             .Take(10)
             .Select(location => new LocationMeta
             {
-                Latitude = location.Latitude / 1e7,
-                Longitude = location.Longitude / 1e7,
-                Name = location.Name,
-                DateTime = location.Date.LocalDateTime
+                Latitude = location.Latitude,
+                Longitude = location.Longitude,
+                DateTime = location.TimeStamp.DateTime
             }).ToList();
 
         telemetryClient.TrackEvent("Location_file_lookup", new Dictionary<string, string>
                 {
-                    {"Total_location", Timeline.Locations.Count().ToString()},
+                    {"Total_location", LocationRecords.Count().ToString()},
                     {"Possible_locations", possibleLocations.Count().ToString()}
                 });
         return possibleLocations;
