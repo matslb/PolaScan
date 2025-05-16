@@ -2,8 +2,6 @@
 
 public class Settings
 {
-    public string? AzureCognitiveSubscriptionKey { get; set; }
-    public string? AzureCognitiveEndpoint { get; set; }
     public string? AzureBlobStorageConnectionString { get; set; }
     public string? CustomVisionPredictionKey { get; set; }
     public string? CustomVisionPredictionEndpoint { get; set; }
@@ -18,4 +16,6 @@ public class Settings
     public string? AuthHeaderName { get; set; }
     public string? StorageAccountToken { get; set; }
     public string? PolaScanApiToken { get; set; }
+    public string? VisionEndpoint { get; set; }
+    public string? VisionKey { get; set; }
 }

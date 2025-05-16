@@ -165,8 +165,8 @@ public class ImageHandler
         var modifier = preview ? tempImageModifier() : 1;
 
         var tempFileName = preview ? await GetCompressedPreviewFile(polaroid.ScanFile) : polaroid.ScanFile;
-
-        using var scanFile = Image.Load<Rgba32>(tempFileName, out var format);
+        var format = await Image.DetectFormatAsync(tempFileName);
+        using var scanFile = await Image.LoadAsync<Rgba32>(tempFileName);
         scanFile.Mutate(x => x
                .Pad(scanFile.Width + padding / modifier, scanFile.Height + padding / modifier)
                .Crop(PolaroidSizeWithMargin(scanFile, polaroid.LocationInScan, modifier))
