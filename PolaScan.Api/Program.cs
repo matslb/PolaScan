@@ -60,7 +60,7 @@ app.MapPost("/DetectDateInImage", async Task<IResult> (HttpRequest request) =>
 
     await using var stream = formFile.OpenReadStream();
 
-    var res = await cognitiveService.DetectDateInImage(stream, formFile.FileName);
+    var res = await cognitiveService.DetectDateInImage(stream);
     return Results.Ok(res);
 
 });

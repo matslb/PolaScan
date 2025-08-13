@@ -1,6 +1,5 @@
 ﻿using Azure;
 using Azure.AI.Vision.ImageAnalysis;
-using Azure.Storage.Blobs;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
 
@@ -10,18 +9,13 @@ public class CognitiveService
 {
     private readonly HttpClient httpClient;
     private readonly CustomVisionPredictionClient customVisionPredictionClient;
-    private readonly BlobContainerClient blobContainer;
     private readonly string customVisionIterationName;
     private readonly Guid customVisionProjectId;
     private readonly Uri CustomVisionEndpoint;
     private readonly ImageAnalysisClient imageAnalysisClient;
-    private readonly string storageAccountToken;
 
     public CognitiveService(Settings settings)
     {
-        var blobServiceClient = new BlobServiceClient(settings.AzureBlobStorageConnectionString);
-        blobContainer = blobServiceClient.GetBlobContainerClient(settings.AzureBlobStorageContainer);
-
         CustomVisionEndpoint = new Uri(settings.CustomVisionEndpoint ?? string.Empty);
 
         httpClient = new HttpClient();
@@ -34,7 +28,6 @@ public class CognitiveService
 
         customVisionIterationName = settings.CustomVisionIterationName ?? string.Empty;
         customVisionProjectId = settings.CustomVisionProjectId ?? Guid.Empty;
-        storageAccountToken = settings.StorageAccountToken;
 
         imageAnalysisClient = new ImageAnalysisClient(new Uri(settings.VisionEndpoint), new AzureKeyCredential(settings.VisionKey));
 
@@ -50,27 +43,22 @@ public class CognitiveService
         return result.Predictions.Where(p => p.TagName == "Polaroid" && p.Probability > 0.999).Select(p => p.BoundingBox).ToList();
     }
 
-    public async Task<string> DetectDateInImage(Stream imageStream, string fileName)
+    public async Task<string> DetectDateInImage(Stream imageStream, CancellationToken ct = default)
     {
-        blobContainer.CreateIfNotExists(Azure.Storage.Blobs.Models.PublicAccessType.Blob);
+        var result = await imageAnalysisClient.AnalyzeAsync(
+            BinaryData.FromStream(imageStream),
+            VisualFeatures.Read,
+            cancellationToken: ct);
 
-        var imageBlobName = $"{Guid.NewGuid()}.{fileName.Split(".")[1]}";
+        var read = result.Value.Read;
+        if (read?.Blocks is null || read.Blocks.Count == 0) return string.Empty;
 
-        await blobContainer.UploadBlobAsync(imageBlobName, imageStream);
-        imageStream.Close();
+        var lines = new List<string>(capacity: 64);
+        foreach (var block in read.Blocks)
+            foreach (var line in block.Lines)
+                lines.Add(line.Text);
 
-        var blobUrl = new Uri($"{blobContainer.Uri}/{imageBlobName}");
-        try
-        {
-            var result = imageAnalysisClient.Analyze(blobUrl, VisualFeatures.Read, new ImageAnalysisOptions { Language = "en" });
-
-            return result?.Value?.Read?.ToString() ?? string.Empty;
-        }
-        finally
-        {
-            await blobContainer.DeleteBlobAsync(imageBlobName);
-        }
-
+        return string.Join(Environment.NewLine, lines);
     }
 
     public class ImageRequest
@@ -81,11 +69,6 @@ public class CognitiveService
     public class CognitiveResult
     {
         public ReadResult ReadResult { get; set; }
-    }
-
-    public class ReadResult
-    {
-        public string Content { get; set; }
     }
 
 }

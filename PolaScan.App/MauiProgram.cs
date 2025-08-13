@@ -65,7 +65,6 @@ public static class MauiProgram
 
         builder.Services.AddSingleton(FolderPicker.Default);
         builder.Services.AddSingleton<PolaScanApiService>();
-        builder.Services.AddSingleton<GoogleTimelineService>();
         builder.Services.AddSingleton<ImageHandler>();
     }
 

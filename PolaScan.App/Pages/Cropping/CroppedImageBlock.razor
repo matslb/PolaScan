@@ -5,7 +5,6 @@
 @using PolaScan.App.Services;
 
 @inject PolaScanApiService polaScanClient;
-@inject GoogleTimelineService timelineService;
 @inject ImageHandler imageHandler;
 @inject TelemetryClient telemetryClient;
 
@@ -26,7 +25,7 @@
         @if (Image.PreviewData != null)
         {
             <div class="button-group">
-                <button class="rotate-left" @onclick="() => Rotate(-.1)"><Icon IconName="rotate-left" /></button>
+            <button class="rotate-left" @onclick="() => Rotate(-.1)"><Icon IconName="rotate-left" /></button>
             <button class="left" @onclick="() => Move(3, 0)"><Icon IconName="arrow-left" /></button>
             <button class="top" @onclick="() => Move(0, 3)"><Icon IconName="arrow-up" /></button>
             <button class="bottom" @onclick="() => Move(0, -3)"><Icon IconName="arrow-down" /></button>
@@ -178,7 +177,6 @@
         {
             if (useTimeLineService)
             {
-                Image.LocationOptions = timelineService.GetDateLocations(Image.Date!.Value, Image.Hour);
                 Image.Location = Image.LocationOptions.FirstOrDefault() ?? Image.Location;
             }
         }

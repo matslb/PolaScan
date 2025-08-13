@@ -23,15 +23,13 @@ public class ImageHandler
 
     private static readonly int padding = Constants.ImageProcessing.ScanFilePadding;
     private readonly PolaScanApiService polaScanService;
-    private readonly GoogleTimelineService timelineService;
     private readonly SerialQueue serialQueue;
 
-    public ImageHandler(PolaScanApiService polaScanService, GoogleTimelineService timelineService)
+    public ImageHandler(PolaScanApiService polaScanService)
     {
         SavedTemporaryFiles = new();
         Directory.CreateDirectory(Helpers.GetTempFilePath(string.Empty));
         this.polaScanService = polaScanService;
-        this.timelineService = timelineService;
         serialQueue = new SerialQueue();
     }
 
@@ -88,7 +86,7 @@ public class ImageHandler
         polaroid.Date = await polaScanService.DetectDateInImage(lip).ConfigureAwait(false);
         if (polaroid.Date != null && polaroid.Date != DateOnly.MinValue)
         {
-            polaroid.Location = timelineService.GetDateLocations(polaroid.Date!.Value, polaroid.Hour).FirstOrDefault();
+            polaroid.Location = null;
         }
 
         return polaroid;
